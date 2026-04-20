@@ -67,7 +67,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
   <section class="s2s-perks-section">
     <div class="s2s-perks-wrap">
       <div class="s2s-perks-col">
-        <div class="s2s-perks-text">Active in 40+ Countries <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Up to 200% Commissions in Month One</div>
+        <div class="s2s-perks-text">Active in 40+ Countries <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Multiple Income Streams</div>
       </div>
       <div class="s2s-logo-col"></div>
     </div>
