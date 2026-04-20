@@ -348,35 +348,34 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <div class="card-header" style="border-bottom:1px solid rgba(183,0,224,.2);">
                     <h4 class="card-title" style="color:#b700e0;">
                       <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#b700e0;color:#fff;font-size:.9rem;margin-right:10px;">1</span>
-                      Create Your PM-International Account & Choose Your Start
+                      Activate Your PM Partner Status &amp; Choose Your Start
                     </h4>
                   </div>
                   <div class="card-body">
                     <div class="row align-items-center">
                       <div class="col-lg-8 col-12">
-                         <p style="font-size:1rem;margin-bottom:.75rem;">
-                          Click the button to open the PM-International registration page in a new tab.
-                          While creating your account is free, you will need the mandatory
-                          <strong>Starter Kit (Demo Bag)</strong> for approx. $26.80 to activate your partner status.
+                        <p style="font-size:1rem;margin-bottom:.75rem;">
+                          This step activates your personal partner link — the foundation for all your commissions and team bonuses.
+                          Click the button below to open the PM-International registration page in a new tab.
+                          Your sponsor link is already pre-set — simply complete the registration form.
                         </p>
 
                         <p style="font-size:1rem;margin-bottom:.5rem;">
-                          <strong>🔥 Fast-Track Your Success (Highly Recommended):</strong>  
-
-                          To start earning commissions immediately, we highly recommend choosing one of the
+                          <strong>🔥 Fast-Track Your Success (Highly Recommended):</strong>
+                          To start earning commissions from day one, we strongly recommend selecting one of the
                           product start options directly during registration:
                         </p>
 
                         <ul style="opacity:.9;font-size:.92rem;padding-left:1.2rem;margin-bottom:1rem;">
-                          <li><strong>Teampartner Start</strong> — The standard way to begin your journey</li>
+                          <li><strong>Teampartner Start</strong> — The reliable way to begin your journey</li>
                           <li><strong>Manager Quickstart</strong> — The fastest way to maximize your commissions from day one</li>
                         </ul>
 
                         <ol style="opacity:.8;font-size:.92rem;padding-left:1.2rem;margin-bottom:1rem;">
-                          <li>Click the button (opens in a new tab — keep this page open)</li>
+                          <li>Click the button — it opens in a new tab, keep this page open</li>
                           <li>Complete the registration &amp; select your preferred Start Option</li>
-                          <li>You will receive your personal PM Partner ID</li>
-                          <li><strong>Return here immediately</strong> to enter your ID and complete this step!</li>
+                          <li>You will receive your personal PM Partner ID by email</li>
+                          <li><strong>Return here immediately</strong> to enter your Partner ID and complete Step 2</li>
                         </ol>
                       </div>
                       <div class="col-lg-4 col-12 text-center">
