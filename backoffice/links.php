@@ -117,8 +117,8 @@ require_once "parts/sidebar.php";
                         <!-- Content types section start -->
                         <?php
                         $shareurlp1 = $baseurl . '/go/' . $userid . '/linkp1/';
-                        $shareurlp2 = $baseurl . '/go/' . $userid . '/linkp2/';
                         $shareurlp3 = $baseurl . '/go/' . $userid . '/linkp3/';
+                        $shareurlp4 = $baseurl . '/go/' . $userid . '/linkp4/';
                         ?>
                         <section id="content-types-premium">
                            <div class="row match-height">
@@ -155,26 +155,26 @@ require_once "parts/sidebar.php";
                               <div class="col-lg-4 col-md-6 col-sm-12">
                                  <div class="card">
                                     <div class="card-content">
-                                       <img class="card-img-top img-fluid" src="<?= $baseurl ?>/linkp2/images/linkp2preview.jpg.jpg" style="width:100%;object-fit:cover;object-position:top;max-height:300px;cursor:pointer;" onclick="window.open('<?= $shareurlp2 ?>','_blank');" title="Klicken für Vorschau">
+                                       <img class="card-img-top img-fluid" src="<?= $baseurl ?>/linkp3/images/linkp3preview.jpg.jpg" style="width:100%;object-fit:cover;object-position:top;max-height:300px;cursor:pointer;" onclick="window.open('<?= $shareurlp4 ?>','_blank');" title="Klicken für Vorschau">
                                        <div class="card-body" style="background-color: white; min-height: 280px;">
-                                          <h4 class="card-title" style="color: black;">Premium Page 2</h4>
+                                          <h4 class="card-title" style="color: black;">Premium Page 4</h4>
                                           <p class="card-text" style="color: black;">Your Link:</p>
                                           <div class="s2s-link-group">
-                                            <input type="text" class="form-control" placeholder="" value="<?= $shareurlp2 ?>" readonly>
-                                            <a href="<?= $shareurlp2 ?>" target="_blank" class="s2s-link-open" title="Link öffnen"><i class="fa fa-external-link" aria-hidden="true"></i></a>
+                                            <input type="text" class="form-control" placeholder="" value="<?= $shareurlp4 ?>" readonly>
+                                            <a href="<?= $shareurlp4 ?>" target="_blank" class="s2s-link-open" title="Link öffnen"><i class="fa fa-external-link" aria-hidden="true"></i></a>
                                           </div>
                                           <p class="card-text" style="color: black;">
-                                             You can track also source traffic in the link, such as: <?= $shareurlp2 ?>?source=XYZ
+                                             You can track also source traffic in the link, such as: <?= $shareurlp4 ?>?source=XYZ
                                           </p>
                                           <div class="mt-2" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
-                                             <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($shareurlp2) ?>" target="_blank" class="btn btn-sm" style="background:#1877F2;color:white;"><i class="fa fa-facebook"></i> Facebook</a>
-                                             <a href="https://wa.me/?text=<?= urlencode('Schau dir das an: ' . $shareurlp2) ?>" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;"><i class="fa fa-whatsapp"></i> WhatsApp</a>
-                                             <a href="https://t.me/share/url?url=<?= urlencode($shareurlp2) ?>&text=<?= urlencode('Schau dir das an!') ?>" target="_blank" class="btn btn-sm" style="background:#0088cc;color:white;"><i class="fa fa-telegram"></i> Telegram</a>
-                                             <a href="https://twitter.com/intent/tweet?url=<?= urlencode($shareurlp2) ?>&text=<?= urlencode('Schau dir das an!') ?>" target="_blank" class="btn btn-sm" style="background:#000;color:white;"><i class="fa fa-twitter"></i> X</a>
-                                             <a href="mailto:?subject=Simple2Success&body=<?= urlencode('Schau dir das an: ' . $shareurlp2) ?>" class="btn btn-sm" style="background:#555;color:white;"><i class="fa fa-envelope"></i> E-Mail</a>
+                                             <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($shareurlp4) ?>" target="_blank" class="btn btn-sm" style="background:#1877F2;color:white;"><i class="fa fa-facebook"></i> Facebook</a>
+                                             <a href="https://wa.me/?text=<?= urlencode('Schau dir das an: ' . $shareurlp4) ?>" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;"><i class="fa fa-whatsapp"></i> WhatsApp</a>
+                                             <a href="https://t.me/share/url?url=<?= urlencode($shareurlp4) ?>&text=<?= urlencode('Schau dir das an!') ?>" target="_blank" class="btn btn-sm" style="background:#0088cc;color:white;"><i class="fa fa-telegram"></i> Telegram</a>
+                                             <a href="https://twitter.com/intent/tweet?url=<?= urlencode($shareurlp4) ?>&text=<?= urlencode('Schau dir das an!') ?>" target="_blank" class="btn btn-sm" style="background:#000;color:white;"><i class="fa fa-twitter"></i> X</a>
+                                             <a href="mailto:?subject=Simple2Success&body=<?= urlencode('Schau dir das an: ' . $shareurlp4) ?>" class="btn btn-sm" style="background:#555;color:white;"><i class="fa fa-envelope"></i> E-Mail</a>
                                              <span style="display:block;width:100%;margin-top:8px;"></span>
-                                             <button onclick="copyLink('<?= $shareurlp2 ?>', this)" class="btn btn-lg s2s-btn-brand"><i class="fa fa-copy"></i> Link kopieren</button>
-                                             <button onclick="window.open('<?= $shareurlp2 ?>','_blank')" class="btn btn-lg s2s-btn-neutral"><i class="fa fa-eye"></i> Preview</button>
+                                             <button onclick="copyLink('<?= $shareurlp4 ?>', this)" class="btn btn-lg s2s-btn-brand"><i class="fa fa-copy"></i> Link kopieren</button>
+                                             <button onclick="window.open('<?= $shareurlp4 ?>','_blank')" class="btn btn-lg s2s-btn-neutral"><i class="fa fa-eye"></i> Preview</button>
                                           </div>
                                        </div>
                                     </div>
