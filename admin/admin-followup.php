@@ -506,6 +506,23 @@ $sequences_member = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM follo
 $total_leads   = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM users WHERE (username IS NULL OR username = '')"))['c'];
 $total_members = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM users WHERE username IS NOT NULL AND username != ''"))['c'];
 $total_sent    = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM followup_log"))['c'];
+
+// A/B + Click Tracking Stats (tables may not exist yet — safe fallback)
+$ab_a_count   = 0; $ab_b_count   = 0;
+$click_count  = 0; $trigger_count = 0;
+$ab_table = mysqli_query($link, "SHOW TABLES LIKE 'followup_ab_assignments'");
+if ($ab_table && mysqli_num_rows($ab_table) > 0) {
+    $ab_a_count  = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM followup_ab_assignments WHERE variant='A'"))['c'];
+    $ab_b_count  = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM followup_ab_assignments WHERE variant='B'"))['c'];
+}
+$click_table = mysqli_query($link, "SHOW TABLES LIKE 'followup_clicks'");
+if ($click_table && mysqli_num_rows($click_table) > 0) {
+    $click_count = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM followup_clicks"))['c'];
+}
+$trigger_table = mysqli_query($link, "SHOW TABLES LIKE 'followup_trigger_log'");
+if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
+    $trigger_count = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM followup_trigger_log"))['c'];
+}
 ?>
 <!DOCTYPE html>
 <html class="loading" lang="en">
@@ -600,6 +617,46 @@ $total_sent    = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FR
             <div class="text-muted" style="font-size:12px;">E-Mails gesendet (gesamt)</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- A/B Test + Click Tracking Stats Row -->
+<div class="row px-2 mb-2">
+  <div class="col-12">
+    <div class="card" style="border-left:4px solid #ff9800;">
+      <div class="card-header py-2">
+        <h6 class="card-title m-0" style="color:#ff9800;"><i class="ft-bar-chart-2 mr-1"></i> A/B-Test &amp; Verhaltens-Tracking (neu)</h6>
+      </div>
+      <div class="card-body py-2">
+        <div class="row">
+          <div class="col-lg-3 col-sm-6 mb-2">
+            <div class="d-flex align-items-center">
+              <span style="font-size:22px;font-weight:bold;color:#cb2ebc;margin-right:8px;"><?= $ab_a_count ?></span>
+              <div><div style="font-size:12px;font-weight:600;">Variante A</div><div class="text-muted" style="font-size:11px;">Original-Betreff</div></div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6 mb-2">
+            <div class="d-flex align-items-center">
+              <span style="font-size:22px;font-weight:bold;color:#1877F2;margin-right:8px;"><?= $ab_b_count ?></span>
+              <div><div style="font-size:12px;font-weight:600;">Variante B</div><div class="text-muted" style="font-size:11px;">Curiosity-Gap-Betreff</div></div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6 mb-2">
+            <div class="d-flex align-items-center">
+              <span style="font-size:22px;font-weight:bold;color:#25D366;margin-right:8px;"><?= $click_count ?></span>
+              <div><div style="font-size:12px;font-weight:600;">Link-Klicks</div><div class="text-muted" style="font-size:11px;">Getrackte E-Mail-Klicks</div></div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6 mb-2">
+            <div class="d-flex align-items-center">
+              <span style="font-size:22px;font-weight:bold;color:#ff9800;margin-right:8px;"><?= $trigger_count ?></span>
+              <div><div style="font-size:12px;font-weight:600;">Trigger-E-Mails</div><div class="text-muted" style="font-size:11px;">Verhaltensbasiert gesendet</div></div>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted mb-0" style="font-size:11px;">A/B-Test läuft automatisch (50/50 Split). Trigger-E-Mails werden durch Klick-Verhalten ausgelöst. Klick-Tracking ist in allen neuen Follow-up-E-Mails aktiv.</p>
       </div>
     </div>
   </div>
