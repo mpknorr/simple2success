@@ -460,13 +460,13 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                           Once saved, your Partner ID is permanently locked and cannot be changed by you.
                           Contact support if an update is ever needed.
                         </p>
-                        <form method="POST" action="welcome.php" style="max-width:520px;">
+                        <form method="POST" action="welcome.php" style="max-width:640px;">
                           <input type="hidden" name="userid" value="<?= isset($userid) ? (int)$userid : '' ?>">
                           <label style="font-size:.9rem;font-weight:600;color:#b700e0;margin-bottom:.5rem;display:block;letter-spacing:.02em;">
                             YOUR PM PARTNER ID
                           </label>
                           <div style="display:flex;margin-bottom:1rem;">
-                            <span class="s2s-id-prefix" style="font-size:.75rem;padding:.75rem .85rem;">pmebusiness.com/…/?TP=</span>
+                            <span class="s2s-id-prefix" style="font-size:.75rem;padding:.75rem .85rem;">pmebusiness.com/registrationv2/?TP=</span>
                             <input type="text"
                                    class="s2s-id-input"
                                    name="root"
