@@ -28,7 +28,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
         <div class="s2s-logo-wrap"></div>
         <h1 class="s2s-heading">Ignite Your Eagle Journey</h1>
         <div class="s2s-tagline">Soar Above the Rest with the Simple2Success Team!<br></div>
-        <div class="s2s-subline">Unlock the Path to Generational Wealth!</div>
+        <div class="s2s-subline">Start Building Your Income Online — Step by Step, 100% Free</div>
         <div class="s2s-form-outer w-form">
           <?php if ($errorMsg): ?>
             <div class="s2s-form-error"><?= $errorMsg ?></div>
@@ -44,7 +44,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
               <div class="s2s-input-wrap"><input type="text" class="s2s-input-base s2s-input" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name"></div>
               <div class="s2s-input-wrap"><input type="email" class="s2s-input-base s2s-input" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email"></div>
             </div>
-            <input type="submit" value="Join The Eagle Team!" class="s2s-btn">
+            <input type="submit" value="Claim My Free Position →" class="s2s-btn">
           </form>
         </div>
         <div class="s2s-cta-label">
@@ -64,7 +64,10 @@ $source = htmlspecialchars($_GET['source'] ?? '');
         </div>
         <div class="s2s-benefit-row last">
           <div class="s2s-check-icon"></div>
-          <div class="s2s-benefit-text">200% Commissions Month One</div>
+          <div class="s2s-benefit-text">200% Commissions Month One <span title="Our partner program pays double commissions in your first active month" style="cursor:help;opacity:.6;font-size:.85em;">ⓘ</span></div>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;opacity:.45;text-align:center;">
+          Trusted Team System &mdash; Active in 40+ Countries &mdash; Free to Join
         </div>
       </div>
       <div class="s2s-bg-col"></div>

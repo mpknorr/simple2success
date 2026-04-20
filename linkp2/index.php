@@ -24,8 +24,8 @@ $source = htmlspecialchars($_GET['source'] ?? '');
 <body class="s2s-body">
   <div class="s2s-section">
     <div class="s2s-banner-wrap">
-      <div class="s2s-banner-text">SOMETHING <span class="s2s-span-accent">LIFE CHANGING</span> IS HAPPENING...</div>
-      <p class="s2s-subtitle">Get your 100% FREE Simple2Success account and see for yourself!</p>
+      <div class="s2s-banner-text">The Team System That Builds Your Income <span class="s2s-span-accent">While You Sleep</span></div>
+      <p class="s2s-subtitle">See how it works — your 100% FREE Simple2Success account is ready for you</p>
     </div>
   </div>
   <div class="s2s-section-3">
@@ -37,7 +37,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
         <div class="s2s-form-col-wrap">
           <div class="s2s-container">
             <h1 class="s2s-heading"><span class="s2s-span-reserve">RESERVE</span><br><span style="white-space:nowrap;">YOUR SPOT</span></h1>
-            <p class="s2s-subtitle action">Don't Wait. It's FREE. Do it Now!</p>
+            <p class="s2s-subtitle action">Free spots are limited by sponsor capacity — yours has been reserved</p>
             <div class="s2s-form-inner">
               <div class="s2s-form-block w-form">
                 <?php if ($errorMsg): ?>
@@ -54,7 +54,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
                   <div class="s2s-divider"></div>
                   <input type="email" class="s2s-email-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
                   <div class="s2s-divider"></div>
-                  <input type="submit" value="Reserve My Spot!" class="s2s-btn">
+                  <input type="submit" value="Reserve My Free Spot →" class="s2s-btn">
                 </form>
               </div>
             </div>
@@ -67,7 +67,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
   <section class="s2s-perks-section">
     <div class="s2s-perks-wrap">
       <div class="s2s-perks-col">
-        <div class="s2s-perks-text">Instant Global Opportunity <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> HUGE Compensation Plan</div>
+        <div class="s2s-perks-text">Active in 40+ Countries <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Up to 200% Commissions in Month One</div>
       </div>
       <div class="s2s-logo-col"></div>
     </div>

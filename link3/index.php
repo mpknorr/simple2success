@@ -5,205 +5,211 @@ require_once __DIR__ . '/../includes/conn.php';
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="apple-touch-icon" sizes="180x180" href="https://www.simple2success.com/backoffice/app-assets/img/ico/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon-16x16.png">
   <link rel="manifest" href="https://www.simple2success.com/backoffice/app-assets/img/ico/site.webmanifest">
-  <link rel="mask-icon" href="https://www.simple2success.com/backoffice/app-assets/img/ico/safari-pinned-tab.svg" color="#5bbad5">
   <link rel="shortcut icon" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon.ico">
   <meta name="msapplication-TileColor" content="#9f00a7">
-  <meta name="msapplication-config" content="https://www.simple2success.com/backoffice/app-assets/img/ico/browserconfig.xml">
-  <meta name="theme-color" content="#ffffff">
-  <title>Screech if you LOVE data safety!</title>
+  <meta name="theme-color" content="#0d0d0d">
+  <title>Join the Eagle Team — Simple2Success</title>
   <style>
-    body, html {
-      height: 100%;
-      margin: 0;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: "Arial", sans-serif;
+      font-family: "Arial", ubuntu, "segoe ui", helvetica, arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #e0e0e0;
+      /* Calm dark gradient — no distracting animation */
+      background: linear-gradient(160deg, #0a0a1a 0%, #12002a 50%, #0a0a1a 100%);
+      padding: 20px;
     }
 
     .container {
-      max-width: 80%;
-      width: 60%;
-      min-height: 200px;
-      background-color: #f7f7f7;
-      border: 1px solid #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding-bottom: 20px;
-    }
-
-    @media only screen and (max-width: 600px) {
-      .container {
-        width: 90%;
-      }
+      width: 100%;
+      max-width: 520px;
+      background: rgba(18,0,42,.9);
+      border: 1px solid rgba(183,0,224,.35);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(183,0,224,.15);
     }
 
     .responsive-image {
-      max-width: 100%;
+      width: 100%;
       height: auto;
+      display: block;
     }
 
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
+    .card-body {
+      padding: 24px 28px 28px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+
+    .subheadline {
+      font-size: .92rem;
+      color: rgba(255,255,255,.55);
+      margin-bottom: 20px;
+    }
+
+    .error-msg {
+      background: rgba(220,50,50,.15);
+      border: 1px solid rgba(220,50,50,.4);
+      color: #ff6b6b;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      font-size: .9rem;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(183,0,224,.3);
+      border-radius: 7px;
+      color: #fff;
+      font-size: .97rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+      border-color: #b700e0;
+    }
+
+    input[type="text"]::placeholder,
+    input[type="email"]::placeholder {
+      color: rgba(255,255,255,.35);
+    }
+
+    .btn-cta {
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      margin-top: 6px;
+      background: linear-gradient(135deg, #b700e0, #7b00a0);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
       text-decoration: none;
-      border-radius: 5px;
-      font-size: 1.2rem;
-    }
-  </style>
-
-  <style>
-    /* Lokale Schriftart */
-    @font-face {
-      font-family: 'Exo';
-      src: url('<?= $baseurl ?>/font/exo/static/Exo-Medium.ttf') format('truetype');
-      font-weight: 100;
+      transition: opacity .2s, transform .1s;
     }
 
-    /* Animierter Hintergrund */
-    body {
-      --s: 25vmin;
-      --p: calc(var(--s) / 2);
-      --c1: pink;
-      --c2: dodgerblue;
-      --c3: white;
-      --bg: var(--c3);
-      --d: 4000ms;
-      --e: cubic-bezier(0.76, 0, 0.24, 1);
-  
-      background-color: var(--bg);
-      background-image:
-        linear-gradient(45deg, var(--c1) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--c1) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, var(--c2) 75%),
-        linear-gradient(-45deg, transparent 75%, var(--c2) 75%);
-      background-size: var(--s) var(--s);
-      background-position: 
-        calc(var(--p) *  1) calc(var(--p) *  0), 
-        calc(var(--p) * -1) calc(var(--p) *  1), 
-        calc(var(--p) *  1) calc(var(--p) * -1), 
-        calc(var(--p) * -1) calc(var(--p) *  0);
-      animation: 
-        color var(--d) var(--e) infinite,
-        position var(--d) var(--e) infinite;
+    .btn-cta:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-cta:active { transform: translateY(0); }
+
+    .micro-copy {
+      font-size: .78rem;
+      color: rgba(255,255,255,.38);
+      margin-top: 10px;
     }
-    
-    @keyframes color {
-      0%, 25% {
-        --bg: var(--c3);
-      }
-      26%, 50% {
-        --bg: var(--c1);
-      }
-      51%, 75% {
-        --bg: var(--c3);
-      }
-      76%, 100% {
-        --bg: var(--c2);
-      }
+
+    .social-proof {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 16px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.08);
     }
-    
-    @keyframes position {
-      0% {
-        background-position: 
-          calc(var(--p) *  1) calc(var(--p) *  0), 
-          calc(var(--p) * -1) calc(var(--p) *  1), 
-          calc(var(--p) *  1) calc(var(--p) * -1), 
-          calc(var(--p) * -1) calc(var(--p) *  0);
-      }
-      25% {
-        background-position: 
-          calc(var(--p) *  1) calc(var(--p) *  4), 
-          calc(var(--p) * -1) calc(var(--p) *  5), 
-          calc(var(--p) *  1) calc(var(--p) *  3), 
-          calc(var(--p) * -1) calc(var(--p) *  4);
-      }
-      50% {
-        background-position: 
-          calc(var(--p) *  3) calc(var(--p) * 8), 
-          calc(var(--p) * -3) calc(var(--p) * 9), 
-          calc(var(--p) *  2) calc(var(--p) * 7), 
-          calc(var(--p) * -2) calc(var(--p) * 8);
-      }
-      75% {
-        background-position: 
-          calc(var(--p) *  3) calc(var(--p) * 12), 
-          calc(var(--p) * -3) calc(var(--p) * 13), 
-          calc(var(--p) *  2) calc(var(--p) * 11), 
-          calc(var(--p) * -2) calc(var(--p) * 12);
-      }
-      100% {    
-        background-position: 
-          calc(var(--p) *  5) calc(var(--p) * 16), 
-          calc(var(--p) * -5) calc(var(--p) * 17), 
-          calc(var(--p) *  5) calc(var(--p) * 15), 
-          calc(var(--p) * -5) calc(var(--p) * 16);
-      }
+
+    .sp-item {
+      font-size: .78rem;
+      color: rgba(255,255,255,.45);
     }
-    
-    @media (prefers-reduced-motion) {
-      body {
-        animation: none;
-      }
+
+    .sp-item::before {
+      content: "✓ ";
+      color: #b700e0;
     }
+
+    .footer-bar {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .footer-bar a {
+      color: #666;
+      text-decoration: none;
+      margin: 0 4px;
+    }
+
+    .footer-bar a:hover { color: #999; }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="<?= $baseurl ?>/<?= $page?>/eagle1b.jpg" class="responsive-image">
-    <center>
-<h2>Wealth seekers who want to soar as high as the eagles?<br>Join our elite team!</h2><br>
+    <img src="<?= $baseurl ?>/<?= $page ?>/eagle1b.jpg" class="responsive-image" alt="Eagle Team">
+    <div class="card-body">
+      <h2>Join 10,000+ People Already Building Income With the Simple2Success Eagle Team</h2>
+      <p class="subheadline">Your free spot is waiting — enter your details to get access</p>
 
-      <?php
-      if (isset($_GET["err"])) {
-        if ($_GET["err"] == "eae") { ?>
-          <h3 style="color: red">Email address is already registered.</h3>
-      <?php }
-      }
-      ?>
+      <?php if (isset($_GET["err"]) && $_GET["err"] == "eae"): ?>
+        <div class="error-msg">This email address is already registered. Please use a different email.</div>
+      <?php endif; ?>
 
-      <script>
-        function showCap() {
-          document.getElementById("ctaspot").innerHTML = document.getElementById("optinform").innerHTML;
-        }
-      </script>
+      <form method="POST" action="<?= $baseurl ?>/includes/postlead.php" target="_top">
+        <input type="hidden" name="a" value="1">
+        <input type="hidden" name="tr" value="2">
+        <input type="hidden" name="page" value="link3">
+        <input type="hidden" name="lang" value="en">
+        <input type="hidden" name="referer" value="<?= isset($referer) ? htmlspecialchars($referer) : '' ?>">
+        <input type="hidden" name="source" value="<?= isset($_GET['source']) ? htmlspecialchars($_GET['source']) : '' ?>">
 
-      <div id="ctaspot">
-        <a href="javascript:showCap();" class="button">Join Our Community</a>
+        <div class="form-group">
+          <input type="text" name="name" placeholder="Your First Name" autocomplete="given-name">
+        </div>
+        <div class="form-group">
+          <input type="email" name="email" placeholder="Your Best Email" required autocomplete="email">
+        </div>
+        <input type="submit" class="btn-cta" value="Yes — Show Me the System →">
+      </form>
+
+      <p class="micro-copy">🔒 100% Free — No Credit Card Required. We respect your privacy.</p>
+
+      <div class="social-proof">
+        <span class="sp-item">10,000+ Members</span>
+        <span class="sp-item">40+ Countries</span>
+        <span class="sp-item">Free to Join</span>
+        <span class="sp-item">Proven System Since 2023</span>
       </div>
-
-      <div id="optinform" style="display:none;">
-        <center>
-          <form method="POST" action="<?= $baseurl ?>/includes/postlead.php" target="_top">
-            <input type="hidden" name="a" value="1">
-            <input type="hidden" name="tr" value="2">
-            <input type="hidden" name="page" value="link3">
-            <input type="hidden" name="lang" value="en">
-            Enter Your Email to Receive Your Access Code:<br>
-            <input type="text" name="email" value="" width="90%" placeholder="Email address"><br>
-            <input type="hidden" name="referer" value="<?= isset($referer) ? $referer : '' ?>" width="90%" placeholder="Referer"><br>
-            <input type="hidden" name="source" value="<?= isset($_GET['source']) ? $_GET['source'] : '' ?>" width="90%"><br>
-            <br>
-            <input type="submit" class="button" value="Get Access Now" />
-          </form>
-        </center>
-      </div>
-    </center>
+    </div>
   </div>
-  <div style="margin-top:12px;text-align:center;font-size:11px;color:#999;white-space:nowrap;">
-    &copy; <?= date('Y') ?> Simple2Success. All Rights Reserved. &nbsp;&nbsp;&nbsp;
-    <a href="<?= $baseurl ?>/impress.php" style="color:#999;text-decoration:none;margin:0 5px;">Impressum</a> |
-    <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy" style="color:#999;text-decoration:none;margin:0 5px;">Privacy Policy</a> |
-    <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use" style="color:#999;text-decoration:none;margin:0 5px;">Terms of Use</a>
+
+  <div class="footer-bar">
+    &copy; <?= date('Y') ?> Simple2Success. All Rights Reserved. &nbsp;
+    <a href="<?= $baseurl ?>/impress.php">Impressum</a> |
+    <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy">Privacy Policy</a> |
+    <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use">Terms of Use</a>
   </div>
 </body>
 </html>
