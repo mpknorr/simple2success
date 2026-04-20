@@ -29,10 +29,10 @@ $countdownSeconds = 48 * 3600;
       <div class="s2s-form-header">
         <div class="s2s-header-inner">
           <div class="s2s-eyebrow-wrap">
-            <div class="s2s-form-eyebrow">I&#x27;m excited for you to see this.</div>
+            <div class="s2s-form-eyebrow">Your sponsor has reserved your free access:</div>
           </div>
           <div class="s2s-heading-wrap">
-            <h1 class="s2s-modal-heading">Don&#x27;t let this opportunity pass you by!</h1>
+            <h1 class="s2s-modal-heading">You&#x27;re One Step Away From Your Free Account</h1>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@ $countdownSeconds = 48 * 3600;
     </div>
     <div class="s2s-perks-banner">
       <div class="s2s-description-wrap">
-        <p class="s2s-tagline">Take the first step towards achieving your dreams. Join an exclusive Simple2Success team of experts who will help propel you towards unparalleled success.</p>
+        <p class="s2s-tagline">Join a proven step-by-step system used by 10,000+ members in 40+ countries to build real income online — 100% free to start.</p>
       </div>
     </div>
     <div class="s2s-benefits-grid">
@@ -106,26 +106,26 @@ $countdownSeconds = 48 * 3600;
         <div class="s2s-benefit-item">
           <div class="s2s-check-icon"></div>
           <div>
-            <div class="s2s-benefit-text">Accelerate Your Growth</div>
+            <div class="s2s-benefit-text">Get Your First Leads Within 7 Days</div>
           </div>
         </div>
         <div class="s2s-benefit-item">
           <div class="s2s-check-icon"></div>
           <div>
-            <div class="s2s-benefit-text">Unlock Your Full Potential</div>
+            <div class="s2s-benefit-text">Earn Commissions on Every New Team Member</div>
           </div>
         </div>
         <div class="s2s-benefit-item">
           <div class="s2s-check-icon"></div>
           <div>
-            <div class="s2s-benefit-text">Transform Dreams Into Reality</div>
+            <div class="s2s-benefit-text">Build a Residual Income That Grows Without You</div>
           </div>
         </div>
       </div>
     </div>
     <div class="s2s-timer-wrap">
       <div class="s2s-timer-section">
-        <div class="s2s-team-label">It&#x27;s ALWAYS about the team you choose to join.</div>
+        <div class="s2s-team-label">Your sponsor has reserved a spot for you — this reservation expires in:</div>
         <div class="s2s-countdown-row">
           <div class="s2s-time-unit">
             <div class="s2s-time-circle">
