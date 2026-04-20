@@ -200,7 +200,7 @@ require_once __DIR__ . '/../includes/conn.php';
         <span class="sp-item">10,000+ Members</span>
         <span class="sp-item">40+ Countries</span>
         <span class="sp-item">Free to Join</span>
-        <span class="sp-item">Backed by PM-International</span>
+        <span class="sp-item">Proven System Since 2023</span>
       </div>
     </div>
   </div>

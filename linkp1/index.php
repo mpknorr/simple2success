@@ -64,10 +64,10 @@ $source = htmlspecialchars($_GET['source'] ?? '');
         </div>
         <div class="s2s-benefit-row last">
           <div class="s2s-check-icon"></div>
-          <div class="s2s-benefit-text">200% Commissions Month One <span title="PM-International's Fast-Start Bonus pays double commissions in your first active month" style="cursor:help;opacity:.6;font-size:.85em;">ⓘ</span></div>
+          <div class="s2s-benefit-text">200% Commissions Month One <span title="Our partner program pays double commissions in your first active month" style="cursor:help;opacity:.6;font-size:.85em;">ⓘ</span></div>
         </div>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;opacity:.45;text-align:center;">
-          Backed by PM-International &mdash; Est. 1993 &mdash; Active in 40+ Countries
+          Trusted Team System &mdash; Active in 40+ Countries &mdash; Free to Join
         </div>
       </div>
       <div class="s2s-bg-col"></div>
