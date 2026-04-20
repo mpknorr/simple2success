@@ -676,12 +676,12 @@ $source = htmlspecialchars($_GET['source'] ?? '');
   <div class="proof-divider"></div>
   <div class="proof-stat">
     <span class="num">1B+</span>
-    <span class="label">PM Products Sold</span>
+    <span class="label">Products Sold Worldwide</span>
   </div>
   <div class="proof-divider"></div>
   <div class="proof-stat">
     <span class="num">30+</span>
-    <span class="label">Years PM Experience</span>
+    <span class="label">Years of Team Experience</span>
   </div>
 </div>
 
@@ -747,7 +747,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
     <div class="benefit-card">
       <span class="benefit-num">03 — Income</span>
       <h3>Multiple Revenue Streams</h3>
-      <p>Training bonuses, first-line bonuses, deep bonuses, and lifestyle rewards — all unlocked through the PM compensation plan.</p>
+      <p>Training bonuses, first-line bonuses, deep bonuses, and lifestyle rewards — all unlocked through our partner compensation plan.</p>
     </div>
     <div class="benefit-card">
       <span class="benefit-num">04 — Community</span>
@@ -794,8 +794,8 @@ $source = htmlspecialchars($_GET['source'] ?? '');
     <div class="step-item">
       <div class="step-dot">2</div>
       <div class="step-body">
-        <h3>Complete Step 2 — Activate Your PM Partnership</h3>
-        <p>Register with PM-International (free) and enter your Partner ID. This activates your marketing system and unlocks the full compensation plan.</p>
+        <h3>Complete Step 2 — Activate Your Partnership</h3>
+        <p>Create your free partner account and enter your Partner ID. This activates your marketing system and unlocks the full compensation plan.</p>
       </div>
     </div>
 
