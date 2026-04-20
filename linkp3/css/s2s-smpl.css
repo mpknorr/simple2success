@@ -1,0 +1,1179 @@
+.s2s-body {
+  color: #4695da;
+  background-color: #f7f7f7;
+  background-image: none;
+  background-repeat: repeat;
+  background-size: auto;
+  padding-top: 0;
+}
+
+.s2s-cta-row {
+  width: 700px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+}
+
+.s2s-modal {
+  z-index: 9999;
+  background-color: #010005;
+  background-image: url('../images/Owl-Money-Popup.jpg');
+  background-position: 100%;
+  background-repeat: no-repeat;
+  background-size: auto;
+  justify-content: center;
+  align-items: center;
+  display: none;
+  position: fixed;
+  top: 0%;
+  bottom: 0%;
+  left: 0%;
+  right: 0%;
+}
+
+.s2s-form-box {
+  width: 600px;
+  height: auto;
+  text-align: center;
+  background-color: #fff;
+  padding-top: 0;
+  padding-bottom: 35px;
+  overflow: hidden;
+}
+
+.s2s-form-header {
+  height: auto;
+  color: #fff;
+  background-color: #b300de;
+  padding: 25px 40px 35px;
+}
+
+.s2s-input-field {
+  min-height: 50px;
+  width: 100%;
+  color: #b300de;
+  text-align: center;
+  letter-spacing: .5px;
+  background-color: #fff;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  padding: 15px 0;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  display: block;
+}
+
+.s2s-input-field::-ms-input-placeholder {
+  color: #b300de;
+  font-family: Ubuntu, Helvetica, sans-serif;
+}
+
+.s2s-input-field::placeholder {
+  color: #b300de;
+  font-family: Ubuntu, Helvetica, sans-serif;
+}
+
+.s2s-input-field.name {
+  color: #b300de;
+  margin-bottom: 4px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+}
+
+.s2s-input-field.name::-ms-input-placeholder {
+  color: #b300de;
+}
+
+.s2s-input-field.name::placeholder {
+  color: #b300de;
+}
+
+.s2s-form {
+  width: 100%;
+  background-color: #f5f5f5;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 30px 50px 35px;
+}
+
+.s2s-form-eyebrow {
+  opacity: 1;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.s2s-btn {
+  width: 100%;
+  letter-spacing: .5px;
+  background-color: #1f6fff;
+  background-image: linear-gradient(155deg, #1a358c, #1f6fff 50%, #253f6f);
+  border: 2px solid #1f6fff;
+  border-radius: 5px;
+  padding-top: 34px;
+  padding-bottom: 32px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 37px;
+  font-weight: 400;
+}
+
+.s2s-btn:hover {
+  color: #fff;
+  letter-spacing: .5px;
+  background-color: #b300de;
+  background-image: linear-gradient(155deg, #510e6b, #b300de 50%, #510e6b);
+  border-color: #b300de;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 37px;
+  font-weight: 400;
+}
+
+.s2s-modal-heading {
+  color: #fff;
+  letter-spacing: 1px;
+  margin-top: 2px;
+  margin-bottom: 0;
+  padding-left: 50px;
+  padding-right: 50px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 35px;
+}
+
+.s2s-icon-wrap {
+  width: 100%;
+  height: auto;
+  background-color: rgba(0, 0, 0, 0);
+  justify-content: center;
+  align-items: center;
+  margin-top: -22px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 0;
+  display: none;
+  position: static;
+}
+
+.s2s-secure-badge {
+  height: 42px;
+  opacity: .55;
+  background-image: url('../images/website-secure.png');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-top: 12px;
+}
+
+.s2s-privacy-text {
+  color: #596273;
+  margin-top: 35px;
+  font-family: Lato, sans-serif;
+  font-size: 12px;
+}
+
+.s2s-bold {
+  letter-spacing: .5px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-weight: 300;
+}
+
+.s2s-close-btn {
+  width: 30px;
+  height: 30px;
+  background-image: url('../images/close-wht.svg');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  padding: 5px;
+  position: absolute;
+  top: 20px;
+  bottom: auto;
+  left: auto;
+  right: 20px;
+}
+
+.s2s-heading-wrap {
+  width: 100%;
+  text-align: center;
+}
+
+.s2s-header-inner {
+  display: block;
+}
+
+.s2s-icon-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 15px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  display: flex;
+}
+
+.s2s-icon-badge.grade-2 {
+  background-image: linear-gradient(135deg, #da2700, #ae001b);
+  margin: 0 auto;
+  padding-top: 3px;
+  padding-bottom: 0;
+}
+
+.s2s-icon-badge.grade-2.popup {
+  width: 40px;
+  height: 40px;
+  background-color: #510e6b;
+  background-image: none;
+  border-radius: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 5px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.s2s-tagline {
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  letter-spacing: .5px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 23px;
+  font-weight: 500;
+  line-height: 32px;
+}
+
+.s2s-arrow-icon {
+  width: 20px;
+  height: 20px;
+  background-image: url('../images/flecha-hacia-arriba.svg');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: rotate(180deg);
+}
+
+.s2s-main-content {
+  height: auto;
+  min-height: 0;
+  background-color: #23082e;
+  justify-content: center;
+  align-items: flex-start;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 0;
+  padding-bottom: 100px;
+  display: block;
+}
+
+.s2s-team-label {
+  color: #fff;
+  text-align: center;
+  letter-spacing: 1px;
+  margin-bottom: 35px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 28px;
+}
+
+.s2s-timer-wrap {
+  width: 900px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.s2s-description-wrap {
+  width: 850px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0;
+}
+
+.s2s-timer-section {
+  width: 100%;
+  margin-top: 50px;
+}
+
+.s2s-countdown-row {
+  width: 240px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  display: none;
+}
+
+.s2s-time-unit {
+  width: 100px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.s2s-time-circle {
+  width: 70px;
+  height: 70px;
+  background-color: #da2700;
+  border: 5px solid #d5d5d5;
+  border-radius: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s2s-time-inner {
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 50px;
+  display: flex;
+}
+
+.s2s-time-number {
+  color: #fff;
+  text-align: center;
+  margin-top: 2px;
+  font-family: Open Sans, sans-serif;
+  font-size: 22px;
+}
+
+.s2s-time-label {
+  color: #858585;
+  text-align: center;
+  margin-top: 4px;
+  font-family: Open Sans, sans-serif;
+  font-size: 15px;
+}
+
+.s2s-perks-banner {
+  background-color: #b300de;
+  margin-top: 0;
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+
+.s2s-arrow-left {
+  width: 125px;
+  height: 45px;
+  background-image: url('../images/Arrw-Pink.png');
+  background-position: 100%;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.s2s-arrow-right {
+  width: 125px;
+  height: 45px;
+}
+
+.s2s-main-btn {
+  width: 500px;
+  height: 90px;
+  color: #fff;
+  text-align: center;
+  letter-spacing: .5px;
+  background-color: #1a358c;
+  background-image: linear-gradient(155deg, #1a358c, #1f6fff 50%, #1a358c);
+  border: 2px solid #1f6fff;
+  border-radius: 8px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0;
+  margin-left: 8px;
+  margin-right: 8px;
+  padding-top: 5px;
+  padding-bottom: 0;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 37px;
+  font-weight: 400;
+  text-decoration: none;
+  display: flex;
+}
+
+.s2s-main-btn:hover {
+  color: #fff;
+  letter-spacing: .5px;
+  background-color: #1f9545;
+  background-image: linear-gradient(155deg, #510e6b, #b300de 50%, #510e6b);
+  border-color: #b300de;
+}
+
+.s2s-form-prompt {
+  color: #b300de;
+  letter-spacing: .5px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 23px;
+  font-weight: 400;
+}
+
+.s2s-eyebrow-wrap {
+  width: 85%;
+  border: 1px #510e6b;
+  border-bottom: 1px solid rgba(255, 255, 255, .68);
+  margin-bottom: 15px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.s2s-section-title {
+  color: #b300de;
+  text-align: center;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 35px;
+  font-weight: 700;
+}
+
+.s2s-title-bar {
+  background-color: #fff;
+  margin-top: 0;
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.s2s-logo-banner {
+  height: 310px;
+  background-color: #23082e;
+  background-image: url('../images/Screech-Logo.png');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: auto 285px;
+}
+
+.s2s-benefit-item {
+  align-items: center;
+  margin-bottom: 12px;
+  display: flex;
+}
+
+.s2s-check-icon {
+  width: 35px;
+  height: 35px;
+  background-image: url('../images/check-Pink.png');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-right: 12px;
+}
+
+.s2s-benefit-text {
+  color: #b300de;
+  letter-spacing: 1px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 25px;
+  font-weight: 400;
+}
+
+.s2s-benefits-grid {
+  width: 850px;
+  align-items: center;
+  margin-top: 55px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+}
+
+.s2s-benefits-col-left,
+.s2s-benefits-col-right {
+  width: 50%;
+}
+
+.s2s-footer {
+  width: 100%;
+  height: auto;
+  margin-bottom: 25px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 65px;
+  padding-bottom: 30px;
+}
+
+.s2s-disclaimer-box {
+  width: 950px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s2s-disclaimer {
+  width: 900px;
+  color: rgba(0, 0, 0, .7);
+  text-align: center;
+  letter-spacing: .5px;
+  margin: 0 auto 60px;
+  padding-bottom: 0;
+  font-family: Open Sans, sans-serif;
+  font-size: 12px;
+  line-height: 21px;
+}
+
+.s2s-divider {
+  height: 1px;
+  background-color: rgba(179, 0, 222, .3);
+  margin-bottom: 15px;
+}
+
+.s2s-footer-nav {
+  width: 950px;
+  color: #000;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+}
+
+.s2s-footer-para {
+  float: left;
+  color: rgba(0, 0, 0, .7);
+  margin-bottom: 0;
+  font-family: Open Sans, sans-serif;
+  font-size: 12px;
+}
+
+.s2s-footer-para.right {
+  float: right;
+}
+
+.s2s-footer-link {
+  color: rgba(81, 87, 162, .7);
+  letter-spacing: .5px;
+  text-decoration: none;
+}
+
+.s2s-footer-link:hover {
+  color: #f26b3e;
+}
+
+@media screen and (max-width: 991px) {
+  .s2s-body {
+    height: auto;
+    color: #fff;
+    background-color: #fff;
+    background-position: 70%;
+    background-size: auto;
+  }
+
+  .s2s-cta-row {
+    margin-top: 18px;
+  }
+
+  .s2s-modal {
+    background-image: linear-gradient(rgba(0, 0, 0, .27), rgba(0, 0, 0, .27)), url('../images/Owl-Money-Popup.jpg');
+    background-position: 0 0, 100% 0;
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
+    display: none;
+  }
+
+  .s2s-form-header {
+    background-color: #b300de;
+    padding-top: 32px;
+  }
+
+  .s2s-btn,
+  .s2s-btn:hover {
+    font-size: 33px;
+  }
+
+  .s2s-icon-wrap {
+    background-position: 50% 99%;
+  }
+
+  .s2s-tagline {
+    width: 85%;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 30px;
+  }
+
+  .s2s-main-content {
+    width: 100%;
+    min-height: 0;
+    align-items: flex-start;
+    padding-top: 0;
+    padding-bottom: 100px;
+  }
+
+  .s2s-team-label {
+    width: 100%;
+    margin-bottom: 15px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 25px;
+    line-height: 35px;
+  }
+
+  .s2s-timer-wrap {
+    width: 85%;
+  }
+
+  .s2s-description-wrap {
+    width: 100%;
+  }
+
+  .s2s-timer-section {
+    margin-top: 45px;
+  }
+
+  .s2s-countdown-row {
+    margin-top: 0;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .s2s-perks-banner {
+    padding-top: 25px;
+    padding-bottom: 25px;
+  }
+
+  .s2s-main-btn {
+    width: 450px;
+    height: 85px;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    font-size: 34px;
+  }
+
+  .s2s-section-title {
+    font-size: 25px;
+  }
+
+  .s2s-title-bar {
+    padding-top: 22px;
+    padding-bottom: 20px;
+  }
+
+  .s2s-logo-banner {
+    height: 300px;
+    background-size: auto 220px;
+  }
+
+  .s2s-benefits-grid {
+    width: 428px;
+    display: block;
+  }
+
+  .s2s-benefits-col-left,
+  .s2s-benefits-col-right {
+    width: 100%;
+  }
+
+  .s2s-footer {
+    margin-bottom: 20px;
+    padding-top: 65px;
+  }
+
+  .s2s-disclaimer-box {
+    width: 80%;
+    margin-bottom: 15px;
+  }
+
+  .s2s-disclaimer {
+    width: 100%;
+    letter-spacing: .5px;
+    margin-bottom: 0;
+    font-size: 12px;
+    line-height: 21px;
+  }
+
+  .s2s-divider {
+    margin-top: 40px;
+    margin-bottom: 0;
+  }
+
+  .s2s-footer-nav {
+    width: 80%;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+  }
+
+  .s2s-footer-para {
+    color: #959595;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .s2s-cta-row {
+    width: 85%;
+    justify-content: flex-start;
+    margin-top: 18px;
+  }
+
+  .s2s-modal {
+    background-color: rgba(1, 0, 5, .85);
+    background-image: none;
+    background-position: 0 0;
+    display: none;
+  }
+
+  .s2s-form-box {
+    width: 80%;
+  }
+
+  .s2s-form-header {
+    height: auto;
+    padding: 15px 24px 28px;
+  }
+
+  .s2s-input-field {
+    margin-bottom: 5px;
+    font-size: 15px;
+  }
+
+  .s2s-form {
+    padding: 30px 33px 40px;
+  }
+
+  .s2s-form-eyebrow {
+    text-align: center;
+    letter-spacing: .5px;
+    margin-bottom: 5px;
+    font-size: 20px;
+  }
+
+  .s2s-btn {
+    letter-spacing: .5px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    font-size: 28px;
+    display: block;
+  }
+
+  .s2s-btn:hover {
+    letter-spacing: .5px;
+    font-size: 28px;
+  }
+
+  .s2s-modal-heading {
+    width: 100%;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 25px;
+    line-height: 33px;
+  }
+
+  .s2s-icon-wrap {
+    background-position: 50% 105%;
+  }
+
+  .s2s-close-btn {
+    width: 20px;
+    height: 20px;
+  }
+
+  .s2s-heading-wrap {
+    width: 100%;
+  }
+
+  .s2s-header-inner {
+    display: block;
+  }
+
+  .s2s-privacy-note {
+    width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 13px;
+  }
+
+  .s2s-icon-badge.grade-2.popup {
+    width: 58px;
+    height: 58px;
+    padding-top: 5px;
+  }
+
+  .s2s-tagline {
+    width: 85%;
+    margin: 0 auto;
+    font-size: 18px;
+    line-height: 27px;
+  }
+
+  .s2s-main-content {
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 90px;
+  }
+
+  .s2s-team-label {
+    width: 85%;
+    margin-bottom: 0;
+    padding-left: 19px;
+    padding-right: 19px;
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .s2s-timer-section {
+    margin-top: 40px;
+  }
+
+  .s2s-time-label {
+    font-size: 13px;
+  }
+
+  .s2s-perks-banner {
+    margin-top: 0;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .s2s-arrow-left,
+  .s2s-arrow-right {
+    display: none;
+  }
+
+  .s2s-main-btn {
+    width: 400px;
+    height: 80px;
+    letter-spacing: .5px;
+    border: 2px solid #1f6fff;
+    margin-bottom: 0;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 0;
+    font-size: 30px;
+    line-height: 32px;
+  }
+
+  .s2s-form-prompt {
+    letter-spacing: 0;
+    margin-bottom: 12px;
+    font-size: 22px;
+    line-height: 27px;
+  }
+
+  .s2s-eyebrow-wrap {
+    width: 95%;
+    margin-bottom: 12px;
+  }
+
+  .s2s-section-title {
+    width: 85%;
+    letter-spacing: 0;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 25px;
+    line-height: 26px;
+  }
+
+  .s2s-title-bar {
+    padding-top: 20px;
+    padding-bottom: 18px;
+  }
+
+  .s2s-logo-banner {
+    height: 225px;
+    background-size: auto 160px;
+  }
+
+  .s2s-benefit-item {
+    margin-bottom: 15px;
+  }
+
+  .s2s-check-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .s2s-benefit-text {
+    font-size: 22px;
+  }
+
+  .s2s-benefits-grid {
+    width: 385px;
+  }
+
+  .s2s-footer {
+    padding-top: 68px;
+  }
+
+  .s2s-disclaimer-box {
+    width: 85%;
+  }
+
+  .s2s-disclaimer {
+    letter-spacing: .25px;
+    font-size: 12px;
+    line-height: 21px;
+  }
+
+  .s2s-divider {
+    margin-top: 30px;
+  }
+
+  .s2s-footer-nav {
+    align-items: center;
+    display: block;
+  }
+
+  .s2s-footer-para {
+    float: none;
+    text-align: center;
+    margin-bottom: 0;
+  }
+
+  .s2s-footer-para.right {
+    float: none;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .s2s-body {
+    height: auto;
+  }
+
+  .s2s-cta-row {
+    width: 85%;
+    margin-top: 7px;
+  }
+
+  .s2s-modal {
+    display: none;
+  }
+
+  .s2s-form-box {
+    width: 300px;
+    margin-bottom: 0;
+    padding-bottom: 30px;
+  }
+
+  .s2s-form-header {
+    height: auto;
+    padding: 15px 20px 25px;
+  }
+
+  .s2s-input-field {
+    letter-spacing: .3px;
+    font-size: 15px;
+  }
+
+  .s2s-form {
+    padding: 25px 21px 30px;
+  }
+
+  .s2s-form-eyebrow {
+    margin-bottom: 8px;
+    padding-left: 18px;
+    padding-right: 18px;
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .s2s-btn {
+    letter-spacing: .5px;
+    padding-top: 25px;
+    padding-bottom: 25px;
+    font-size: 24px;
+    line-height: 20px;
+  }
+
+  .s2s-btn:hover {
+    font-size: 24px;
+  }
+
+  .s2s-modal-heading {
+    letter-spacing: .5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .s2s-icon-wrap {
+    height: auto;
+    padding-top: 0;
+  }
+
+  .s2s-secure-badge {
+    height: 40px;
+    margin-top: 12px;
+  }
+
+  .s2s-privacy-text {
+    width: 100%;
+    margin-top: 28px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0;
+    padding-right: 0;
+    line-height: 17px;
+  }
+
+  .s2s-bold {
+    line-height: 17px;
+  }
+
+  .s2s-close-btn {
+    width: 20px;
+    height: 20px;
+  }
+
+  .s2s-privacy-note {
+    width: 85%;
+    margin-bottom: 0;
+  }
+
+  .s2s-icon-badge.grade-2.popup {
+    padding-top: 0;
+  }
+
+  .s2s-tagline {
+    width: 85%;
+    letter-spacing: .5px;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 18px;
+    line-height: 26px;
+  }
+
+  .s2s-main-content {
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 85px;
+  }
+
+  .s2s-team-label {
+    width: 100%;
+    margin-bottom: 15px;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 20px;
+    line-height: 27px;
+  }
+
+  .s2s-timer-section {
+    margin-top: 35px;
+  }
+
+  .s2s-countdown-row {
+    margin-top: 11px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .s2s-time-label {
+    margin-top: 5px;
+    font-size: 12px;
+  }
+
+  .s2s-perks-banner {
+    margin-top: 0;
+  }
+
+  .s2s-main-btn {
+    width: 100%;
+    height: 0;
+    border: 2px solid #1f6fff;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0;
+    padding-top: 37px;
+    padding-bottom: 34px;
+    font-size: 25px;
+    line-height: 28px;
+    display: flex;
+  }
+
+  .s2s-form-prompt {
+    padding-left: 14px;
+    padding-right: 14px;
+    font-size: 21px;
+    line-height: 25px;
+  }
+
+  .s2s-eyebrow-wrap {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  .s2s-section-title {
+    width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 25px;
+  }
+
+  .s2s-title-bar {
+    margin-top: 0;
+    padding-top: 17px;
+    padding-bottom: 15px;
+  }
+
+  .s2s-logo-banner {
+    height: 185px;
+    background-size: auto 110px;
+  }
+
+  .s2s-benefit-item {
+    align-items: flex-start;
+  }
+
+  .s2s-benefit-text {
+    letter-spacing: .5px;
+    padding-top: 3px;
+    font-size: 20px;
+    line-height: 24px;
+  }
+
+  .s2s-benefits-grid {
+    width: 85%;
+    margin-top: 45px;
+  }
+
+  .s2s-disclaimer-box {
+    width: 85%;
+  }
+
+  .s2s-disclaimer {
+    font-size: 12px;
+    line-height: 20px;
+  }
+
+  .s2s-footer-para {
+    margin-bottom: 1px;
+    font-size: 11px;
+  }
+
+  .s2s-footer-para.right {
+    font-size: 10px;
+  }
+}

@@ -1,0 +1,4 @@
+# Kein direkter Zugriff auf PHP-Dateien ohne Session
+# Der PHP-Sessionschutz in jeder Datei ist die primäre Absicherung.
+# Hier wird verhindert dass der Ordner gelistet wird.
+Options -Indexes

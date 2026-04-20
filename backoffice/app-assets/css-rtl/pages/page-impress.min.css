@@ -1,0 +1,18 @@
+.card-impress .getting-started{
+    width: 80%; /* Adjust this value to your desired width */
+    margin: 50px auto 0; /* Center the box horizontally and set top margin to 50px (adjust as needed) */
+}
+
+.card-impress .card-body {
+    text-align: left !important;
+}
+
+
+@media (max-width:576px){
+	.card-impress{
+		top:-12px
+}
+	.card-impress img{
+		width:150px
+}
+}

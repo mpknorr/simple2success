@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.code-workspace
+
+# Claude Code
+.claude/
+
+# Composer dependencies (install via composer install on server)
+vendor/
+
+# Database credentials — NEVER commit
+includes/conn.php
+
+# SQL dumps
+*.sql
+
+# Backups & temp
+*.bak
+*.zip
+*.log
+
+# Template source files (not part of the deployed project)
+apex-admin-v14*/
+TEST/

@@ -1,0 +1,567 @@
+<?php
+session_start();
+if (empty($_SESSION["userid"]) || empty($_SESSION["is_admin"])) {
+    require_once '../includes/conn.php';
+    header("Location: " . $baseurl . "/backoffice/index.php");
+    exit();
+}
+require_once '../includes/conn.php';
+$userid = $_SESSION["userid"];
+$getuserdetails = mysqli_query($link, "SELECT * FROM users WHERE leadid = $userid");
+foreach ($getuserdetails as $userData) {
+    $name        = $userData["name"];
+    $username    = $userData["username"];
+    $useremail   = $userData["email"];
+    $paidstatus  = $userData["paidstatus"];
+    $profile_pic = $userData["profile_pic"];
+}
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+$f_from    = isset($_GET['from'])    && $_GET['from']    !== '' ? $_GET['from']    : date('Y-m-d', strtotime('-30 days'));
+$f_to      = isset($_GET['to'])      && $_GET['to']      !== '' ? $_GET['to']      : date('Y-m-d');
+$f_country = isset($_GET['country']) && $_GET['country'] !== '' ? $_GET['country'] : '';
+$f_lang    = isset($_GET['lang'])    && $_GET['lang']    !== '' ? $_GET['lang']    : '';
+$f_page    = isset($_GET['page'])    && $_GET['page']    !== '' ? $_GET['page']    : '';
+
+// Sanitise
+$sf_from    = mysqli_real_escape_string($link, $f_from);
+$sf_to      = mysqli_real_escape_string($link, $f_to);
+$sf_country = mysqli_real_escape_string($link, $f_country);
+$sf_lang    = mysqli_real_escape_string($link, $f_lang);
+$sf_page    = mysqli_real_escape_string($link, $f_page);
+
+// Build WHERE clause for all queries
+$where = "WHERE timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
+if ($sf_country !== '') $where .= " AND country_detected = '$sf_country'";
+if ($sf_lang    !== '') $where .= " AND lang = '$sf_lang'";
+if ($sf_page    !== '') $where .= " AND page = '$sf_page'";
+
+// ── Filter dropdown options ───────────────────────────────────────────────────
+$opt_countries = mysqli_query($link, "SELECT DISTINCT country_detected FROM users WHERE country_detected != '' AND country_detected IS NOT NULL ORDER BY country_detected");
+$opt_langs     = mysqli_query($link, "SELECT DISTINCT lang FROM users WHERE lang != '' AND lang IS NOT NULL ORDER BY lang");
+$opt_pages     = mysqli_query($link, "SELECT DISTINCT page FROM users WHERE page != '' AND page IS NOT NULL ORDER BY page");
+
+// ── KPI queries ───────────────────────────────────────────────────────────────
+$q = function($sql) use ($link) { return mysqli_fetch_assoc(mysqli_query($link, $sql))['c']; };
+
+$kpi_signups  = $q("SELECT COUNT(*) as c FROM users $where");
+$kpi_paid     = $q("SELECT COUNT(*) as c FROM users $where AND paidstatus = 'Paid'");
+$kpi_step1    = $q("SELECT COUNT(*) as c FROM users $where AND step1_at IS NOT NULL");
+$kpi_step2    = $q("SELECT COUNT(*) as c FROM users $where AND username IS NOT NULL AND username != ''");
+$kpi_today    = $q("SELECT COUNT(*) as c FROM users WHERE DATE(timestamp) = CURDATE()");
+$kpi_week     = $q("SELECT COUNT(*) as c FROM users WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+
+// ── Funnel ────────────────────────────────────────────────────────────────────
+$funnel = [
+    ['label' => 'Signups',         'count' => (int)$kpi_signups],
+    ['label' => 'Step 1 clicked',  'count' => (int)$kpi_step1],
+    ['label' => 'Step 2 complete', 'count' => (int)$kpi_step2],
+    ['label' => 'Paid',            'count' => (int)$kpi_paid],
+];
+
+// ── Breakdown tables ──────────────────────────────────────────────────────────
+function breakdownQuery($link, $dimension, $where, $limit = 20) {
+    $sql = "SELECT $dimension as dim,
+                COUNT(*) AS signups,
+                SUM(step1_at IS NOT NULL) AS step1,
+                SUM(username IS NOT NULL AND username != '') AS step2
+            FROM users $where
+            GROUP BY $dimension
+            ORDER BY signups DESC
+            LIMIT $limit";
+    $res = mysqli_query($link, $sql);
+    return $res ? mysqli_fetch_all($res, MYSQLI_ASSOC) : [];
+}
+
+$bd_page    = breakdownQuery($link, 'page',             $where);
+$bd_source  = breakdownQuery($link, 'source',           $where);
+$bd_country = breakdownQuery($link, 'country_detected', $where, 30);
+$bd_lang    = breakdownQuery($link, 'lang',             $where);
+
+// ── Daily trend (respects date filter) ───────────────────────────────────────
+$daily_res = mysqli_query($link, "SELECT DATE(timestamp) as day, COUNT(*) as c FROM users
+    $where GROUP BY DATE(timestamp) ORDER BY day ASC");
+$daily_labels = [];
+$daily_data   = [];
+while ($row = mysqli_fetch_assoc($daily_res)) {
+    $daily_labels[] = $row['day'];
+    $daily_data[]   = (int)$row['c'];
+}
+
+// ── Activity log summary ──────────────────────────────────────────────────────
+$ev_where = "WHERE created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
+$ev_res   = mysqli_query($link, "SELECT event_type, COUNT(*) AS cnt FROM lead_events $ev_where GROUP BY event_type ORDER BY cnt DESC");
+$ev_rows  = $ev_res ? mysqli_fetch_all($ev_res, MYSQLI_ASSOC) : [];
+
+$evLabels = [
+    'login'          => '🔓 Logins',
+    'login_failed'   => '⚠️ Fehlgeschlagene Logins',
+    'signup_attempt' => '🔁 Re-signup-Versuche',
+];
+
+// ── Flag helper ───────────────────────────────────────────────────────────────
+function statsFlag(string $iso): string {
+    if (strlen($iso) !== 2) return '';
+    $iso = strtoupper($iso);
+    return mb_chr(ord($iso[0]) - 65 + 0x1F1E6) . mb_chr(ord($iso[1]) - 65 + 0x1F1E6);
+}
+
+$langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español','it'=>'Italiano',
+    'nl'=>'Nederlands','pt'=>'Português','pl'=>'Polski','ru'=>'Русский','tr'=>'Türkçe',
+    'ar'=>'Arabic','zh'=>'中文','ja'=>'日本語','ko'=>'한국어'];
+?>
+<!DOCTYPE html>
+<html class="loading" lang="en">
+<?php require_once "parts/head.php"; ?>
+<style>
+/* ── Stats page local styles ───────────────────────────── */
+.st-kpi {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: var(--s2s-radius);
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+}
+.st-kpi-icon {
+    font-size: 1.7rem;
+    opacity: .6;
+    flex-shrink: 0;
+    width: 2.4rem;
+    text-align: center;
+}
+.st-kpi-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--s2s-text-100);
+    line-height: 1;
+}
+.st-kpi-label {
+    font-size: var(--s2s-size-body-sm);
+    color: var(--s2s-text-42);
+    margin-top: .2rem;
+}
+.st-kpi.brand  .st-kpi-num { color: var(--s2s-brand); }
+.st-kpi.green  .st-kpi-num { color: #28c76f; }
+.st-kpi.blue   .st-kpi-num { color: #00cfe8; }
+.st-kpi.orange .st-kpi-num { color: #ff9f43; }
+.st-kpi.purple .st-kpi-num { color: #9c8bd4; }
+.st-kpi.teal   .st-kpi-num { color: #4dc9c9; }
+
+.st-card-header {
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.st-card-header h5 {
+    margin: 0;
+    font-size: var(--s2s-size-body);
+    font-weight: 700;
+    color: var(--s2s-text-80);
+}
+.st-table { width: 100%; font-size: var(--s2s-size-body-sm); }
+.st-table th {
+    color: var(--s2s-text-42);
+    font-weight: 600;
+    font-size: var(--s2s-size-small);
+    padding: .5rem .75rem;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    white-space: nowrap;
+}
+.st-table td {
+    padding: .5rem .75rem;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    color: var(--s2s-text-65);
+    vertical-align: middle;
+}
+.st-table tr:last-child td { border-bottom: none; }
+.st-table td strong { color: var(--s2s-text-100); }
+
+.st-bar-wrap {
+    background: rgba(255,255,255,.07);
+    border-radius: 3px;
+    height: 5px;
+    min-width: 60px;
+}
+.st-bar-fill {
+    background: var(--s2s-brand);
+    border-radius: 3px;
+    height: 5px;
+}
+
+/* funnel */
+.st-funnel-pct-main { color: var(--s2s-text-100); font-weight: 700; font-size: var(--s2s-size-body); }
+.st-funnel-pct-prev { color: var(--s2s-text-42); font-size: var(--s2s-size-small); }
+
+/* filter bar */
+.st-filter-bar {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: var(--s2s-radius-sm);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+.st-filter-bar label {
+    font-size: var(--s2s-size-small);
+    color: var(--s2s-text-42);
+    font-weight: 600;
+    display: block;
+    margin-bottom: .25rem;
+}
+</style>
+<body class="vertical-layout vertical-menu 2-columns navbar-static layout-dark" data-menu="vertical-menu" data-col="2-columns">
+<?php require_once "parts/navbar.php"; ?>
+<div class="wrapper">
+<?php require_once "parts/sidebar.php"; ?>
+<div class="main-panel">
+<div class="main-content">
+<div class="content-overlay"></div>
+<div class="content-wrapper">
+
+<!-- ── Page header ── -->
+<div class="content-header row mb-1">
+    <div class="content-header-left col-12">
+        <h3 class="content-header-title mb-0">Admin — Statistiken</h3>
+        <small style="color:var(--s2s-text-42);">
+            Gefiltert: <?= htmlspecialchars($f_from) ?> – <?= htmlspecialchars($f_to) ?>
+            <?= $f_country ? ' · ' . htmlspecialchars(strtoupper($f_country)) : '' ?>
+            <?= $f_lang    ? ' · ' . htmlspecialchars(strtoupper($f_lang))    : '' ?>
+            <?= $f_page    ? ' · ' . htmlspecialchars($f_page)                : '' ?>
+        </small>
+    </div>
+</div>
+
+<!-- ══ FILTER BAR ═══════════════════════════════════════════════════════════ -->
+<div class="st-filter-bar">
+    <form method="GET" class="row" style="row-gap:.5rem;">
+        <div class="col-6 col-sm-4 col-lg-2">
+            <label>Von</label>
+            <input type="date" name="from" class="form-control form-control-sm" value="<?= htmlspecialchars($f_from) ?>">
+        </div>
+        <div class="col-6 col-sm-4 col-lg-2">
+            <label>Bis</label>
+            <input type="date" name="to" class="form-control form-control-sm" value="<?= htmlspecialchars($f_to) ?>">
+        </div>
+        <div class="col-6 col-sm-4 col-lg-2">
+            <label>Land</label>
+            <select name="country" class="form-control form-control-sm">
+                <option value="">Alle Länder</option>
+                <?php while ($r = mysqli_fetch_assoc($opt_countries)): ?>
+                <option value="<?= htmlspecialchars($r['country_detected']) ?>" <?= $f_country === $r['country_detected'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars(strtoupper($r['country_detected'])) ?> — <?= htmlspecialchars(isoCodeToCountryName($r['country_detected'])) ?>
+                </option>
+                <?php endwhile; ?>
+            </select>
+        </div>
+        <div class="col-6 col-sm-4 col-lg-2">
+            <label>Sprache</label>
+            <select name="lang" class="form-control form-control-sm">
+                <option value="">Alle Sprachen</option>
+                <?php while ($r = mysqli_fetch_assoc($opt_langs)): ?>
+                <option value="<?= htmlspecialchars($r['lang']) ?>" <?= $f_lang === $r['lang'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars(strtoupper($r['lang'])) ?> — <?= htmlspecialchars($langLabels[$r['lang']] ?? $r['lang']) ?>
+                </option>
+                <?php endwhile; ?>
+            </select>
+        </div>
+        <div class="col-6 col-sm-4 col-lg-2">
+            <label>Landing Page</label>
+            <select name="page" class="form-control form-control-sm">
+                <option value="">Alle Pages</option>
+                <?php while ($r = mysqli_fetch_assoc($opt_pages)): ?>
+                <option value="<?= htmlspecialchars($r['page']) ?>" <?= $f_page === $r['page'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($r['page']) ?>
+                </option>
+                <?php endwhile; ?>
+            </select>
+        </div>
+        <div class="col-6 col-sm-4 col-lg-2 d-flex align-items-end" style="gap:.4rem;">
+            <button type="submit" class="btn btn-primary btn-sm s2s-btn-brand flex-grow-1">Filtern</button>
+            <a href="admin-stats.php" class="btn btn-secondary btn-sm">Reset</a>
+        </div>
+    </form>
+</div>
+
+
+<!-- ══ KPI CARDS ═══════════════════════════════════════════════════════════ -->
+<div class="row mb-1" style="row-gap:.5rem;">
+    <div class="col-6 col-lg-4 col-xl-2 mb-1">
+        <div class="st-kpi brand">
+            <div class="st-kpi-icon"><i class="ft-user-plus"></i></div>
+            <div><div class="st-kpi-num"><?= $kpi_signups ?></div><div class="st-kpi-label">Signups (Zeitraum)</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2 mb-1">
+        <div class="st-kpi blue">
+            <div class="st-kpi-icon"><i class="ft-mouse-pointer"></i></div>
+            <div><div class="st-kpi-num"><?= $kpi_step1 ?></div><div class="st-kpi-label">Step 1 geklickt</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2 mb-1">
+        <div class="st-kpi purple">
+            <div class="st-kpi-icon"><i class="ft-check-circle"></i></div>
+            <div><div class="st-kpi-num"><?= $kpi_step2 ?></div><div class="st-kpi-label">Step 2 abgeschlossen</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2 mb-1">
+        <div class="st-kpi green">
+            <div class="st-kpi-icon"><i class="ft-dollar-sign"></i></div>
+            <div><div class="st-kpi-num"><?= $kpi_paid ?></div><div class="st-kpi-label">Paid</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2 mb-1">
+        <div class="st-kpi orange">
+            <div class="st-kpi-icon"><i class="ft-calendar"></i></div>
+            <div><div class="st-kpi-num"><?= $kpi_today ?></div><div class="st-kpi-label">Heute (gesamt)</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2 mb-1">
+        <div class="st-kpi teal">
+            <div class="st-kpi-icon"><i class="ft-trending-up"></i></div>
+            <div><div class="st-kpi-num"><?= $kpi_week ?></div><div class="st-kpi-label">Letzte 7 Tage (gesamt)</div></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══ DAILY CHART + FUNNEL ════════════════════════════════════════════════ -->
+<div class="row mb-1">
+
+    <!-- Daily trend chart -->
+    <div class="col-lg-8 col-12 mb-1">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header">
+                <i class="ft-activity" style="color:var(--s2s-brand);"></i>
+                <h5>Signups pro Tag (im gewählten Zeitraum)</h5>
+            </div>
+            <div class="card-content">
+                <div class="card-body" style="padding:1.25rem;">
+                    <?php if (empty($daily_labels)): ?>
+                        <p style="color:var(--s2s-text-42);font-size:var(--s2s-size-body-sm);margin:0;">Keine Daten für diesen Zeitraum.</p>
+                    <?php else: ?>
+                    <canvas id="dailyChart" style="width:100%;max-height:260px;"></canvas>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conversion funnel -->
+    <div class="col-lg-4 col-12 mb-1">
+        <div class="card" style="margin-bottom:0;height:100%;">
+            <div class="st-card-header">
+                <i class="ft-filter" style="color:var(--s2s-brand);"></i>
+                <h5>Conversion Funnel</h5>
+            </div>
+            <div class="card-content">
+                <div class="card-body p-0">
+                    <table class="st-table">
+                        <thead>
+                            <tr>
+                                <th>Stufe</th>
+                                <th style="text-align:right;">Anzahl</th>
+                                <th style="text-align:right;">% Signups</th>
+                                <th style="text-align:right;">% vorher</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        $base = max(1, $funnel[0]['count']);
+                        foreach ($funnel as $i => $stage):
+                            $pct_signup = $base > 0 ? round($stage['count'] / $base * 100) : 0;
+                            $prev_cnt   = $i > 0 ? max(1, $funnel[$i-1]['count']) : $base;
+                            $pct_prev   = $prev_cnt > 0 ? round($stage['count'] / $prev_cnt * 100) : 0;
+                        ?>
+                        <tr>
+                            <td><?= htmlspecialchars($stage['label']) ?></td>
+                            <td style="text-align:right;"><strong><?= $stage['count'] ?></strong></td>
+                            <td style="text-align:right;" class="st-funnel-pct-main"><?= $pct_signup ?>%</td>
+                            <td style="text-align:right;" class="st-funnel-pct-prev">
+                                <?= $i === 0 ? '—' : $pct_prev . '%' ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ══ BREAKDOWN TABLES ════════════════════════════════════════════════════ -->
+<?php
+function renderBreakdown(string $title, string $icon, array $rows, int $totalSignups, callable $labelFn = null): void {
+    if (empty($rows)) {
+        echo '<p style="padding:.75rem 1.25rem;color:rgba(255,255,255,.3);font-size:.82rem;margin:0;">Keine Daten.</p>';
+        return;
+    }
+    $max = max(1, $rows[0]['signups'] ?? 1);
+    echo '<div class="table-responsive"><table class="st-table">';
+    echo '<thead><tr><th>' . htmlspecialchars($title) . '</th><th>Signups</th><th>Step1</th><th>Step2</th><th style="min-width:80px;">Anteil</th></tr></thead><tbody>';
+    foreach ($rows as $r) {
+        $dim  = $r['dim'] ?? '';
+        $label = $labelFn ? $labelFn($dim) : (htmlspecialchars($dim ?: '—'));
+        $pct_total = $totalSignups > 0 ? round($r['signups'] / $totalSignups * 100) : 0;
+        $bar_pct   = $max > 0 ? round($r['signups'] / $max * 100) : 0;
+        $s1_pct    = $r['signups'] > 0 ? round($r['step1'] / $r['signups'] * 100) : 0;
+        $s2_pct    = $r['signups'] > 0 ? round($r['step2'] / $r['signups'] * 100) : 0;
+        echo '<tr>';
+        echo '<td>' . $label . '</td>';
+        echo '<td><strong>' . $r['signups'] . '</strong> <small style="opacity:.4;">(' . $pct_total . '%)</small></td>';
+        echo '<td style="color:#00cfe8;">' . $r['step1'] . ' <small style="opacity:.4;">(' . $s1_pct . '%)</small></td>';
+        echo '<td style="color:#9c8bd4;">' . $r['step2'] . ' <small style="opacity:.4;">(' . $s2_pct . '%)</small></td>';
+        echo '<td><div class="st-bar-wrap"><div class="st-bar-fill" style="width:' . $bar_pct . '%;"></div></div></td>';
+        echo '</tr>';
+    }
+    echo '</tbody></table></div>';
+}
+?>
+
+<div class="row mb-1">
+    <div class="col-lg-6 col-12 mb-1">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header"><i class="ft-layout" style="color:var(--s2s-brand);"></i><h5>Landing Page</h5></div>
+            <div class="card-content">
+                <?php renderBreakdown('Page', 'ft-layout', $bd_page, (int)$kpi_signups); ?>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-12 mb-1">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header"><i class="ft-cpu" style="color:var(--s2s-brand);"></i><h5>Traffic-Quelle</h5></div>
+            <div class="card-content">
+                <?php renderBreakdown('Source', 'ft-cpu', $bd_source, (int)$kpi_signups); ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-1">
+    <div class="col-lg-6 col-12 mb-1">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header"><i class="ft-globe" style="color:var(--s2s-brand);"></i><h5>Land</h5></div>
+            <div class="card-content">
+                <?php renderBreakdown('Land', 'ft-globe', $bd_country, (int)$kpi_signups, function($iso) {
+                    if (!$iso) return '<span style="opacity:.4;">—</span>';
+                    $flag = strlen($iso) === 2 ? mb_chr(ord(strtoupper($iso)[0]) - 65 + 0x1F1E6) . mb_chr(ord(strtoupper($iso)[1]) - 65 + 0x1F1E6) : '';
+                    return $flag . ' ' . htmlspecialchars(isoCodeToCountryName($iso));
+                }); ?>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-12 mb-1">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header"><i class="ft-message-square" style="color:var(--s2s-brand);"></i><h5>Sprache</h5></div>
+            <div class="card-content">
+                <?php renderBreakdown('Sprache', 'ft-message-square', $bd_lang, (int)$kpi_signups, function($lang) use ($langLabels) {
+                    if (!$lang) return '<span style="opacity:.4;">—</span>';
+                    return htmlspecialchars(strtoupper($lang)) . ' — ' . htmlspecialchars($langLabels[$lang] ?? $lang);
+                }); ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══ ACTIVITY LOG ════════════════════════════════════════════════════════ -->
+<?php if (!empty($ev_rows)): ?>
+<div class="row mb-2">
+    <div class="col-12">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header"><i class="ft-activity" style="color:var(--s2s-brand);"></i><h5>Aktivitäts-Zusammenfassung (lead_events)</h5></div>
+            <div class="card-content">
+                <div class="card-body p-0">
+                    <table class="st-table">
+                        <thead><tr><th>Ereignis</th><th>Anzahl</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($ev_rows as $ev): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($evLabels[$ev['event_type']] ?? $ev['event_type']) ?></td>
+                            <td><strong><?= $ev['cnt'] ?></strong></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+
+</div><!-- /.content-wrapper -->
+</div><!-- /.main-content -->
+<?php require_once "../backoffice/parts/footer.php"; ?>
+<button class="btn btn-primary scroll-top" type="button"><i class="ft-arrow-up"></i></button>
+</div><!-- /.main-panel -->
+</div><!-- /.wrapper -->
+
+<div class="sidenav-overlay"></div>
+<div class="drag-target"></div>
+<script src="../backoffice/app-assets/vendors/js/vendors.min.js"></script>
+<script src="../backoffice/app-assets/js/core/app-menu.js"></script>
+<script src="../backoffice/app-assets/js/core/app.js"></script>
+<script src="../backoffice/app-assets/js/notification-sidebar.js"></script>
+<script src="../backoffice/app-assets/js/scroll-top.js"></script>
+<script src="../backoffice/assets/js/scripts.js"></script>
+
+<?php if (!empty($daily_labels)): ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const ctx = document.getElementById('dailyChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($daily_labels) ?>,
+            datasets: [{
+                label: 'Signups',
+                data: <?= json_encode($daily_data) ?>,
+                borderColor: '#b700e0',
+                backgroundColor: 'rgba(183,0,224,.12)',
+                borderWidth: 2,
+                pointRadius: 4,
+                pointBackgroundColor: '#b700e0',
+                fill: true,
+                tension: 0.35,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a1040',
+                    borderColor: 'rgba(183,0,224,.4)',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: 'rgba(255,255,255,.7)',
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: 'rgba(255,255,255,.4)', font: { size: 11 } },
+                    grid:  { color: 'rgba(255,255,255,.06)' },
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: 'rgba(255,255,255,.4)', font: { size: 11 }, stepSize: 1 },
+                    grid:  { color: 'rgba(255,255,255,.06)' },
+                }
+            }
+        }
+    });
+})();
+</script>
+<?php endif; ?>
+</body>
+</html>

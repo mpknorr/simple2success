@@ -1,0 +1,352 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   SIMPLE2SUCCESS — Design System v1
+   assets/css/style.css
+
+   Load order: LAST (after all vendor CSS + Apex Admin CSS)
+   Purpose:    Design tokens, shared semantic utilities, global
+               normalizations. Every page in the backoffice inherits
+               these tokens and can override at page level with vars.
+═══════════════════════════════════════════════════════════════════════ */
+
+
+/* ─────────────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS  —  single source of truth
+   All typography + spacing decisions flow from these variables.
+   Override at page level by re-declaring in a scoped selector or a
+   page-specific <style> block that sets new :root or body values.
+───────────────────────────────────────────────────────────────────── */
+:root {
+
+  /* Brand ----------------------------------------------------------- */
+  --s2s-brand:          #b700e0;
+  --s2s-brand-hover:    #9800c4;
+  --s2s-brand-dim:      rgba(183,0,224,.25);
+  --s2s-brand-glow:     rgba(183,0,224,.4);
+  --s2s-brand-subtle:   rgba(183,0,224,.08);
+
+  /* Text opacity scale ---------------------------------------------- */
+  --s2s-text-100:  #ffffff;
+  --s2s-text-80:   rgba(255,255,255,.80);
+  --s2s-text-65:   rgba(255,255,255,.65);
+  --s2s-text-50:   rgba(255,255,255,.50);
+  --s2s-text-42:   rgba(255,255,255,.42);
+  --s2s-text-30:   rgba(255,255,255,.30);
+
+  /* ── Typography scale ─────────────────────────────────────────────
+     Rem values assume the Apex Admin base font-size of 14px.
+     Pixel equivalents are shown as a reference comment.
+  ────────────────────────────────────────────────────────────────── */
+
+  /* Eyebrow / kicker / label — uppercase tag above a headline */
+  --s2s-size-eyebrow:   0.72rem;   /* ≈10px  — all eyebrows, step labels  */
+
+  /* Helper / disclaimer / strip text */
+  --s2s-size-small:     0.82rem;   /* ≈11.5px — footer strips, disclaimers */
+
+  /* Card / grid item body copy */
+  --s2s-size-body-sm:   0.88rem;   /* ≈12.3px — grid item descriptions    */
+
+  /* Standard paragraph, form text */
+  --s2s-size-body:      0.95rem;   /* ≈13.3px — standard body             */
+
+  /* Primary page body (hero, main action cards) */
+  --s2s-size-body-lg:   1.05rem;   /* ≈14.7px — hero intro copy           */
+
+  /* H4 — card title / secondary section label */
+  --s2s-size-h4:        1.0rem;    /* ≈14px   — card headers, sub-labels  */
+
+  /* H3 — section title (aspiration, solution, why, process headers) */
+  --s2s-size-h3:        1.65rem;   /* ≈23.1px — all section titles        */
+
+  /* H2 — featured / CTA title (slightly larger than section titles) */
+  --s2s-size-h2:        1.75rem;   /* ≈24.5px — CTA headlines             */
+
+  /* H1 — hero primary headline */
+  --s2s-size-h1:        2.0rem;    /* ≈28px   — hero / onboarding title   */
+
+  /* ── Line-height scale ────────────────────────────────────────── */
+  --s2s-lh-tight:    1.2;    /* H1, banner headlines                       */
+  --s2s-lh-heading:  1.28;   /* H2–H4, section titles                      */
+  --s2s-lh-label:    1.3;    /* step labels, eyebrow multi-line            */
+  --s2s-lh-compact:  1.5;    /* helper text, notes, secondary small text   */
+  --s2s-lh-body:     1.68;   /* standard body paragraphs                   */
+  --s2s-lh-loose:    1.78;   /* long-form body in wide sections            */
+
+  /* ── Spacing scale (4 px grid) ───────────────────────────────── */
+  --s2s-sp-1:   0.25rem;   /*  3.5px */
+  --s2s-sp-2:   0.5rem;    /*    7px */
+  --s2s-sp-3:   0.75rem;   /* 10.5px */
+  --s2s-sp-4:   1rem;      /*   14px */
+  --s2s-sp-5:   1.25rem;   /* 17.5px */
+  --s2s-sp-6:   1.5rem;    /*   21px */
+  --s2s-sp-8:   2rem;      /*   28px */
+  --s2s-sp-10:  2.5rem;    /*   35px */
+  --s2s-sp-12:  3rem;      /*   42px */
+  --s2s-sp-14:  3.5rem;    /*   49px */
+
+  /* ── Section rhythm ──────────────────────────────────────────── */
+  --s2s-section-pt:           3.5rem;  /* section header top padding     */
+  --s2s-section-pb:           2.0rem;  /* section header bottom padding  */
+  --s2s-section-eyebrow-gap:  0.5rem;  /* eyebrow → headline             */
+  --s2s-section-title-gap:    0.6rem;  /* headline → subtext             */
+  --s2s-section-sub-gap:      1.75rem; /* subtext → grid / cards         */
+
+  /* ── Card padding ─────────────────────────────────────────────── */
+  --s2s-card-pad-sm:  1.0rem;   /* compact / utility cards     */
+  --s2s-card-pad:     1.5rem;   /* standard cards              */
+  --s2s-card-pad-lg:  2.0rem;   /* premium / hero cards        */
+
+  /* ── Border radius ───────────────────────────────────────────── */
+  --s2s-radius-sm:   6px;
+  --s2s-radius:      8px;
+  --s2s-radius-lg:  12px;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────
+   2. RESPONSIVE TOKEN OVERRIDES
+   Tokens scale down at each breakpoint so every element using var()
+   automatically inherits the correct size — no per-element media query
+   needed for values that follow the standard scale.
+───────────────────────────────────────────────────────────────────── */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  :root {
+    --s2s-size-h1:   1.75rem;
+    --s2s-size-h2:   1.6rem;
+    --s2s-size-h3:   1.5rem;
+    --s2s-section-pt:  2.75rem;
+    --s2s-section-pb:  1.75rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  :root {
+    --s2s-size-h1:   1.55rem;
+    --s2s-size-h2:   1.45rem;
+    --s2s-size-h3:   1.35rem;
+    --s2s-size-h4:   0.97rem;
+    --s2s-section-pt:  2.25rem;
+    --s2s-section-pb:  1.5rem;
+    --s2s-card-pad-lg: 1.5rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  :root {
+    --s2s-size-h1:  1.4rem;
+    --s2s-size-h2:  1.3rem;
+    --s2s-size-h3:  1.25rem;
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────
+   3. GLOBAL NORMALIZATIONS
+   Safe, minimal overrides that fix cross-page inconsistencies
+   without breaking Apex Admin's own component styles.
+───────────────────────────────────────────────────────────────────── */
+
+/* Normalize all text inputs to the system body size.
+   Fixes links.php inputs that use the old "font-size:10pt" inline style. */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea {
+  font-size: var(--s2s-size-body) !important;
+}
+
+/* Normalize card border-radius across all pages */
+.card {
+  border-radius: var(--s2s-radius);
+}
+
+/* Normalize card-title sizing — affects all pages using Bootstrap cards */
+.card-title {
+  font-size: var(--s2s-size-h4);
+  font-weight: 700;
+  line-height: var(--s2s-lh-heading);
+}
+
+/* Normalize small/helper text (Bootstrap .small, <small>) */
+small,
+.small,
+.text-small {
+  font-size: var(--s2s-size-small);
+  line-height: var(--s2s-lh-compact);
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────
+   4. SHARED SEMANTIC TYPOGRAPHY UTILITIES
+   Use these classes on any page. Each maps to a token.
+   Naming: .s2s-{type} or .s2s-text-{role}
+───────────────────────────────────────────────────────────────────── */
+
+/* ── Eyebrow / label / kicker ─────────────────────────────────────
+   Uppercase tag placed above a section or card headline.
+   Use instead of .et-hero-eyebrow / .et-section-eyebrow / .et-cta-eyebrow */
+.s2s-eyebrow {
+  font-size: var(--s2s-size-eyebrow);
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--s2s-brand);
+  display: block;
+  margin-bottom: var(--s2s-section-eyebrow-gap);
+}
+
+/* ── Section header block ──────────────────────────────────────── */
+.s2s-section-header {
+  text-align: center;
+  padding: var(--s2s-section-pt) var(--s2s-sp-8) var(--s2s-section-pb);
+}
+
+/* H3 — primary section title */
+.s2s-section-title {
+  font-size: var(--s2s-size-h3);
+  font-weight: 800;
+  color: var(--s2s-text-100);
+  line-height: var(--s2s-lh-tight);
+  margin-bottom: var(--s2s-section-title-gap);
+}
+
+/* H2 — CTA / featured headline */
+.s2s-feature-title {
+  font-size: var(--s2s-size-h2);
+  font-weight: 800;
+  color: var(--s2s-text-100);
+  line-height: var(--s2s-lh-tight);
+  margin-bottom: var(--s2s-sp-4);
+}
+
+/* H1 — hero / primary page title */
+.s2s-hero-title {
+  font-size: var(--s2s-size-h1);
+  font-weight: 800;
+  color: var(--s2s-text-100);
+  line-height: var(--s2s-lh-tight);
+}
+
+/* ── Section sub-text / description ───────────────────────────── */
+.s2s-section-sub {
+  font-size: var(--s2s-size-body);
+  color: var(--s2s-text-50);
+  line-height: var(--s2s-lh-body);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Card title (H4-level) ─────────────────────────────────────── */
+.s2s-card-title {
+  font-size: var(--s2s-size-h4);
+  font-weight: 700;
+  color: var(--s2s-text-100);
+  line-height: var(--s2s-lh-heading);
+  margin-bottom: var(--s2s-sp-2);
+}
+
+/* ── Body text variants ────────────────────────────────────────── */
+
+/* Primary body — hero intro, main action card copy */
+.s2s-body-lg {
+  font-size: var(--s2s-size-body-lg);
+  color: var(--s2s-text-80);
+  line-height: var(--s2s-lh-body);
+}
+
+/* Standard body — section descriptions, paragraphs */
+.s2s-body {
+  font-size: var(--s2s-size-body);
+  color: var(--s2s-text-65);
+  line-height: var(--s2s-lh-body);
+}
+
+/* Secondary body — card / grid item descriptions */
+.s2s-body-sm {
+  font-size: var(--s2s-size-body-sm);
+  color: var(--s2s-text-50);
+  line-height: var(--s2s-lh-body);
+}
+
+/* ── Small / helper text ───────────────────────────────────────── */
+.s2s-text-small {
+  font-size: var(--s2s-size-small);
+  color: var(--s2s-text-42);
+  line-height: var(--s2s-lh-compact);
+}
+
+.s2s-text-helper {
+  font-size: var(--s2s-size-small);
+  color: var(--s2s-text-30);
+  line-height: var(--s2s-lh-compact);
+  text-align: center;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────
+   5. SHARED BUTTON SYSTEM
+   Normalize brand color used on all pages.
+   links.php historically used #cb2ebc; this corrects it globally.
+───────────────────────────────────────────────────────────────────── */
+
+/* Brand-color utility button — use instead of inline style="background:#cb2ebc" */
+.s2s-btn-brand {
+  background: var(--s2s-brand) !important;
+  border-color: var(--s2s-brand) !important;
+  color: var(--s2s-text-100) !important;
+  font-size: var(--s2s-size-body);
+  font-weight: 600;
+}
+.s2s-btn-brand:hover,
+.s2s-btn-brand:focus {
+  background: var(--s2s-brand-hover) !important;
+  border-color: var(--s2s-brand-hover) !important;
+  color: var(--s2s-text-100) !important;
+}
+
+/* Ghost/neutral secondary button (Preview, etc.) */
+.s2s-btn-neutral {
+  background: rgba(255,255,255,.08) !important;
+  border-color: rgba(255,255,255,.15) !important;
+  color: var(--s2s-text-80) !important;
+  font-size: var(--s2s-size-body);
+  font-weight: 600;
+}
+.s2s-btn-neutral:hover,
+.s2s-btn-neutral:focus {
+  background: rgba(255,255,255,.14) !important;
+  color: var(--s2s-text-100) !important;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────
+   6. SHARED SECTION / CARD STRUCTURAL PATTERNS
+   Light structural helpers used across multiple pages.
+───────────────────────────────────────────────────────────────────── */
+
+/* Divider-line eyebrow row (section subheading + horizontal rule) */
+.s2s-label-divider {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .85rem;
+}
+.s2s-label-divider span:first-child {
+  font-size: var(--s2s-size-eyebrow);
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--s2s-text-42);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.s2s-label-divider span:last-child {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,.08);
+}

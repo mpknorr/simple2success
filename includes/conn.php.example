@@ -1,0 +1,11 @@
+<?php
+// Copy this file to conn.php and fill in your database credentials.
+// conn.php is excluded from version control (.gitignore).
+
+$dbname = 'your_database_name';
+$dbuser = 'your_database_user';
+$dbpass = 'your_database_password';
+$dbhost = 'localhost';
+
+$link = mysqli_connect($dbhost, $dbuser, $dbpass) or die("Unable to Connect to '$dbhost'");
+mysqli_select_db($link, $dbname) or die("Could not open the db '$dbname'");

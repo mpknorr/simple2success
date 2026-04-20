@@ -1,0 +1,648 @@
+.s2s-body {
+  background-color: #000;
+}
+
+.s2s-section {
+  width: 1100px;
+  margin-bottom: 70px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 75px;
+  padding-bottom: 0;
+}
+
+.s2s-banner-text {
+  color: #fff;
+  text-align: center;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.s2s-globe {
+  width: 750px;
+  height: 400px;
+  background-image: url('../images/Earth2.png');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: auto;
+  margin-top: -190px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s2s-section-2 {
+  width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s2s-banner-wrap {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  display: block;
+}
+
+.s2s-layout {
+  width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+}
+
+.s2s-video-col {
+  width: 65%;
+  height: auto;
+  border: 5px #353535;
+}
+
+.s2s-form-col {
+  width: 35%;
+  margin-top: -8px;
+}
+
+.s2s-name-field {
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 1px;
+  background-color: rgba(0, 0, 0, 0);
+  border: 5px #000;
+  margin-bottom: 0;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 15px;
+}
+
+.s2s-name-field::-ms-input-placeholder {
+  color: #fff;
+}
+
+.s2s-name-field::placeholder {
+  color: #fff;
+}
+
+.s2s-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, .3);
+  margin-bottom: 10px;
+}
+
+.s2s-email-field {
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0);
+  border: 1px #000;
+  margin-bottom: 0;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 15px;
+}
+
+.s2s-email-field::-ms-input-placeholder {
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.s2s-email-field::placeholder {
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.s2s-heading {
+  color: #fff;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: Oswald, sans-serif;
+  font-size: 60px;
+  line-height: 58px;
+}
+
+.s2s-subtitle {
+  color: #f5f5f5;
+  letter-spacing: 1.5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, .24), 0 1px rgba(0, 0, 0, .25);
+  margin-bottom: 10px;
+  padding-left: 17px;
+  padding-right: 17px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 26px;
+}
+
+.s2s-subtitle.action {
+  letter-spacing: .5px;
+  margin-top: 17px;
+  font-size: 16px;
+}
+
+.s2s-btn {
+  width: 100%;
+  color: #fff;
+  letter-spacing: .5px;
+  background-color: #1f6fff;
+  background-image: linear-gradient(155deg, #1a358c, #1f6fff 50%, #1a358c);
+  border: 2px solid #1f6fff;
+  border-radius: 7px;
+  margin-top: 18px;
+  padding-top: 28px;
+  padding-bottom: 28px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.s2s-btn:hover {
+  color: #fff;
+  background-color: #b300de;
+  background-image: linear-gradient(155deg, #510e6b, #b300de 50%, #510e6b);
+  border-color: #b300de;
+}
+
+.s2s-container {
+  text-align: center;
+  margin-top: 0;
+  padding-top: 5px;
+  padding-left: 45px;
+  padding-right: 45px;
+}
+
+.s2s-form-block {
+  margin-top: 25px;
+  margin-bottom: 17px;
+}
+
+.s2s-form-inner {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.s2s-span-reserve {
+  color: #b300de;
+  font-size: 65px;
+}
+
+.s2s-form-col-wrap,
+.s2s-section-3 {
+  margin-top: 0;
+}
+
+.s2s-footer-section {
+  color: #7e7c87;
+  background-color: rgba(0, 0, 0, 0);
+  padding-top: 38px;
+  padding-bottom: 34px;
+}
+
+.s2s-copyright {
+  color: rgba(255, 255, 255, .45);
+  text-align: center;
+  letter-spacing: .5px;
+  font-family: Open Sans, sans-serif;
+  font-size: 12px;
+  line-height: 22px;
+}
+
+.s2s-cta-label {
+  color: #fff;
+  letter-spacing: 1px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 17px;
+}
+
+.s2s-span-accent {
+  color: #b300de;
+}
+
+.s2s-footer-links {
+  color: rgba(255, 255, 255, .5);
+  text-align: center;
+  letter-spacing: .5px;
+  font-family: Open Sans, sans-serif;
+  font-size: 12px;
+}
+
+.s2s-link {
+  color: rgba(255, 255, 255, .5);
+  text-decoration: none;
+}
+
+.s2s-link:hover {
+  color: #fff;
+}
+
+.s2s-disclaimer-wrap {
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s2s-disclaimer {
+  width: 100%;
+  color: rgba(255, 255, 255, .5);
+  text-align: center;
+  letter-spacing: .5px;
+  margin-bottom: 28px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 20px;
+  font-family: Open Sans, sans-serif;
+  font-size: 12.5px;
+  line-height: 22px;
+}
+
+.s2s-footer-lower {
+  margin-bottom: 33px;
+}
+
+.s2s-perks-text {
+  color: #f5f5f5;
+  text-align: center;
+  letter-spacing: 1px;
+  padding-left: 0;
+  padding-right: 0;
+  font-family: Ubuntu, Helvetica, sans-serif;
+  font-size: 28px;
+  line-height: 1.6;
+}
+
+.s2s-perks-col {
+  width: 65%;
+  margin-top: 10px;
+  font-family: Ubuntu, Helvetica, sans-serif;
+}
+
+.s2s-perks-section {
+  width: 1100px;
+  margin-top: 28px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s2s-span-sep {
+  color: #b300de;
+}
+
+.s2s-logo-col {
+  width: 35%;
+  height: 160px;
+  background-image: url('../images/Screech-Logo.png');
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: auto 130px;
+  align-items: center;
+  margin-top: 20px;
+  display: flex;
+  overflow: hidden;
+}
+
+.s2s-perks-wrap {
+  align-items: flex-start;
+  display: flex;
+}
+
+@media screen and (max-width: 991px) {
+  .s2s-section {
+    width: 85%;
+    padding-top: 55px;
+  }
+
+  .s2s-banner-text {
+    text-align: center;
+    margin-bottom: 14px;
+    padding-left: 18px;
+    padding-right: 18px;
+    font-size: 40px;
+    line-height: 42px;
+  }
+
+  .s2s-globe {
+    width: 100%;
+    margin-top: 0;
+    margin-left: 0;
+  }
+
+  .s2s-section-2 {
+    width: 85%;
+    margin-top: -144px;
+  }
+
+  .s2s-banner-wrap {
+    display: block;
+  }
+
+  .s2s-layout {
+    width: 85%;
+    display: block;
+  }
+
+  .s2s-video-col {
+    width: 100%;
+    margin-bottom: 57px;
+  }
+
+  .s2s-form-col {
+    width: 88%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .s2s-heading {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 57px;
+  }
+
+  .s2s-subtitle {
+    margin-bottom: 4px;
+    font-size: 20px;
+  }
+
+  .s2s-subtitle.action {
+    letter-spacing: 1px;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 22px;
+  }
+
+  .s2s-btn {
+    margin-top: 25px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    font-size: 33px;
+  }
+
+  .s2s-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .s2s-form-block {
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+
+  .s2s-span-reserve {
+    font-size: 57px;
+  }
+
+  .s2s-section-3 {
+    margin-top: -30px;
+  }
+
+  .s2s-footer-section {
+    padding-top: 17px;
+  }
+
+  .s2s-cta-label {
+    font-size: 20px;
+  }
+
+  .s2s-footer-links {
+    font-size: 11px;
+  }
+
+  .s2s-disclaimer-wrap {
+    width: 80%;
+    font-family: Open Sans, sans-serif;
+    font-size: 13px;
+  }
+
+  .s2s-disclaimer {
+    letter-spacing: .5px;
+    font-size: 12px;
+    line-height: 21px;
+  }
+
+  .s2s-perks-text {
+    font-size: 25px;
+  }
+
+  .s2s-perks-col {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .s2s-perks-section {
+    width: 85%;
+    margin-top: 50px;
+  }
+
+  .s2s-logo-col {
+    width: 100%;
+    height: 140px;
+    background-position: 50% 50%;
+    background-size: auto 120px;
+    margin-top: 35px;
+    display: block;
+    position: relative;
+  }
+
+  .s2s-perks-wrap {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .s2s-section {
+    margin-bottom: 50px;
+    padding-top: 40px;
+  }
+
+  .s2s-banner-text {
+    letter-spacing: .5px;
+    margin-bottom: 10px;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 29px;
+    line-height: 35px;
+  }
+
+  .s2s-section-2 {
+    width: 100%;
+    margin-top: -155px;
+  }
+
+  .s2s-form-col {
+    margin-top: 115px;
+  }
+
+  .s2s-heading {
+    margin-bottom: 15px;
+    font-size: 67px;
+    line-height: 68px;
+  }
+
+  .s2s-subtitle {
+    letter-spacing: .25px;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 17px;
+  }
+
+  .s2s-subtitle.action {
+    font-size: 20px;
+  }
+
+  .s2s-btn {
+    margin-top: 18px;
+    font-size: 29px;
+  }
+
+  .s2s-container {
+    margin-top: -75px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .s2s-form-block {
+    margin-bottom: 22px;
+  }
+
+  .s2s-span-reserve {
+    font-size: 70px;
+  }
+
+  .s2s-section-3 {
+    margin-top: -28px;
+  }
+
+  .s2s-footer-section {
+    padding-top: 12px;
+    padding-bottom: 26px;
+  }
+
+  .s2s-disclaimer {
+    letter-spacing: .25px;
+    font-size: 12px;
+    line-height: 21px;
+  }
+
+  .s2s-perks-text {
+    font-size: 24px;
+  }
+
+  .s2s-logo-col {
+    height: 80px;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .s2s-section {
+    padding-top: 30px;
+  }
+
+  .s2s-banner-text {
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    font-size: 33px;
+    line-height: 35px;
+  }
+
+  .s2s-globe {
+    height: 350px;
+    background-size: 600px;
+  }
+
+  .s2s-section-2 {
+    margin-top: -135px;
+  }
+
+  .s2s-video-col {
+    margin-bottom: 0;
+  }
+
+  .s2s-form-col {
+    width: 90%;
+    margin-top: 120px;
+  }
+
+  .s2s-heading {
+    font-size: 54px;
+    line-height: 53px;
+  }
+
+  .s2s-subtitle {
+    letter-spacing: 1px;
+    padding-left: 25px;
+    padding-right: 25px;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .s2s-subtitle.action {
+    letter-spacing: .5px;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 16px;
+  }
+
+  .s2s-btn {
+    font-size: 24px;
+  }
+
+  .s2s-container {
+    margin-top: -83px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .s2s-form-block {
+    margin-bottom: 18px;
+  }
+
+  .s2s-span-reserve {
+    font-size: 54px;
+  }
+
+  .s2s-section-3 {
+    margin-top: -35px;
+  }
+
+  .s2s-footer-section {
+    padding-top: 8px;
+  }
+
+  .s2s-copyright {
+    text-align: center;
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+
+  .s2s-cta-label {
+    font-size: 17px;
+  }
+
+  .s2s-disclaimer {
+    font-size: 12px;
+    line-height: 20px;
+  }
+
+  .s2s-perks-text {
+    letter-spacing: .5px;
+    font-size: 21px;
+  }
+
+  .s2s-perks-col {
+    margin-top: 0;
+  }
+
+  .s2s-perks-section {
+    margin-top: 45px;
+  }
+
+  .s2s-logo-col {
+    height: 70px;
+    margin-top: 25px;
+  }
+}
