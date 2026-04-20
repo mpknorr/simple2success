@@ -28,7 +28,7 @@ $router->get('/', function() use ($link, $baseurl) {
     }
 
     if ($mode === 'page' && !empty($target)) {
-        $allowed = ['link1', 'link2', 'link3', 'linkp1', 'linkp2', 'linkp3', 'linkp4'];
+        $allowed = ['link1', 'link2', 'link3', 'link4', 'linkp1', 'linkp2', 'linkp3', 'linkp4'];
         if (in_array($target, $allowed, true)) {
             // No personal referer — rotator will assign a sponsor on form submit
             $referer = 0;
@@ -43,7 +43,7 @@ $router->get('/', function() use ($link, $baseurl) {
 });
 $router->get('/go/(\d+)/(\w+)', function($referer, $page) use ($link, $baseurl) {
     if (!empty($referer)) {
-        $allowed = ['link1', 'link2', 'link3', 'linkp1', 'linkp2', 'linkp3', 'linkp4'];
+        $allowed = ['link1', 'link2', 'link3', 'link4', 'linkp1', 'linkp2', 'linkp3', 'linkp4'];
         if (in_array($page, $allowed, true)) {
             require __DIR__ . '/' . $page . '/index.php';
         }
