@@ -323,7 +323,7 @@ require_once "parts/sidebar.php";
                               <div class="col-lg-4 col-md-6 col-sm-12">
                                   <div class="card">
                                       <div class="card-content">
-                                          <img class="card-img-top img-fluid" src="<?= $baseurl ?>/link4/eagle7bpreview.jpg" style="width:100%;object-fit:cover;object-position:top;max-height:300px;cursor:pointer;" onclick="window.open('<?= $baseurl ?>/go/<?= $userid ?>/link4/','_blank');" title="Klicken für Vorschau">
+                                          <img class="card-img-top img-fluid" src="<?= $baseurl ?>/link4/images/link4preview.jpg" style="width:100%;object-fit:cover;object-position:top;max-height:300px;cursor:pointer;" onclick="window.open('<?= $baseurl ?>/go/<?= $userid ?>/link4/','_blank');" title="Klicken für Vorschau">
                                           <div class="card-body" style="background-color: white; min-height: 280px;">
                                               <h4 class="card-title" style="color: black;">Capture Page 4</h4>
                                               <p class="card-text" style="color: black;">Your Link:</p>
