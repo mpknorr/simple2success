@@ -53,6 +53,11 @@ $user_row = mysqli_fetch_assoc(mysqli_query($link, "SELECT lang, country_detecte
 $language_data    = $user_row['lang']             ?? 'en';
 $country_detected = $user_row['country_detected'] ?? '';
 
+$fb_data = $insta_data = $tg_data = $twitter_data = '';
+$country_data  = $country_detected;
+$phone_data    = '';
+$whatsapp_data = '';
+
 $user_socials = mysqli_query($link, "SELECT * FROM user_socialmedia WHERE user_id = $tmpUserID");
 if($user_socials){
     if(mysqli_num_rows($user_socials) > 0){

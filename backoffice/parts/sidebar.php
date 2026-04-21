@@ -1,3 +1,23 @@
+<style>
+/* Make sidebar a flex column so content fills remaining height after header */
+.app-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+.app-sidebar .sidebar-header {
+    flex-shrink: 0;
+}
+.app-sidebar .sidebar-content.main-menu-content {
+    flex: 1 1 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: scroll !important;
+}
+.app-sidebar .sidebar-content.main-menu-content::-webkit-scrollbar { width: 4px; }
+.app-sidebar .sidebar-content.main-menu-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+.app-sidebar .sidebar-content.main-menu-content::-webkit-scrollbar-track { background: transparent; }
+</style>
 <div class="app-sidebar menu-fixed" data-background-color="black" data-image="app-assets/img/sidebar-bg/01.jpg" data-scroll-to-active="true">
             <!-- main menu header-->
             
@@ -52,7 +72,7 @@
                         </li>
 
                         <?php if(!empty($_SESSION["is_admin"])){ ?>
-                        <li class="nav-item has-sub open"><a href="javascript:;"><i class="ft-shield"></i><span class="menu-title">Admin</span></a>
+                        <li class="nav-item has-sub"><a href="javascript:;"><i class="ft-shield"></i><span class="menu-title">Admin</span></a>
                             <ul class="menu-content">
                                 <li><a href="<?= $baseurl ?>/admin/admin-settings.php"><i class="ft-settings"></i><span class="menu-title">Einstellungen</span></a></li>
                                 <li><a href="<?= $baseurl ?>/admin/admin-leads.php"><i class="ft-users"></i><span class="menu-title">Alle User</span></a></li>
@@ -66,6 +86,9 @@
                             </ul>
                         </li>
                         <?php } ?>
+
+                        <li class="nav-item"><a href="user-profile.php"><i class="ft-user"></i><span class="menu-title">My Profile</span></a>
+                        </li>
 
                         <li class="nav-item"><a href="logout.php"><i class="ft-log-out"></i><span class="menu-title" data-i18n="Logout">Logout</span></a>
                         </li>
