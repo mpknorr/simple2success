@@ -517,6 +517,7 @@ $langLabels = [
                                 'login'            => ['label' => 'Login in Backoffice',                  'color' => 'rgba(40,199,111,.8)'],
                                 'login_failed'     => ['label' => 'Fehlgeschlagener Login',               'color' => 'rgba(234,84,85,.8)'],
                                 'start_step_click' => ['label' => 'Button "Next Step" geklickt',          'color' => 'rgba(0,207,232,.8)'],
+                                'video_play'       => ['label' => 'Video abgespielt',                      'color' => 'rgba(155,89,182,.8)'],
                             ];
                             foreach ($events as $ev):
                                 $type  = $ev['event_type'];

@@ -91,7 +91,8 @@ require_once "parts/navbar.php";
                            <div class="col-sm-6 col-12">
                               <div class="card-img">
                                  <div style="padding:56.25% 0 0 0;position:relative;">
-                                    <iframe src="https://player.vimeo.com/video/1185176396?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                                    <iframe id="vimeo-traffic-1"
+                                            src="https://player.vimeo.com/video/1185176396?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
                                             frameborder="0"
                                             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                                             referrerpolicy="strict-origin-when-cross-origin"
@@ -136,7 +137,8 @@ require_once "parts/navbar.php";
                            <div class="col-sm-6 col-12">
                               <div class="card-img">
                                  <div style="padding:56.25% 0 0 0;position:relative;">
-                                    <iframe src="https://player.vimeo.com/video/1185173699?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                                    <iframe id="vimeo-traffic-2"
+                                            src="https://player.vimeo.com/video/1185173699?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
                                             frameborder="0"
                                             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                                             referrerpolicy="strict-origin-when-cross-origin"
@@ -175,7 +177,7 @@ require_once "parts/navbar.php";
                            <div class="col-sm-6 col-12">
                               <div class="card-img">
                                  <div class="embed-responsive embed-responsive-16by9">
-                                    <iframe width="560" height="315" src="https://www.youtube.com/embed/QxA4wzU5G6Q?si=2m9PINeGGxIvHBXF" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                                    <iframe id="yt-traffic-1" width="560" height="315" src="https://www.youtube.com/embed/QxA4wzU5G6Q?si=2m9PINeGGxIvHBXF&enablejsapi=1" title="Traffic Authority Review" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                                  </div>
                               </div>
                            </div>
@@ -296,6 +298,49 @@ require_once "parts/navbar.php";
     <!-- BEGIN: Custom CSS-->
     <script src="assets/js/scripts.js"></script>
     <!-- END: Custom CSS-->
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+(function() {
+  var trackUrl = '../includes/track-video.php';
+  var page     = window.location.pathname;
+
+  function sendVideoPlay(title) {
+    fetch(trackUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'video=' + encodeURIComponent(title) + '&page=' + encodeURIComponent(page)
+    });
+  }
+
+  // Vimeo
+  document.querySelectorAll('iframe[src*="vimeo"]').forEach(function(iframe) {
+    var player = new Vimeo.Player(iframe);
+    var played = false;
+    player.on('play', function() {
+      if (played) return;
+      played = true;
+      sendVideoPlay(iframe.title || iframe.id);
+    });
+  });
+
+  // YouTube
+  var ytPlayed = {};
+  window.onYouTubeIframeAPIReady = function() {
+    document.querySelectorAll('iframe[src*="youtube"]').forEach(function(iframe) {
+      new YT.Player(iframe.id, {
+        events: {
+          onStateChange: function(e) {
+            if (e.data === YT.PlayerState.PLAYING && !ytPlayed[iframe.id]) {
+              ytPlayed[iframe.id] = true;
+              sendVideoPlay(iframe.title || iframe.id);
+            }
+          }
+        }
+      });
+    });
+  };
+})();
+</script>
 </body>
 <!-- END : Body-->
 

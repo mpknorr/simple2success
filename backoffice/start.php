@@ -300,7 +300,8 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
               <div class="card">
                 <div class="card-content">
                   <div style="padding:62.5% 0 0 0;position:relative;">
-                    <iframe src="https://player.vimeo.com/video/1183822471?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                    <iframe id="vimeo-start-1"
+                            src="https://player.vimeo.com/video/1183822471?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
                             frameborder="0"
                             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                             referrerpolicy="strict-origin-when-cross-origin"
@@ -324,7 +325,8 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
               <div class="card">
                 <div class="card-content">
                   <div style="padding:62.5% 0 0 0;position:relative;">
-                    <iframe src="https://player.vimeo.com/video/1183845597?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                    <iframe id="vimeo-start-2"
+                            src="https://player.vimeo.com/video/1183845597?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
                             frameborder="0"
                             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                             referrerpolicy="strict-origin-when-cross-origin"
@@ -801,6 +803,25 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
       });
     });
   });
+</script>
+<script>
+(function() {
+  var trackUrl = '../includes/track-video.php';
+  var page     = window.location.pathname;
+  document.querySelectorAll('iframe[src*="vimeo"]').forEach(function(iframe) {
+    var player = new Vimeo.Player(iframe);
+    var played = false;
+    player.on('play', function() {
+      if (played) return;
+      played = true;
+      fetch(trackUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'video=' + encodeURIComponent(iframe.title || iframe.id) + '&page=' + encodeURIComponent(page)
+      });
+    });
+  });
+})();
 </script>
 </body>
 </html>
