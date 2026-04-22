@@ -97,6 +97,132 @@ function legalEnsureTable($link) {
         }
     }
 
+    // ── Migration v2: Full Terms of Use ──────────────────────────────────────
+    $touHtml = '<h2>Terms of Use</h2>'
+        . '<p><em>Last updated: April 22, 2026</em></p>'
+        . '<p><strong>PLEASE READ THESE TERMS OF USE CAREFULLY BEFORE USING SIMPLE2SUCCESS.</strong><br>'
+        . 'By accessing or using Simple2Success (&ldquo;the Platform&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;), '
+        . 'you agree to be bound by these Terms of Use (&ldquo;Terms&rdquo;). If you do not agree to these Terms, please do not use the Platform.</p>'
+
+        . '<h3>1. About Simple2Success</h3>'
+        . '<p>Simple2Success is a software platform that provides lead generation, onboarding, and team management tools for independent business partners. '
+        . 'Simple2Success is operated by Marc-Philipp Knorr, Auf der Nachthut 3, 72534 Hayingen, Germany '
+        . '(E-mail: <a href="mailto:info@simple2success.com">info@simple2success.com</a>).</p>'
+        . '<p><strong>IMPORTANT:</strong> Simple2Success is a software tool only. It is not a business opportunity, investment product, '
+        . 'or income-generating program in itself. Any income potential depends entirely on the underlying partner program you are '
+        . 'associated with and your own efforts.</p>'
+
+        . '<h3>2. Eligibility</h3>'
+        . '<p>You must be at least 18 years of age to use the Platform. By using the Platform, you represent and warrant that you are '
+        . 'at least 18 years old and have the legal capacity to enter into a binding agreement.</p>'
+
+        . '<h3>3. Account Registration and Security</h3>'
+        . '<p>When you register for an account, you agree to:</p>'
+        . '<ul>'
+        . '<li>Provide accurate, current, and complete information</li>'
+        . '<li>Maintain the security and confidentiality of your login credentials</li>'
+        . '<li>Notify us immediately of any unauthorised use of your account at <a href="mailto:info@simple2success.com">info@simple2success.com</a></li>'
+        . '<li>Accept responsibility for all activities that occur under your account</li>'
+        . '</ul>'
+        . '<p>We reserve the right to suspend or terminate accounts that contain inaccurate information or that are used in violation of these Terms.</p>'
+
+        . '<h3>4. Acceptable Use Policy</h3>'
+        . '<p>You agree <strong>NOT</strong> to use the Platform to:</p>'
+        . '<ul>'
+        . '<li>Send unsolicited commercial e-mails (spam) or engage in any form of unsolicited marketing</li>'
+        . '<li>Make false, misleading, or exaggerated income claims when promoting the platform or associated programs</li>'
+        . '<li>Engage in any pyramid scheme, fraudulent activity, or illegal multi-level marketing practices</li>'
+        . '<li>Upload, post, or transmit any content that is unlawful, harmful, threatening, abusive, harassing, defamatory, or otherwise objectionable</li>'
+        . '<li>Violate any applicable local, national, or international law or regulation</li>'
+        . '<li>Impersonate any person or entity or falsely state your affiliation with any person or entity</li>'
+        . '<li>Attempt to gain unauthorised access to any part of the Platform or its related systems</li>'
+        . '</ul>'
+        . '<p>Violation of this Acceptable Use Policy may result in immediate account termination without notice.</p>'
+
+        . '<h3>5. Income Disclaimer and Earnings Claims</h3>'
+        . '<p><strong>THE PLATFORM MAKES NO GUARANTEES REGARDING INCOME OR EARNINGS.</strong></p>'
+        . '<p>This is not a get-rich-quick program. We believe in hard work, integrity, and developing your skills if you want to earn more financially. '
+        . 'As required by law, we cannot and do not make any guarantees about your ability to get results or earn any money with any of our products or services. '
+        . 'Results will vary and depend on many factors, including but not limited to your background, experience, work ethic, and market conditions.</p>'
+        . '<p>All business activities entail risk as well as consistent effort and action. If you are not willing to accept that, please do not use the Platform.</p>'
+        . '<p>Any income figures or results mentioned in our marketing materials represent exceptional results, not typical results. '
+        . 'The average participant earns significantly less or nothing at all. You should not expect to achieve similar results.</p>'
+        . '<p>This disclaimer complies with the guidelines of the U.S. Federal Trade Commission (FTC) regarding income claims and endorsements.</p>'
+
+        . '<h3>6. Intellectual Property</h3>'
+        . '<p>All content on the Platform, including but not limited to text, graphics, logos, images, software code, and design, '
+        . 'is the property of Simple2Success or its content suppliers and is protected by applicable copyright, trademark, and other intellectual property laws.</p>'
+        . '<p>You are granted a limited, non-exclusive, non-transferable licence to access and use the Platform for its intended purpose. '
+        . 'You may not reproduce, distribute, modify, create derivative works of, publicly display, or exploit any content from the Platform without our prior written consent.</p>'
+
+        . '<h3>7. Third-Party Links and Services</h3>'
+        . '<p>The Platform may contain links to third-party websites or services. These links are provided for your convenience only. '
+        . 'We have no control over the content of those sites and accept no responsibility for them or for any loss or damage that may arise from your use of them.</p>'
+
+        . '<h3>8. Limitation of Liability</h3>'
+        . '<p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, SIMPLE2SUCCESS AND ITS OPERATORS SHALL NOT BE LIABLE FOR ANY INDIRECT, '
+        . 'INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, GOODWILL, OR OTHER '
+        . 'INTANGIBLE LOSSES, RESULTING FROM:</p>'
+        . '<ul>'
+        . '<li>(a) YOUR ACCESS TO OR USE OF (OR INABILITY TO ACCESS OR USE) THE PLATFORM;</li>'
+        . '<li>(b) ANY CONDUCT OR CONTENT OF ANY THIRD PARTY ON THE PLATFORM;</li>'
+        . '<li>(c) ANY CONTENT OBTAINED FROM THE PLATFORM; OR</li>'
+        . '<li>(d) UNAUTHORISED ACCESS, USE, OR ALTERATION OF YOUR TRANSMISSIONS OR CONTENT.</li>'
+        . '</ul>'
+        . '<p>IN NO EVENT SHALL OUR TOTAL LIABILITY TO YOU EXCEED THE AMOUNT YOU HAVE PAID TO US IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM, '
+        . 'OR EUR 100, WHICHEVER IS GREATER.</p>'
+        . '<p>Nothing in these Terms shall limit or exclude our liability for death or personal injury caused by our negligence, fraud or fraudulent '
+        . 'misrepresentation, or any other liability that cannot be excluded or limited by applicable law.</p>'
+
+        . '<h3>9. Indemnification</h3>'
+        . '<p>You agree to defend, indemnify, and hold harmless Simple2Success and its operators from and against any claims, liabilities, damages, '
+        . 'losses, and expenses, including reasonable legal fees, arising out of or in any way connected with your access to or use of the Platform, '
+        . 'your violation of these Terms, or your violation of any third-party rights.</p>'
+
+        . '<h3>10. Right of Withdrawal (for EU Consumers)</h3>'
+        . '<p>If you are a consumer resident in the European Union or European Economic Area, you have the right to withdraw from this agreement '
+        . 'within 14 days without giving any reason (right of withdrawal / <em>Widerrufsrecht</em>).</p>'
+        . '<p>The withdrawal period expires 14 days after the day you concluded the agreement. To exercise the right of withdrawal, you must inform us '
+        . '(Marc-Philipp Knorr, <a href="mailto:info@simple2success.com">info@simple2success.com</a>) of your decision to withdraw from this agreement '
+        . 'by an unequivocal statement (e.g., a letter sent by post or e-mail).</p>'
+        . '<p><em>Note: Since Simple2Success is currently offered free of charge, the practical implications of withdrawal are limited. '
+        . 'However, we inform you of this right in compliance with EU consumer protection law (Directive 2011/83/EU).</em></p>'
+
+        . '<h3>11. Governing Law and Jurisdiction</h3>'
+        . '<p>These Terms shall be governed by and construed in accordance with the laws of the Federal Republic of Germany, '
+        . 'excluding the UN Convention on Contracts for the International Sale of Goods (CISG).</p>'
+        . '<p>For consumers resident in the European Union: The choice of German law does not deprive you of the protection afforded to you '
+        . 'by provisions that cannot be derogated from by agreement under the law of the country where you have your habitual residence.</p>'
+        . '<p>For disputes arising from these Terms, the parties agree to submit to the jurisdiction of the courts of Reutlingen, Germany. '
+        . 'However, if you are a consumer, you may also bring proceedings in the courts of your country of residence.</p>'
+
+        . '<h3>12. Changes to These Terms</h3>'
+        . '<p>We reserve the right to modify these Terms at any time. We will notify you of material changes by posting the updated Terms on the '
+        . 'Platform with a new &ldquo;Last updated&rdquo; date. Your continued use of the Platform after such changes constitutes your acceptance '
+        . 'of the new Terms. If you do not agree to the new Terms, you must stop using the Platform.</p>'
+
+        . '<h3>13. Severability</h3>'
+        . '<p>If any provision of these Terms is found to be invalid, illegal, or unenforceable, the remaining provisions shall continue in full '
+        . 'force and effect. The invalid provision shall be replaced by a valid provision that most closely reflects the intent of the original provision.</p>'
+
+        . '<h3>14. Entire Agreement</h3>'
+        . '<p>These Terms, together with our Privacy Policy and any other legal notices published by us on the Platform, constitute the entire '
+        . 'agreement between you and Simple2Success regarding your use of the Platform and supersede all prior agreements and understandings.</p>'
+
+        . '<h3>15. Contact</h3>'
+        . '<p>If you have any questions about these Terms of Use, please contact us:</p>'
+        . '<p>Marc-Philipp Knorr<br>'
+        . 'E-mail: <a href="mailto:info@simple2success.com">info@simple2success.com</a><br>'
+        . 'Address: Auf der Nachthut 3, 72534 Hayingen, Germany</p>';
+
+    $touEsc = mysqli_real_escape_string($link, $touHtml);
+    mysqli_query($link,
+        "UPDATE legal_documents
+         SET content_html='$touEsc', title='Terms of Use', version_number=2, updated_at=NOW()
+         WHERE slug='terms-of-use' AND language_code='en' AND market_code='global'
+           AND version_number < 2"
+    );
+
     // ── Migration v2: Full GDPR Privacy Policy ────────────────────────────────
     // Runs only once (version_number < 2). Safe to re-deploy — won't overwrite
     // any future admin edits that advance version_number beyond 2.
