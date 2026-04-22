@@ -6,12 +6,12 @@
  *   /usr/bin/php /path/to/cron/followup.php >> /path/to/cron/followup.log 2>&1
  *
  * Or call it via HTTP with a secret token:
- *   https://yoursite.com/cron/followup.php?token=CHANGE_ME_FOLLOWUP_TOKEN
+ *   https://yoursite.com/cron/followup.php?token=ca246a9152344e988c9eb30c9f05460e60c518b01949351e
  */
 
 // Security: allow CLI or HTTP call with a token
 $cli  = (php_sapi_name() === 'cli');
-$token_ok = isset($_GET['token']) && $_GET['token'] === 'CHANGE_ME_FOLLOWUP_TOKEN';
+$token_ok = isset($_GET['token']) && $_GET['token'] === 'ca246a9152344e988c9eb30c9f05460e60c518b01949351e';
 
 if (!$cli && !$token_ok) {
     http_response_code(403);
