@@ -1,0 +1,14 @@
+User-agent: *
+
+# Legal pages — noindex via meta tag, also blocked here as fallback
+Disallow: /impress.php
+Disallow: /legal.php
+
+# Admin and internal areas
+Disallow: /admin/
+Disallow: /backoffice/
+Disallow: /includes/
+Disallow: /cron/
+Disallow: /vendor/
+
+Sitemap: https://simple2success.com/sitemap.xml

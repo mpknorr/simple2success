@@ -19,6 +19,7 @@ $contentHtml = $doc ? $doc['content_html'] : '<h2>Impressum</h2><p>Content not f
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <meta name="robots" content="noindex, nofollow">
     <title><?= $pageTitle ?> — Simple2Success</title>
     <link rel="shortcut icon" href="<?= $baseurl ?>/backoffice/app-assets/img/ico/favicon.ico">
     <style>
