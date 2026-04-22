@@ -25,6 +25,11 @@ foreach ($getuserdetails as $userData) {
 $success = '';
 $error = '';
 
+// One-time migration: replace www.simple2success.com with simple2success.com in all bodies
+// (www-variant causes broken images in email clients that don't follow redirects)
+mysqli_query($link, "UPDATE email_templates SET body = REPLACE(body, 'https://www.simple2success.com/', 'https://simple2success.com/') WHERE body LIKE '%www.simple2success.com%'");
+mysqli_query($link, "UPDATE followup_sequences SET body = REPLACE(body, 'https://www.simple2success.com/', 'https://simple2success.com/') WHERE body LIKE '%www.simple2success.com%'");
+
 // Template speichern
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_template'])) {
     $id      = (int)$_POST['id'];
