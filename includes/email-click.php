@@ -11,7 +11,7 @@
  * but don't convert are identified for targeted re-engagement triggers.
  */
 
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/conn.php';
 
 $uid = isset($_GET['uid']) ? (int)$_GET['uid'] : 0;
 $sid = isset($_GET['sid']) ? (int)$_GET['sid'] : 0;
