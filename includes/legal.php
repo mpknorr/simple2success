@@ -97,6 +97,46 @@ function legalEnsureTable($link) {
         }
     }
 
+    // ── Migration v2: Impressum / Legal Notice ───────────────────────────────
+    $impHtml = '<h2>Impressum / Legal Notice</h2>'
+        . '<h3>Provider Identification according to &sect; 5 DDG (Digital Services Act)</h3>'
+        . '<p>Marc-Philipp Knorr<br>'
+        . 'Auf der Nachthut 3<br>'
+        . '72534 Hayingen<br>'
+        . 'Germany</p>'
+        . '<p><strong>Contact:</strong><br>'
+        . 'Phone: +49 151 40438186<br>'
+        . 'E-mail: <a href="mailto:info@simple2success.com">info@simple2success.com</a></p>'
+        . '<p><strong>Responsible for editorial content (&sect; 18 Abs. 2 MStV):</strong><br>'
+        . 'Marc-Philipp Knorr (address as above)</p>'
+        . '<h3>Dispute Resolution / Consumer Arbitration</h3>'
+        . '<p>We are not willing or obliged to participate in dispute resolution proceedings before a consumer '
+        . 'arbitration board (<em>Verbraucherschlichtungsstelle</em>).</p>'
+        . '<h3>Liability for Content</h3>'
+        . '<p>As a service provider, we are responsible for our own content on these pages in accordance with '
+        . '&sect; 7 Abs. 1 DDG under general law. According to &sect;&sect; 8 to 10 DDG, however, we are not '
+        . 'obligated to monitor transmitted or stored third-party information or to investigate circumstances that '
+        . 'indicate illegal activity. Obligations to remove or block the use of information under general law remain '
+        . 'unaffected. However, liability in this regard is only possible from the point in time at which a concrete '
+        . 'infringement of the law becomes known.</p>'
+        . '<h3>Liability for Links</h3>'
+        . '<p>Our offer contains links to external websites of third parties, on whose contents we have no influence. '
+        . 'Therefore, we cannot assume any liability for these external contents. The respective provider or operator '
+        . 'of the pages is always responsible for the content of the linked pages. The linked pages were checked for '
+        . 'possible legal violations at the time of linking. Illegal contents were not recognisable at the time of linking.</p>'
+        . '<h3>Copyright</h3>'
+        . '<p>The content and works created by the site operators on these pages are subject to German copyright law. '
+        . 'Duplication, processing, distribution, or any form of commercialisation of such material beyond the scope '
+        . 'of the copyright law shall require the prior written consent of its respective author or creator.</p>';
+
+    $impEsc = mysqli_real_escape_string($link, $impHtml);
+    mysqli_query($link,
+        "UPDATE legal_documents
+         SET content_html='$impEsc', title='Impressum / Legal Notice', version_number=2, updated_at=NOW()
+         WHERE slug='impress' AND language_code='en' AND market_code='global'
+           AND version_number < 2"
+    );
+
     // ── Migration v2: Income Disclaimer (footer_snippet intentionally preserved) ─
     $idHtml = '<h2>Income Disclaimer</h2>'
         . '<p><em>Last updated: April 1, 2026</em></p>'
