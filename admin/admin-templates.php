@@ -75,6 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['send_test'])) {
         $testBody = str_replace('{{email}}', 'max.mustermann@example.com', $testBody);
         $testBody = str_replace('{{password}}', 'TestPw123!', $testBody);
         $testBody = str_replace('{{login_url}}', $baseurl . '/backoffice/login.php', $testBody);
+        $testBody = str_replace('{{cta_url}}', $baseurl . '/backoffice/start.php', $testBody);
 
         $mail = new PHPMailer(true);
         try {
@@ -264,6 +265,7 @@ if (!$active && !empty($tpl_list)) { $active = $tpl_list[0]; $active_id = (int)$
                                         $preview = str_replace('{{email}}', 'max.mustermann@example.com', $preview);
                                         $preview = str_replace('{{password}}', 'TestPw123!', $preview);
                                         $preview = str_replace('{{login_url}}', $baseurl . '/backoffice/login.php', $preview);
+                                        $preview = str_replace('{{cta_url}}', $baseurl . '/backoffice/start.php', $preview);
                                         ?>
                                         <div id="tplPreviewEditHint" style="display:none;background:#1a3a5c;color:#7ec8f7;font-size:12px;padding:5px 12px;border-radius:4px 4px 0 0;border:1px solid #3a7abf;border-bottom:none;">
                                             <i class="ft-edit-2"></i>&nbsp; Klicke auf Text zum Bearbeiten &mdash; &Auml;nderungen werden beim Zur&uuml;ckwechseln &uuml;bernommen
