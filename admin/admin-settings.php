@@ -99,7 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_smtp'])) {
 // ── POST: Save frontend settings ──────────────────────────────────────────────
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_frontend'])) {
     $allowed_modes   = ['default', 'maintenance', 'page'];
-    $allowed_targets = ['link1', 'link2', 'link3', 'linkp1', 'linkp2', 'linkp3'];
+    $allowed_targets = ['link1', 'link2', 'link3', 'link4', 'linkp1', 'linkp2', 'linkp3', 'linkp4'];
 
     $mode   = in_array($_POST['homepage_mode'] ?? '', $allowed_modes, true) ? $_POST['homepage_mode'] : 'default';
     $target = in_array($_POST['homepage_target'] ?? '', $allowed_targets, true) ? $_POST['homepage_target'] : '';
@@ -153,11 +153,13 @@ $pages = [
         'link1'  => 'Capture Page 1',
         'link2'  => 'Capture Page 2',
         'link3'  => 'Capture Page 3',
+        'link4'  => 'Capture Page 4',
     ],
     'Premium Pages' => [
         'linkp1' => 'Premium Page 1',
         'linkp2' => 'Premium Page 2',
         'linkp3' => 'Premium Page 3',
+        'linkp4' => 'Premium Page 4',
     ],
 ];
 ?>
