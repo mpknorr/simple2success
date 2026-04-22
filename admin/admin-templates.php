@@ -25,10 +25,18 @@ foreach ($getuserdetails as $userData) {
 $success = '';
 $error = '';
 
-// One-time migration: replace www.simple2success.com with simple2success.com in all bodies
-// (www-variant causes broken images in email clients that don't follow redirects)
+// Migration: replace www.simple2success.com with simple2success.com in all bodies
 mysqli_query($link, "UPDATE email_templates SET body = REPLACE(body, 'https://www.simple2success.com/', 'https://simple2success.com/') WHERE body LIKE '%www.simple2success.com%'");
 mysqli_query($link, "UPDATE followup_sequences SET body = REPLACE(body, 'https://www.simple2success.com/', 'https://simple2success.com/') WHERE body LIKE '%www.simple2success.com%'");
+
+// Migration: decode HTML entities in subject lines (plain text field — entities must not appear)
+foreach (['email_templates', 'followup_sequences'] as $_tbl) {
+    foreach (['&mdash;'=>'—','&ndash;'=>'–','&rarr;'=>'→','&rsquo;'=>"\u{2019}",'&lsquo;'=>"\u{2018}",'&ldquo;'=>"\u{201C}",'&rdquo;'=>"\u{201D}",'&hellip;'=>'…','&amp;'=>'&','&nbsp;'=>' '] as $_ent => $_char) {
+        $_e = mysqli_real_escape_string($link, $_ent);
+        $_c = mysqli_real_escape_string($link, $_char);
+        mysqli_query($link, "UPDATE {$_tbl} SET subject = REPLACE(subject, '$_e', '$_c') WHERE subject LIKE '%$_e%'");
+    }
+}
 
 // Template speichern
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_template'])) {
@@ -83,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['send_test'])) {
             $fromName  = getTplSmtp($link, 'smtp_from_name') ?: 'Simple2Success';
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($testTo);
-            $mail->Subject = '[TEST] ' . $tplRow['subject'];
+            $mail->Subject = '[TEST] ' . html_entity_decode($tplRow['subject'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $mail->Body    = $testBody;
             $mail->send();
             $success = "Test-E-Mail erfolgreich gesendet an <strong>" . htmlspecialchars($testTo) . "</strong>.";
@@ -130,13 +138,7 @@ if (!$active && !empty($tpl_list)) { $active = $tpl_list[0]; $active_id = (int)$
                 <div class="content-header-left col-8">
                     <h3 class="content-header-title">Admin — E-Mail Templates</h3>
                 </div>
-                <div class="content-header-right col-4 text-right">
-                    <form method="POST" onsubmit="return confirm('Neuer-Member- und Paid-Kunden-Templates jetzt initialisieren / aktualisieren?');">
-                        <button type="submit" name="seed_new_member" class="btn btn-sm btn-outline-primary">
-                            <i class="ft-refresh-cw mr-1"></i> Vorlagen initialisieren
-                        </button>
-                    </form>
-                </div>
+                <div class="content-header-right col-4 text-right"></div>
             </div>
 
             <?php if ($success): ?>

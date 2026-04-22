@@ -155,7 +155,7 @@ try {
     $fromName  = getSmtpSetting($link, 'smtp_from_name');
     $mail->setFrom($fromEmail ?: 'noreply@simple2success.com', $fromName ?: 'Simple2Success');
     $mail->addAddress($adminEmail);
-    $mail->Subject = $mailSubject;
+    $mail->Subject = html_entity_decode($mailSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $mail->Body    = $mailBody;
 
     if ($attachmentFilename && file_exists(__DIR__ . '/../' . $attachmentPath)) {

@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["email"])) {
                 [htmlspecialchars($displayName), $resetLink],
                 $body
             );
-            $mail->Subject = $subject;
+            $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $mail->Body    = $body;
             $mail->send();
         } catch (Exception $e) {

@@ -169,7 +169,7 @@ function sendSingleEmailFU($smtpConfig, $toEmail, $toName, $subject, $body) {
         $mail->isHTML(true);
         $mail->setFrom($smtpConfig['from_email'], $smtpConfig['from_name']);
         $mail->addAddress($toEmail, $toName);
-        $mail->Subject = $subject;
+        $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $mail->Body    = $body;
         $mail->send();
         return true;
@@ -217,6 +217,7 @@ function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
                                $tpl['subject']);
         $body = injectClickTracking($body, $base_url, $uid, 0);
 
+        $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         if (sendSingleEmailFU($smtpConfig, $toEmail, $toName, $subject, $body)) {
             mysqli_query($link, "INSERT IGNORE INTO followup_trigger_log (user_id, trigger_type) VALUES ($uid, 'clicked_no_step2')");
             $sent++;
@@ -263,7 +264,8 @@ function sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url) {
         $subject = str_replace(['{{name}}', '{{email}}'],
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
                                $tpl['subject']);
-        $body = injectClickTracking($body, $base_url, $uid, 0);
+        $body    = injectClickTracking($body, $base_url, $uid, 0);
+        $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         if (sendSingleEmailFU($smtpConfig, $toEmail, $toName, $subject, $body)) {
             mysqli_query($link, "INSERT IGNORE INTO followup_trigger_log (user_id, trigger_type) VALUES ($uid, 'step2_done_no_step4')");
@@ -345,7 +347,7 @@ function sendFollowupEmails($link) {
                     $mail->isHTML(true);
                     $mail->setFrom($smtpConfig['from_email'], $smtpConfig['from_name']);
                     $mail->addAddress($toEmail, $toName);
-                    $mail->Subject = $personalSubject;
+                    $mail->Subject = html_entity_decode($personalSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
                     $mail->Body    = $personalBody;
                     $mail->send();
                     mysqli_query($link, "INSERT IGNORE INTO followup_log (user_id, sequence_id) VALUES ($uid, $seq_id)");

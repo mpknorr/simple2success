@@ -75,7 +75,7 @@ function sendNewsletter($link, $subject, $body, $target) {
             $mail->isHTML(true);
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($toEmail, $toName);
-            $mail->Subject = $personalSubject;
+            $mail->Subject = html_entity_decode($personalSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $mail->Body    = $personalBody;
             $mail->send();
             $sent++;

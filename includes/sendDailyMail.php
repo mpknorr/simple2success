@@ -109,7 +109,7 @@ function sendDailyLeadsNotifications($link) {
             $mail->isHTML(true);
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($memberEmail, $memberName);
-            $mail->Subject = $personalSubject;
+            $mail->Subject = html_entity_decode($personalSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $mail->Body    = $personalBody;
             $mail->send();
             $sent++;

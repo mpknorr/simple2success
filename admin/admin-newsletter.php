@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->isHTML(true);
                 $mail->setFrom($fromEmail, $fromName);
                 $mail->addAddress($testTo);
-                $mail->Subject = $testSubject;
+                $mail->Subject = html_entity_decode($testSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $mail->Body    = $testBody;
                 $mail->send();
                 $success = 'Test-E-Mail gesendet an <strong>' . htmlspecialchars($testTo) . '</strong>.';

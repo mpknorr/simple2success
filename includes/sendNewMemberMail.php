@@ -73,7 +73,7 @@ function sendNewMemberMail($link, $root) {
         $fromName  = getSmtpSettingMember($link, 'smtp_from_name');
         $mail->setFrom($fromEmail ?: 'info@simple2success.com', $fromName ?: 'Simple2Success');
         $mail->addAddress($sponsorEmail, $sponsorName);
-        $mail->Subject = $subject;
+        $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $mail->Body    = $body;
         $mail->send();
         return true;
