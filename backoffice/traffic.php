@@ -90,9 +90,17 @@ require_once "parts/navbar.php";
                         <div class="row">
                            <div class="col-sm-6 col-12">
                               <div class="card-img">
-                                 <div class="embed-responsive embed-responsive-16by9">
-                                    <iframe width="560" height="315" src="https://www.youtube.com/embed/_QQTSUaYigk?si=UZPhxB5Zrce9iglS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                                 </div>
+                                 <div style="padding:56.25% 0 0 0;position:relative;">
+                                    <iframe src="https://player.vimeo.com/video/1185176396?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                                            frameborder="0"
+                                            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                                            referrerpolicy="strict-origin-when-cross-origin"
+                                            style="position:absolute;top:0;left:0;width:100%;height:100%;"
+                                            title="How to Buy Advertising on Traffic4Me"></iframe>
+
+
+                                    </div>
+                                 <script src="https://player.vimeo.com/api/player.js"></script>
                               </div>
                            </div>
                            <div class="col-sm-6 col-12 d-flex align-items-center">
@@ -127,7 +135,14 @@ require_once "parts/navbar.php";
                         <div class="row">
                            <div class="col-sm-6 col-12">
                               <div class="card-img">
-                                 <div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/741467747?h=45ba97bec4&title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>
+                                 <div style="padding:56.25% 0 0 0;position:relative;">
+                                    <iframe src="https://player.vimeo.com/video/1185173699?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                                            frameborder="0"
+                                            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                                            referrerpolicy="strict-origin-when-cross-origin"
+                                            style="position:absolute;top:0;left:0;width:100%;height:100%;"
+                                            title="How to Buy a Solo Ad on Udimi"></iframe>
+                                 </div>
                                  <script src="https://player.vimeo.com/api/player.js"></script>
                               </div>
                            </div>

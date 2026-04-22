@@ -165,6 +165,7 @@ $_eq_key     = $editorCfg['instance_key']  ?? 'default';
     const QUILL_ID = <?= json_encode($_eq_qid) ?>;
     const TA_ID    = <?= json_encode($_eq_tid) ?>;
     const PRV_ID   = <?= json_encode($_eq_pid) ?>;
+    const BASEURL  = <?= json_encode(isset($baseurl) ? $baseurl : '') ?>;
 
     /* ── Init Quill ──────────────────────────────────────────────── */
     const quill = new Quill('#' + QUILL_ID, {
@@ -189,6 +190,13 @@ $_eq_key     = $editorCfg['instance_key']  ?? 'default';
     if (initialHtml.trim()) {
         quill.clipboard.dangerouslyPasteHTML(initialHtml);
     }
+
+    /* ── Dirty-Tracking: Quill strippt <html>/<body>/<style>,
+          daher nur bei echter User-Eingabe zurückschreiben ─────────── */
+    let quillDirty = false;
+    quill.on('text-change', function(_, __, source) {
+        if (source === 'user') quillDirty = true;
+    });
 
     /* ── Tab state ───────────────────────────────────────────────── */
     let activeTab = 'visual';
@@ -227,15 +235,29 @@ $_eq_key     = $editorCfg['instance_key']  ?? 'default';
 
     /* ── Render preview iframe ───────────────────────────────────── */
     function renderPreview() {
-        const html = getHtml();
-        document.getElementById(TA_ID).value = html;
+        // NICHT getHtml() verwenden — activeTab ist bereits 'preview', dann würde aus dem
+        // noch leeren iframe gelesen. Stattdessen direkt aus Textarea (wurde vor Tab-Switch synced).
+        let html = document.getElementById(TA_ID).value || '';
+
+        // Localize banner URL (prod → local) for correct image display in preview
+        if (BASEURL) {
+            const localBanner = BASEURL + '/backoffice/app-assets/img/banner/newleademailheader.jpg';
+            html = html
+                .replace(/https:\/\/www\.simple2success\.com\/backoffice\/app-assets\/img\/banner\/newleademailheader\.jpg/g, localBanner)
+                .replace(/https:\/\/simple2success\.com\/backoffice\/app-assets\/img\/banner\/newleademailheader\.jpg/g, localBanner);
+        }
+
         const frame = document.getElementById(PRV_ID);
-        frame.srcdoc = '<!DOCTYPE html><html><head>'
-            + '<meta charset="utf-8">'
-            + '<style>body{font-family:Arial,sans-serif;padding:16px;color:#333;line-height:1.6;}'
-            + 'a{color:#b700e0;} img{max-width:100%;}</style>'
-            + '</head><body>' + html + '</body></html>';
+        // If body already contains full HTML document, render directly (avoid double-wrap)
+        const isFullDoc = /<html[\s>]/i.test(html) || /<body[\s>]/i.test(html);
         frame.onload = enablePreviewEditing;
+        frame.srcdoc = isFullDoc
+            ? html
+            : ('<!DOCTYPE html><html><head>'
+                + '<meta charset="utf-8">'
+                + '<style>body{font-family:Arial,sans-serif;padding:16px;color:#333;line-height:1.6;}'
+                + 'a{color:#b700e0;} img{max-width:100%;}</style>'
+                + '</head><body>' + html + '</body></html>');
     }
 
     /* ── Sync preview iframe → textarea ─────────────────────────── */
@@ -259,12 +281,18 @@ $_eq_key     = $editorCfg['instance_key']  ?? 'default';
     function _switchTab(tab, btn) {
         // Sync away from current tab first
         if (activeTab === 'visual') {
-            document.getElementById(TA_ID).value = quill.root.innerHTML;
+            // Nur schreiben wenn User tatsächlich editiert hat — sonst würde der
+            // Original-HTML-Wrapper (<html>/<body>/<style>) zerstört.
+            if (quillDirty) {
+                document.getElementById(TA_ID).value = quill.root.innerHTML;
+            }
         } else if (activeTab === 'source') {
             quill.clipboard.dangerouslyPasteHTML(document.getElementById(TA_ID).value);
+            quillDirty = false;
         } else if (activeTab === 'preview') {
             syncFromPreview();
             quill.clipboard.dangerouslyPasteHTML(document.getElementById(TA_ID).value);
+            quillDirty = false;
         }
 
         // Hide all panels
@@ -295,6 +323,9 @@ $_eq_key     = $editorCfg['instance_key']  ?? 'default';
 
     /* ── Auto-sync textarea before any form submit on this page ──── */
     document.addEventListener('submit', function() {
+        // Wenn User nicht in Quill editiert hat und gerade 'visual' aktiv ist,
+        // NICHT überschreiben — sonst wird Original-HTML zerstört.
+        if (activeTab === 'visual' && !quillDirty) return;
         document.getElementById(TA_ID).value = getHtml();
     }, true);
 

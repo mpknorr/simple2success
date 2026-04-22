@@ -6,7 +6,7 @@
  *   /usr/bin/php /path/to/cron/followup.php >> /path/to/cron/followup.log 2>&1
  *
  * Or call it via HTTP with a secret token:
- *   https://yoursite.com/cron/followup.php?token=YOURSECRETTOKEN
+ *   https://yoursite.com/cron/followup.php?token=CHANGE_ME_FOLLOWUP_TOKEN
  */
 
 // Security: allow CLI or HTTP call with a token

@@ -135,7 +135,7 @@ require_once "parts/navbar.php";
                             <div id="full-container">
                                 <label for="basicInput">* Email Template</label>
                                 <div class="editor">
-                                   <img src="https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" style="max-width:100%"><br><br>
+                                   <img src="https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" style="max-width:100%"><br><br>
     <h1>CONGRATULATIONS! You Have a New Personal Customer!</h1><br>
     <p><strong>Hey {lead_name},</strong><br><br>
     <em>"Success is not something that just happens." - George Halas</em><br><br>

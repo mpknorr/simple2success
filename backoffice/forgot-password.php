@@ -59,33 +59,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["email"])) {
             $fromName  = getFpSmtp($link, 'smtp_from_name') ?: 'Simple2Success';
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($email, $displayName);
-            $mail->Subject = 'Reset Your Simple2Success Password';
-            $mail->Body    = '<!DOCTYPE html>
-<html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
-  <tr><td align="center" style="padding:20px 0;">
-    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-      <tr><td style="background:#1a1a1a;padding:24px 40px;">
-        <h2 style="color:#cb2ebc;margin:0;">Simple2Success</h2>
-      </td></tr>
-      <tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.6;">
-        <h3 style="margin-top:0;">Password Reset Request</h3>
-        <p>Hi ' . htmlspecialchars($displayName) . ',</p>
-        <p>We received a request to reset your password. Click the button below to choose a new password. This link is valid for <strong>1 hour</strong>.</p>
-        <div style="text-align:center;margin:30px 0;">
-          <a href="' . $resetLink . '" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Reset My Password</a>
-        </div>
-        <p style="font-size:13px;color:#888;">If you did not request a password reset, you can safely ignore this email.</p>
-        <p style="font-size:12px;color:#aaa;word-break:break-all;">Or copy this link: ' . $resetLink . '</p>
-      </td></tr>
-      <tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">
-        Copyright &copy; ' . date('Y') . ' <a href="https://www.simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>
-      </td></tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>';
+
+            $tpl = mysqli_fetch_assoc(mysqli_query($link,
+                "SELECT subject, body FROM email_templates WHERE template_key = 'password_reset' LIMIT 1"));
+            $subject = $tpl['subject'] ?? 'Reset Your Simple2Success Password';
+            $body    = $tpl['body'] ?? '';
+            $body = str_replace(
+                ['{{name}}', '{{reset_link}}'],
+                [htmlspecialchars($displayName), $resetLink],
+                $body
+            );
+            $mail->Subject = $subject;
+            $mail->Body    = $body;
             $mail->send();
         } catch (Exception $e) {
             // Mail-Fehler still ignorieren — User sieht immer Erfolgsmeldung (Sicherheit)

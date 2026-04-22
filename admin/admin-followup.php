@@ -39,7 +39,7 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS followup_log (
 // Auto-insert default lead follow-up sequence if empty
 $seq_count = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM followup_sequences"))['c'];
 if ($seq_count == 0) {
-    $bannerUrl = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+    $bannerUrl = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
     $defaultDays = [1,2,3,4,5,7,10,13,16,19,23,27,30];
     $defaultSubjects = [
         1  => 'Welcome to Simple2Success — Your Journey Starts Now!',
@@ -141,7 +141,7 @@ if ($action === 'reset_log') {
 
 // ── SEED: Lead-Sequenz (Step 2 Conversion) ──────────────────────────────────
 if ($action === 'seed_lead_content') {
-    $banner = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+    $banner = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
     $ctaUrl = 'https://www.simple2success.com/backoffice/start.php';
     $ctaBtn = '<div style="text-align:center;margin:28px 0;"><a href="' . $ctaUrl . '" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">%s</a></div>';
     $footer = '<tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">Copyright &copy; 2025 <a href="https://www.simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>. All rights reserved.<br><small>You are receiving this email because you signed up at Simple2Success.</small></td></tr>';
@@ -355,7 +355,7 @@ if ($action === 'seed_lead_content') {
 
 // ── SEED: Member-Sequenz (Step 4 Conversion) ────────────────────────────────
 if ($action === 'seed_member_content') {
-    $banner  = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+    $banner  = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
     $ctaUrl  = 'https://www.simple2success.com/backoffice/start.php';
     $ctaBtn  = '<div style="text-align:center;margin:28px 0;"><a href="' . $ctaUrl . '" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">%s</a></div>';
     $footer  = '<tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">Copyright &copy; 2025 <a href="https://www.simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>. All rights reserved.<br><small>You are receiving this email because you are a Simple2Success member.</small></td></tr>';
@@ -498,9 +498,14 @@ if (isset($_GET['edit'])) {
     $edit_seq = mysqli_fetch_assoc(mysqli_query($link, "SELECT * FROM followup_sequences WHERE id=$eid"));
 }
 
-// Load all sequences
-$sequences_lead   = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
-$sequences_member = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
+// Load all sequences as arrays (needed for JS preview data + table loop)
+$_res_lead = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
+$_res_member = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
+$sequences_lead   = [];
+$sequences_member = [];
+$preview_data     = [];
+while ($r = mysqli_fetch_assoc($_res_lead))   { $sequences_lead[]   = $r; $preview_data[$r['id']] = ['subject' => $r['subject'], 'body' => $r['body']]; }
+while ($r = mysqli_fetch_assoc($_res_member)) { $sequences_member[] = $r; $preview_data[$r['id']] = ['subject' => $r['subject'], 'body' => $r['body']]; }
 
 // Stats
 $total_leads   = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM users WHERE (username IS NULL OR username = '')"))['c'];
@@ -527,7 +532,6 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
 <!DOCTYPE html>
 <html class="loading" lang="en">
 <?php require_once "parts/head.php"; ?>
-<link rel="stylesheet" href="../backoffice/app-assets/vendors/css/quill.snow.css">
 <body class="vertical-layout vertical-menu 2-columns navbar-static layout-dark" data-menu="vertical-menu" data-col="2-columns">
 <?php require_once "parts/navbar.php"; ?>
 
@@ -623,69 +627,111 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
 </div>
 
 <!-- A/B Test + Click Tracking Stats Row -->
-<div class="row px-2 mb-2">
-  <div class="col-12">
-    <div class="card" style="border-left:4px solid #ff9800;">
-      <div class="card-header py-2">
-        <h6 class="card-title m-0" style="color:#ff9800;"><i class="ft-bar-chart-2 mr-1"></i> A/B-Test &amp; Verhaltens-Tracking (neu)</h6>
-      </div>
-      <div class="card-body py-2">
-        <div class="row">
-          <div class="col-lg-3 col-sm-6 mb-2">
-            <div class="d-flex align-items-center">
-              <span style="font-size:22px;font-weight:bold;color:#cb2ebc;margin-right:8px;"><?= $ab_a_count ?></span>
-              <div><div style="font-size:12px;font-weight:600;">Variante A</div><div class="text-muted" style="font-size:11px;">Original-Betreff</div></div>
+<details class="mb-2 mx-2">
+  <summary style="cursor:pointer;color:#ff9800;font-weight:600;padding:6px 2px;list-style:none;outline:none;">
+    <i class="ft-bar-chart-2 mr-1"></i> A/B-Test &amp; Verhaltens-Tracking <span style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">▸ Details anzeigen</span>
+  </summary>
+  <div class="row mt-1">
+    <div class="col-12">
+      <div class="card" style="border-left:4px solid #ff9800;">
+        <div class="card-body py-2">
+          <div class="row">
+            <div class="col-lg-3 col-sm-6 mb-2">
+              <div class="d-flex align-items-center">
+                <span style="font-size:22px;font-weight:bold;color:#cb2ebc;margin-right:8px;"><?= $ab_a_count ?></span>
+                <div><div style="font-size:12px;font-weight:600;">Variante A</div><div class="text-muted" style="font-size:11px;">Original-Betreff</div></div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 mb-2">
+              <div class="d-flex align-items-center">
+                <span style="font-size:22px;font-weight:bold;color:#1877F2;margin-right:8px;"><?= $ab_b_count ?></span>
+                <div><div style="font-size:12px;font-weight:600;">Variante B</div><div class="text-muted" style="font-size:11px;">Curiosity-Gap-Betreff</div></div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 mb-2">
+              <div class="d-flex align-items-center">
+                <span style="font-size:22px;font-weight:bold;color:#25D366;margin-right:8px;"><?= $click_count ?></span>
+                <div><div style="font-size:12px;font-weight:600;">Link-Klicks</div><div class="text-muted" style="font-size:11px;">Getrackte E-Mail-Klicks</div></div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 mb-2">
+              <div class="d-flex align-items-center">
+                <span style="font-size:22px;font-weight:bold;color:#ff9800;margin-right:8px;"><?= $trigger_count ?></span>
+                <div><div style="font-size:12px;font-weight:600;">Trigger-E-Mails</div><div class="text-muted" style="font-size:11px;">Verhaltensbasiert gesendet</div></div>
+              </div>
             </div>
           </div>
-          <div class="col-lg-3 col-sm-6 mb-2">
-            <div class="d-flex align-items-center">
-              <span style="font-size:22px;font-weight:bold;color:#1877F2;margin-right:8px;"><?= $ab_b_count ?></span>
-              <div><div style="font-size:12px;font-weight:600;">Variante B</div><div class="text-muted" style="font-size:11px;">Curiosity-Gap-Betreff</div></div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-sm-6 mb-2">
-            <div class="d-flex align-items-center">
-              <span style="font-size:22px;font-weight:bold;color:#25D366;margin-right:8px;"><?= $click_count ?></span>
-              <div><div style="font-size:12px;font-weight:600;">Link-Klicks</div><div class="text-muted" style="font-size:11px;">Getrackte E-Mail-Klicks</div></div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-sm-6 mb-2">
-            <div class="d-flex align-items-center">
-              <span style="font-size:22px;font-weight:bold;color:#ff9800;margin-right:8px;"><?= $trigger_count ?></span>
-              <div><div style="font-size:12px;font-weight:600;">Trigger-E-Mails</div><div class="text-muted" style="font-size:11px;">Verhaltensbasiert gesendet</div></div>
-            </div>
-          </div>
+          <p class="text-muted mb-0" style="font-size:11px;">A/B-Test läuft automatisch (50/50 Split). Trigger-E-Mails werden durch Klick-Verhalten ausgelöst. Klick-Tracking ist in allen neuen Follow-up-E-Mails aktiv.</p>
         </div>
-        <p class="text-muted mb-0" style="font-size:11px;">A/B-Test läuft automatisch (50/50 Split). Trigger-E-Mails werden durch Klick-Verhalten ausgelöst. Klick-Tracking ist in allen neuen Follow-up-E-Mails aktiv.</p>
       </div>
     </div>
   </div>
-</div>
+</details>
+
+<style>
+.followup-table { margin-bottom: 0; }
+.followup-table thead th {
+  padding: .45rem .6rem;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.55);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.followup-table tbody td {
+  padding: .45rem .6rem;
+  vertical-align: middle;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+.followup-table tbody tr:hover { background: rgba(255,255,255,.02); }
+.followup-table .btn-xs {
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+.followup-table .actions-cell { white-space: nowrap; text-align: right; }
+.followup-table .actions-cell .btn-xs + form { margin-left: 4px; }
+.followup-table .col-day { width: 70px; }
+.followup-table .col-sent,
+.followup-table .col-status { width: 90px; text-align: center; }
+.followup-table .col-actions { width: 215px; text-align: right; white-space: nowrap; }
+.followup-table .col-subject {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+</style>
 
 <!-- Lead Sequences -->
 <div class="row px-2 mb-2">
   <div class="col-12">
     <div class="card">
-      <div class="card-header">
-        <h5 class="card-title m-0"><i class="ft-mail mr-1" style="color:#cb2ebc;"></i> Lead-Sequenz &mdash; Step-2-Conversion (<?= mysqli_num_rows($sequences_lead) ?> E-Mails)</h5>
-        <small class="text-muted">Gesendet an: Nutzer ohne Step 2 (username leer)</small>
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+          <h5 class="card-title m-0"><i class="ft-mail mr-1" style="color:#cb2ebc;"></i> Lead-Sequenz &mdash; Step-2-Conversion</h5>
+          <small class="text-muted"><?= count($sequences_lead) ?> E-Mails &middot; Empfänger: Nutzer ohne Step 2</small>
+        </div>
       </div>
       <div class="card-body p-0">
-        <table class="table table-sm mb-0">
+        <div class="table-responsive">
+        <table id="followup-lead-datatable" class="table followup-table">
           <thead><tr>
-            <th style="width:60px;">Tag</th>
+            <th class="col-day">Tag</th>
             <th>Betreff</th>
-            <th style="width:80px;">Gesendet</th>
-            <th style="width:80px;">Status</th>
-            <th style="width:160px;">Aktionen</th>
+            <th class="col-sent">Gesendet</th>
+            <th class="col-status">Status</th>
+            <th class="col-actions">Aktionen</th>
           </tr></thead>
           <tbody>
-          <?php while ($seq = mysqli_fetch_assoc($sequences_lead)): ?>
+          <?php foreach ($sequences_lead as $seq): ?>
           <tr>
             <td><span class="badge badge-secondary">Tag <?= $seq['day_offset'] ?></span></td>
-            <td style="font-size:13px;"><?= htmlspecialchars($seq['subject']) ?></td>
-            <td><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
-            <td>
+            <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
+            <td class="text-center"><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
+            <td class="text-center">
               <form method="POST" style="display:inline;">
                 <input type="hidden" name="action" value="toggle_active">
                 <input type="hidden" name="tog_id" value="<?= $seq['id'] ?>">
@@ -695,18 +741,20 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 </button>
               </form>
             </td>
-            <td>
-              <a href="admin-followup.php?edit=<?= $seq['id'] ?>" class="btn btn-xs btn-outline-primary mr-1">Bearbeiten</a>
-              <form method="POST" style="display:inline;" onsubmit="return confirm('E-Mail löschen?');">
+            <td class="actions-cell">
+              <button type="button" class="btn btn-xs btn-outline-secondary" title="Vorschau" onclick="showFollowupPreview(<?= $seq['id'] ?>)"><i class="ft-eye"></i></button>
+              <a href="admin-followup.php?edit=<?= $seq['id'] ?>" class="btn btn-xs btn-outline-primary" title="Bearbeiten"><i class="ft-edit-2"></i> Bearbeiten</a>
+              <form method="POST" style="display:inline;margin-left:2px;" onsubmit="return confirm('E-Mail löschen?');">
                 <input type="hidden" name="action" value="delete_sequence">
                 <input type="hidden" name="del_id" value="<?= $seq['id'] ?>">
-                <button type="submit" class="btn btn-xs btn-outline-danger">Löschen</button>
+                <button type="submit" class="btn btn-xs btn-outline-danger" title="Löschen"><i class="ft-trash-2"></i></button>
               </form>
             </td>
           </tr>
-          <?php endwhile; ?>
+          <?php endforeach; ?>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   </div>
@@ -716,31 +764,34 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
 <div class="row px-2 mb-2">
   <div class="col-12">
     <div class="card">
-      <div class="card-header">
-        <h5 class="card-title m-0"><i class="ft-star mr-1" style="color:#1877F2;"></i> Member-Sequenz &mdash; Step-4-Conversion (<?= mysqli_num_rows($sequences_member) ?> E-Mails)</h5>
-        <small class="text-muted">Gesendet an: Nutzer mit Step 2 (username gesetzt) &mdash; Ziel: Step 4 Aktivierung</small>
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+          <h5 class="card-title m-0"><i class="ft-star mr-1" style="color:#1877F2;"></i> Member-Sequenz &mdash; Step-4-Conversion</h5>
+          <small class="text-muted"><?= count($sequences_member) ?> E-Mails &middot; Empfänger: Nutzer mit Step 2 &mdash; Ziel: Step 4</small>
+        </div>
       </div>
       <div class="card-body p-0">
-        <?php if (mysqli_num_rows($sequences_member) === 0): ?>
+        <?php if (count($sequences_member) === 0): ?>
         <div class="p-3 text-muted">
           Noch keine Member-Sequenz vorhanden. Klicke oben auf <strong>"Member-Sequenz erstellen (Step 4)"</strong> um die optimierte Step-4-Conversion-Sequenz zu aktivieren.
         </div>
         <?php else: ?>
-        <table class="table table-sm mb-0">
+        <div class="table-responsive">
+        <table id="followup-member-datatable" class="table followup-table">
           <thead><tr>
-            <th style="width:60px;">Tag</th>
+            <th class="col-day">Tag</th>
             <th>Betreff</th>
-            <th style="width:80px;">Gesendet</th>
-            <th style="width:80px;">Status</th>
-            <th style="width:160px;">Aktionen</th>
+            <th class="col-sent">Gesendet</th>
+            <th class="col-status">Status</th>
+            <th class="col-actions">Aktionen</th>
           </tr></thead>
           <tbody>
-          <?php while ($seq = mysqli_fetch_assoc($sequences_member)): ?>
+          <?php foreach ($sequences_member as $seq): ?>
           <tr>
             <td><span class="badge badge-primary">Tag <?= $seq['day_offset'] ?></span></td>
-            <td style="font-size:13px;"><?= htmlspecialchars($seq['subject']) ?></td>
-            <td><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
-            <td>
+            <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
+            <td class="text-center"><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
+            <td class="text-center">
               <form method="POST" style="display:inline;">
                 <input type="hidden" name="action" value="toggle_active">
                 <input type="hidden" name="tog_id" value="<?= $seq['id'] ?>">
@@ -750,18 +801,20 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 </button>
               </form>
             </td>
-            <td>
-              <a href="admin-followup.php?edit=<?= $seq['id'] ?>" class="btn btn-xs btn-outline-primary mr-1">Bearbeiten</a>
-              <form method="POST" style="display:inline;" onsubmit="return confirm('E-Mail löschen?');">
+            <td class="actions-cell">
+              <button type="button" class="btn btn-xs btn-outline-secondary" title="Vorschau" onclick="showFollowupPreview(<?= $seq['id'] ?>)"><i class="ft-eye"></i></button>
+              <a href="admin-followup.php?edit=<?= $seq['id'] ?>" class="btn btn-xs btn-outline-primary" title="Bearbeiten"><i class="ft-edit-2"></i> Bearbeiten</a>
+              <form method="POST" style="display:inline;margin-left:2px;" onsubmit="return confirm('E-Mail löschen?');">
                 <input type="hidden" name="action" value="delete_sequence">
                 <input type="hidden" name="del_id" value="<?= $seq['id'] ?>">
-                <button type="submit" class="btn btn-xs btn-outline-danger">Löschen</button>
+                <button type="submit" class="btn btn-xs btn-outline-danger" title="Löschen"><i class="ft-trash-2"></i></button>
               </form>
             </td>
           </tr>
-          <?php endwhile; ?>
+          <?php endforeach; ?>
           </tbody>
         </table>
+        </div>
         <?php endif; ?>
       </div>
     </div>
@@ -796,8 +849,19 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <input type="text" name="subject" class="form-control" value="<?= htmlspecialchars($edit_seq['subject']) ?>">
           </div>
           <div class="form-group">
-            <label>E-Mail-Body (HTML)</label>
-            <textarea name="body" class="form-control" rows="20" style="font-family:monospace;font-size:12px;"><?= htmlspecialchars($edit_seq['body']) ?></textarea>
+            <label>E-Mail-Body</label>
+            <?php
+            $editorCfg = [
+                'textarea_name' => 'body',
+                'textarea_id'   => 'bodyEditTa',
+                'quill_id'      => 'bodyEditQuill',
+                'preview_id'    => 'bodyEditPreview',
+                'height'        => '500px',
+                'initial_html'  => $edit_seq['body'],
+                'instance_key'  => 'edit',
+            ];
+            require_once "parts/editor-quill.php";
+            ?>
           </div>
           <div class="form-group">
             <label class="d-flex align-items-center">
@@ -806,11 +870,11 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           </div>
           <button type="submit" class="btn btn-primary">Speichern</button>
           <a href="admin-followup.php" class="btn btn-secondary ml-2">Abbrechen</a>
-          <form method="POST" style="display:inline;margin-left:8px;" onsubmit="return confirm('Versandprotokoll zurücksetzen?');">
-            <input type="hidden" name="action" value="reset_log">
-            <input type="hidden" name="reset_id" value="<?= $edit_seq['id'] ?>">
-            <button type="submit" class="btn btn-outline-warning btn-sm">Versandlog zurücksetzen</button>
-          </form>
+        </form>
+        <form method="POST" style="display:inline;margin-left:8px;" onsubmit="return confirm('Versandprotokoll zurücksetzen?');">
+          <input type="hidden" name="action" value="reset_log">
+          <input type="hidden" name="reset_id" value="<?= $edit_seq['id'] ?>">
+          <button type="submit" class="btn btn-outline-warning btn-sm">Versandlog zurücksetzen</button>
         </form>
       </div>
     </div>
@@ -847,8 +911,19 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             </div>
           </div>
           <div class="form-group">
-            <label>E-Mail-Body (HTML)</label>
-            <textarea name="body" class="form-control" rows="10" style="font-family:monospace;font-size:12px;" placeholder="HTML-Body der E-Mail..."></textarea>
+            <label>E-Mail-Body</label>
+            <?php
+            $editorCfg = [
+                'textarea_name' => 'body',
+                'textarea_id'   => 'bodyNewTa',
+                'quill_id'      => 'bodyNewQuill',
+                'preview_id'    => 'bodyNewPreview',
+                'height'        => '380px',
+                'initial_html'  => '',
+                'instance_key'  => 'new',
+            ];
+            require_once "parts/editor-quill.php";
+            ?>
           </div>
           <div class="form-group">
             <label class="d-flex align-items-center">
@@ -864,6 +939,73 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
 
 </div></div></div></div>
 
-<?php require_once "parts/footer.php"; ?>
+<!-- Followup Preview Modal -->
+<div id="followupPreviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <div style="background:#1a1a2e;border-radius:8px;width:92%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #333;background:#111;flex-shrink:0;">
+      <strong style="color:#fff;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:560px;"><i class="ft-eye" style="color:#cb2ebc;margin-right:6px;"></i><span id="fpModalTitle"></span></strong>
+      <button onclick="closeFollowupPreview()" style="background:none;border:none;color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0 4px;flex-shrink:0;">&times;</button>
+    </div>
+    <div style="flex:1;overflow:auto;">
+      <iframe id="fpModalFrame" style="width:100%;height:560px;border:none;display:block;" frameborder="0"></iframe>
+    </div>
+  </div>
+</div>
+
+<?php require_once "../backoffice/parts/footer.php"; ?>
+<button class="btn btn-primary scroll-top" type="button"><i class="ft-arrow-up"></i></button>
+
+<div class="sidenav-overlay"></div>
+<div class="drag-target"></div>
+<script src="../backoffice/app-assets/vendors/js/vendors.min.js"></script>
+<script src="../backoffice/app-assets/vendors/js/datatable/jquery.dataTables.min.js"></script>
+<script src="../backoffice/app-assets/vendors/js/datatable/dataTables.bootstrap4.min.js"></script>
+<script src="../backoffice/app-assets/js/core/app-menu.js"></script>
+<script src="../backoffice/app-assets/js/core/app.js"></script>
+<script src="../backoffice/app-assets/js/notification-sidebar.js"></script>
+<script src="../backoffice/app-assets/js/scroll-top.js"></script>
+<script src="../backoffice/assets/js/scripts.js"></script>
+
+<script>
+var fpData = <?= json_encode($preview_data) ?>;
+var fpLocalBanner = '<?= htmlspecialchars($baseurl) ?>/backoffice/app-assets/img/banner/newleademailheader.jpg';
+var fpProdBanner  = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+
+function showFollowupPreview(id) {
+    var d = fpData[id];
+    if (!d) return;
+    document.getElementById('fpModalTitle').textContent = d.subject;
+    var html = d.body.replace(new RegExp(fpProdBanner.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g'), fpLocalBanner);
+    html = html.replace(/\{\{name\}\}/g, 'Max Mustermann')
+               .replace(/\{\{email\}\}/g, 'max@beispiel.de')
+               .replace(/\{\{username\}\}/g, 'maxmustermann');
+    document.getElementById('fpModalFrame').srcdoc = html;
+    var m = document.getElementById('followupPreviewModal');
+    m.style.display = 'flex';
+    document.addEventListener('keydown', fpEscClose);
+}
+function closeFollowupPreview() {
+    document.getElementById('followupPreviewModal').style.display = 'none';
+    document.getElementById('fpModalFrame').srcdoc = '';
+    document.removeEventListener('keydown', fpEscClose);
+}
+function fpEscClose(e) { if (e.key === 'Escape') closeFollowupPreview(); }
+document.getElementById('followupPreviewModal').addEventListener('click', function(e) {
+    if (e.target === this) closeFollowupPreview();
+});
+
+// DataTables für beide Followup-Tabellen (Sort an Headern, Actions-Spalte nicht sortierbar)
+jQuery(function($) {
+    var dtOpts = {
+        paging: false,
+        searching: false,
+        info: false,
+        order: [[0, 'asc']],
+        columnDefs: [{ orderable: false, targets: [-1, 3] }]
+    };
+    if ($('#followup-lead-datatable').length)   $('#followup-lead-datatable').DataTable(dtOpts);
+    if ($('#followup-member-datatable').length) $('#followup-member-datatable').DataTable(dtOpts);
+});
+</script>
 </body>
 </html>

@@ -213,10 +213,23 @@ $pages = [
                             </button>
                         </form>
                         <hr>
-                        <p class="text-muted font-small-3">
-                            <strong>Cron:</strong><br>
-                            <code>0 20 * * * curl "<?= $baseurl ?>/cron/daily_leads.php?token=CHANGE_ME_DAILY_TOKEN"</code>
-                        </p>
+                        <div class="font-small-3">
+                            <strong>Cronjobs (auf dem Produktiv-Server einrichten):</strong>
+                            <ol class="pl-3 mt-2 mb-0" style="list-style:decimal;">
+                                <li class="mb-2">
+                                    <strong>Follow-UP Daily Leads</strong> &mdash; tägliche Sponsor-Benachrichtigung um 20:00<br>
+                                    <code style="display:block;padding:4px 6px;background:rgba(0,0,0,.2);border-radius:3px;word-break:break-all;">0 20 * * * curl "<?= $baseurl ?>/cron/daily_leads.php?token=CHANGE_ME_DAILY_TOKEN"</code>
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Follow-UP Leads-Sequenz</strong> &mdash; Step-2-Conversion (alle 15 Min.)<br>
+                                    <code style="display:block;padding:4px 6px;background:rgba(0,0,0,.2);border-radius:3px;word-break:break-all;">*/15 * * * * curl "<?= $baseurl ?>/cron/followup.php?token=CHANGE_ME_FOLLOWUP_TOKEN"</code>
+                                </li>
+                                <li class="mb-0">
+                                    <strong>Follow-UP Member-Sequenz</strong> &mdash; Step-4-Conversion<br>
+                                    <small class="text-muted">Wird vom selben <code>followup.php</code>-Endpoint mitverarbeitet (Target=member). Kein separater Cron nötig.</small>
+                                </li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
             </div>

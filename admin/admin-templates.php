@@ -27,7 +27,7 @@ $error = '';
 
 // Default HTML templates mit Banner + Footer
 // Banner-URL MUSS absolut (Production) sein — localhost funktioniert in E-Mail-Clients nicht!
-$bannerUrl = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+$bannerUrl = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
 $siteUrl   = 'https://www.simple2success.com';
 
 $defaultTemplates = [
@@ -41,7 +41,7 @@ $defaultTemplates = [
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
   <tr><td align="center" style="padding:20px 0;">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-      <tr><td><img src="https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
+      <tr><td><img src="https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
       <tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.6;">
         <h2 style="color:#cb2ebc;margin-top:0;">Screech-Screech! You Have New Leads!</h2>
         <p>We couldn\'t contain our excitement — congratulations on gathering a flock of new leads! Let us spread our wings and celebrate with you.</p>
@@ -75,7 +75,7 @@ $defaultTemplates = [
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
   <tr><td align="center" style="padding:20px 0;">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-      <tr><td><img src="https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
+      <tr><td><img src="https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
       <tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.6;">
         <h2 style="color:#cb2ebc;margin-top:0;">You Have a New Partner!</h2>
         <p>Hi {{name}},</p>
@@ -108,7 +108,7 @@ $defaultTemplates = [
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
   <tr><td align="center" style="padding:20px 0;">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-      <tr><td><img src="https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
+      <tr><td><img src="https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
       <tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.6;">
         <h2 style="color:#cb2ebc;margin-top:0;">You Have a New Paying Customer!</h2>
         <p>Hi {{name}},</p>
@@ -131,6 +131,36 @@ $defaultTemplates = [
 </body>
 </html>',
     ],
+    'password_reset' => [
+        'name'    => 'Passwort zurücksetzen',
+        'subject' => 'Reset Your Simple2Success Password',
+        'body' => '<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+  <tr><td align="center" style="padding:20px 0;">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <tr><td><img src="https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
+      <tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.6;">
+        <h2 style="color:#cb2ebc;margin-top:0;">Password Reset Request</h2>
+        <p>Hi {{name}},</p>
+        <p>We received a request to reset your password. Click the button below to choose a new password. This link is valid for <strong>1 hour</strong>.</p>
+        <div style="text-align:center;margin:28px 0;">
+          <a href="{{reset_link}}" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Reset My Password</a>
+        </div>
+        <p style="font-size:13px;color:#888;">If you did not request a password reset, you can safely ignore this email.</p>
+        <p style="font-size:12px;color:#aaa;word-break:break-all;">Or copy this link: {{reset_link}}</p>
+      </td></tr>
+      <tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">
+        Copyright &copy; 2024 <a href="https://www.simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>. All rights reserved.
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>',
+    ],
     'welcome_user' => [
         'name'    => 'Welcome E-Mail (Neuer User)',
         'subject' => 'Welcome to Simple2Success — Your Login Details',
@@ -141,7 +171,7 @@ $defaultTemplates = [
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
   <tr><td align="center" style="padding:20px 0;">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-      <tr><td><img src="https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
+      <tr><td><img src="https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>
       <tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.6;">
         <h2 style="color:#cb2ebc;margin-top:0;">Welcome to Simple2Success!</h2>
         <p>Hi {{name}},</p>
@@ -441,7 +471,7 @@ if (!$active && !empty($tpl_list)) { $active = $tpl_list[0]; $active_id = (int)$
                                         <?php
                                         $preview = $active['body'];
                                         // Banner-URL für lokale Vorschau auf $baseurl umbiegen
-                                        $preview = str_replace('https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg', $baseurl . '/backoffice/app-assets/img/banner/newleademailheader.jpg', $preview);
+                                        $preview = str_replace('https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg', $baseurl . '/backoffice/app-assets/img/banner/newleademailheader.jpg', $preview);
                                         $preview = str_replace('{{leads}}', '<ul style="padding-left:20px;"><li>max.mustermann@example.com</li><li>anna.beispiel@example.com</li></ul>', $preview);
                                         $preview = str_replace('{{customer_email}}', 'max.mustermann@example.com', $preview);
                                         $preview = str_replace('{{name}}', 'Max Mustermann', $preview);
@@ -497,27 +527,29 @@ if (!$active && !empty($tpl_list)) { $active = $tpl_list[0]; $active_id = (int)$
 
 <script>
 var bannerUrlPreview = '<?= htmlspecialchars($baseurl) ?>/backoffice/app-assets/img/banner/newleademailheader.jpg';
-var BANNER_PROD = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+var BANNER_PROD = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
 
 function delocalizeHtml(html) {
     var escaped = bannerUrlPreview.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return html.replace(new RegExp(escaped, 'g'), BANNER_PROD);
 }
+function applyEditMode(frame, hintEl) {
+    try {
+        var doc = frame.contentDocument;
+        if (!doc) return;
+        var old = doc.getElementById('edit-mode-style');
+        if (old) old.parentNode.removeChild(old);
+        var style = doc.createElement('style');
+        style.id = 'edit-mode-style';
+        style.textContent = 'body{outline:2px solid #3a7abf!important;outline-offset:-2px;cursor:text;}';
+        if (doc.head) doc.head.appendChild(style);
+        doc.designMode = 'on';
+    } catch(e) {}
+    if (hintEl) hintEl.style.display = 'block';
+}
 function enablePreviewEditing(frame, hintEl) {
-    frame.onload = function() {
-        try {
-            var doc = frame.contentDocument;
-            if (!doc) return;
-            var old = doc.getElementById('edit-mode-style');
-            if (old) old.parentNode.removeChild(old);
-            var style = doc.createElement('style');
-            style.id = 'edit-mode-style';
-            style.textContent = 'body{outline:2px solid #3a7abf!important;outline-offset:-2px;cursor:text;}';
-            if (doc.head) doc.head.appendChild(style);
-            doc.designMode = 'on';
-        } catch(e) {}
-        if (hintEl) hintEl.style.display = 'block';
-    };
+    // Must be set BEFORE assigning srcdoc (caller ordering)
+    frame.onload = function() { applyEditMode(frame, hintEl); };
 }
 function syncIframeToTextarea(frame, textarea) {
     try {
@@ -525,11 +557,14 @@ function syncIframeToTextarea(frame, textarea) {
         if (!doc || doc.designMode !== 'on') return;
         var s = doc.getElementById('edit-mode-style');
         if (s) s.parentNode.removeChild(s);
-        textarea.value = delocalizeHtml(doc.documentElement.outerHTML);
+        // Only body.innerHTML — outerHTML would re-wrap the next render
+        var bodyHtml = doc.body ? doc.body.innerHTML : '';
+        textarea.value = delocalizeHtml(bodyHtml);
     } catch(e) {}
 }
 function localizeAndReplace(html) {
     html = html.replace(/https:\/\/www\.simple2success\.com\/backoffice\/app-assets\/img\/banner\/newleademailheader\.jpg/g, bannerUrlPreview);
+    html = html.replace(/https:\/\/simple2success\.com\/backoffice\/app-assets\/img\/banner\/newleademailheader\.jpg/g, bannerUrlPreview);
     html = html.replace(/\{\{leads\}\}/g, '<ul style="padding-left:20px;"><li>max.mustermann@example.com</li><li>anna.beispiel@example.com</li></ul>');
     html = html.replace(/\{\{customer_email\}\}/g, 'max.mustermann@example.com');
     html = html.replace(/\{\{name\}\}/g, 'Max Mustermann');
@@ -546,6 +581,7 @@ var bodyEditor   = document.getElementById('bodyEditor');
 var previewFrame = document.getElementById('previewFrame');
 var previewHint  = document.getElementById('tplPreviewEditHint');
 
+var tplQuillDirty = false;
 if (document.getElementById('tplQuillEditor')) {
     tplQuill = new Quill('#tplQuillEditor', {
         theme: 'snow',
@@ -566,15 +602,21 @@ if (document.getElementById('tplQuillEditor')) {
     if (bodyEditor && bodyEditor.value.trim()) {
         tplQuill.clipboard.dangerouslyPasteHTML(bodyEditor.value);
     }
+    // Dirty flag: only sync Quill → textarea nach echter User-Eingabe
+    // (Quill strippt <html>/<body>/<style> — wir dürfen Original-HTML nicht zerstören)
+    tplQuill.on('text-change', function(_, __, source) {
+        if (source === 'user') tplQuillDirty = true;
+    });
 }
 
 // ── Visual / Source sub-tab switcher ─────────────────────────
 window.tplSubSwitch = function(tab) {
     if (tab === tplSubActive) return;
-    if (tplSubActive === 'visual' && tplQuill) {
+    if (tplSubActive === 'visual' && tplQuill && tplQuillDirty) {
         bodyEditor.value = tplQuill.root.innerHTML;
     } else if (tplSubActive === 'source' && tplQuill) {
         tplQuill.clipboard.dangerouslyPasteHTML(bodyEditor.value);
+        tplQuillDirty = false;
     }
     document.getElementById('tplQuillWrap').style.display  = tab === 'visual' ? '' : 'none';
     document.getElementById('tplSourceWrap').style.display = tab === 'source' ? '' : 'none';
@@ -586,7 +628,7 @@ window.tplSubSwitch = function(tab) {
 // ── Sync Quill → textarea before any form submit ─────────────
 document.querySelectorAll('form').forEach(function(f) {
     f.addEventListener('submit', function() {
-        if (tplQuill && tplSubActive === 'visual') {
+        if (tplQuill && tplSubActive === 'visual' && tplQuillDirty) {
             bodyEditor.value = tplQuill.root.innerHTML;
         }
     });
@@ -594,8 +636,11 @@ document.querySelectorAll('form').forEach(function(f) {
 
 // ── Bootstrap tab events — Vorschau ──────────────────────────
 $('a[href="#tab-preview"]').on('shown.bs.tab', function() {
-    if (tplQuill && tplSubActive === 'visual') bodyEditor.value = tplQuill.root.innerHTML;
+    if (tplQuill && tplSubActive === 'visual' && tplQuillDirty) {
+        bodyEditor.value = tplQuill.root.innerHTML;
+    }
     var html = bodyEditor ? localizeAndReplace(bodyEditor.value) : '';
+    // onload handler MUST be set before srcdoc assignment
     enablePreviewEditing(previewFrame, previewHint);
     previewFrame.srcdoc = html;
 });

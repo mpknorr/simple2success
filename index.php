@@ -14,7 +14,9 @@ function getHomepageSetting($link, $key) {
 
 // Create Router instance
 $router = new \Bramus\Router\Router();
-$router->setBasePath('/simple2success');
+// Derive basePath from $baseurl so lokaler MAMP (/simple2success) und Produktiv-Domain (/) beide funktionieren
+$basePath = parse_url($baseurl, PHP_URL_PATH) ?: '';
+$router->setBasePath(rtrim($basePath, '/'));
 
 // Define routes
 // ...

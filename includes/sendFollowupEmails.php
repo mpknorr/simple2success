@@ -170,7 +170,7 @@ function buildEmailHtml($banner, $content, $ctaUrl, $ctaLabel, $footerText = '')
  */
 function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
     $sent = 0; $errors = [];
-    $banner = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+    $banner = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
     $ctaUrl = rtrim($base_url, '/') . '/backoffice/start.php';
 
     $sql = "SELECT DISTINCT u.leadid, u.name, u.email, u.lang
@@ -240,7 +240,7 @@ function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
  */
 function sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url) {
     $sent = 0; $errors = [];
-    $banner = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+    $banner = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
     $ctaUrl = rtrim($base_url, '/') . '/backoffice/start.php';
 
     $sql = "SELECT u.leadid, u.name, u.email, u.lang

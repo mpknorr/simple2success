@@ -1,5 +1,7 @@
 RewriteEngine On
-RewriteBase /simple2success/
+# RewriteBase wird bewusst nicht gesetzt — Apache nutzt dann die Request-URI.
+# Lokal (MAMP: /simple2success/) und auf Produktiv-Domain (/) funktioniert gleich.
+# Falls auf dem Server Probleme auftreten: RewriteBase / setzen.
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . index.php [L]

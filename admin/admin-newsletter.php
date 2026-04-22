@@ -40,7 +40,7 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS newsletter_templates (
 // Auto-insert default template if none exist
 $tpl_count = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) AS c FROM newsletter_templates"))['c'];
 if ($tpl_count == 0) {
-    $bannerUrl  = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+    $bannerUrl  = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
     $siteUrl    = 'https://www.simple2success.com';
     $defaultBody = '<!DOCTYPE html>
 <html>
@@ -580,13 +580,18 @@ $bannerUrlPreview = $baseurl . '/backoffice/app-assets/img/banner/newleademailhe
 
 <script>
 var bannerUrlPreview = <?= json_encode($bannerUrlPreview) ?>;
-var BANNER_PROD = 'https://www.simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+var BANNER_PROD = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
 
 function localizeHtml(html) {
-    return html.replace(
+    html = html.replace(
         /https:\/\/www\.simple2success\.com\/backoffice\/app-assets\/img\/banner\/newleademailheader\.jpg/g,
         bannerUrlPreview
     );
+    html = html.replace(
+        /https:\/\/simple2success\.com\/backoffice\/app-assets\/img\/banner\/newleademailheader\.jpg/g,
+        bannerUrlPreview
+    );
+    return html;
 }
 
 // ── Editable Preview Helpers ────────────────────────────────────────────────
@@ -620,7 +625,8 @@ function syncIframeToTextarea(frame, textarea) {
         if (!doc || doc.designMode !== 'on') return;
         var s = doc.getElementById('edit-mode-style');
         if (s) s.parentNode.removeChild(s);
-        textarea.value = delocalizeHtml(doc.documentElement.outerHTML);
+        var bodyHtml = doc.body ? doc.body.innerHTML : '';
+        textarea.value = delocalizeHtml(bodyHtml);
     } catch(e) { console.warn('syncIframeToTextarea failed:', e); }
 }
 
