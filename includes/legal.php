@@ -97,6 +97,42 @@ function legalEnsureTable($link) {
         }
     }
 
+    // ── Migration v2: Income Disclaimer (footer_snippet intentionally preserved) ─
+    $idHtml = '<h2>Income Disclaimer</h2>'
+        . '<p><em>Last updated: April 1, 2026</em></p>'
+        . '<p><strong>IMPORTANT EARNINGS DISCLAIMER</strong></p>'
+        . '<p>Simple2Success is a software and marketing tool platform. It is <strong>NOT</strong> a business opportunity '
+        . 'and does <strong>NOT</strong> generate income by itself.</p>'
+        . '<p>This is not a get-rich-quick program, and we do not believe in overnight success. We believe in hard work, '
+        . 'integrity, and developing your skills if you want to achieve financial success.</p>'
+        . '<p>As required by law, we cannot and do not make any guarantees about your ability to get results or earn any '
+        . 'money with any of our products or services. Results will vary significantly and depend on many factors, '
+        . 'including but not limited to:</p>'
+        . '<ul>'
+        . '<li>Your prior experience and background</li>'
+        . '<li>Your work ethic and time investment</li>'
+        . '<li>The market conditions in your country</li>'
+        . '<li>Your personal network and marketing skills</li>'
+        . '<li>The specific partner program you are associated with</li>'
+        . '</ul>'
+        . '<p>All business activities entail risk as well as consistent effort and action. If you are not willing to '
+        . 'accept that, please do not sign up for our program.</p>'
+        . '<p>Any income figures, testimonials, or results mentioned in our marketing materials represent exceptional, '
+        . 'not typical, results. The majority of participants earn little to no income. You should not expect to achieve '
+        . 'similar results.</p>'
+        . '<p>This disclaimer is provided in compliance with the guidelines of the U.S. Federal Trade Commission (FTC) '
+        . 'on income claims (16 C.F.R. Part 255) and equivalent consumer protection regulations in other jurisdictions.</p>'
+        . '<p>For questions, contact: <a href="mailto:info@simple2success.com">info@simple2success.com</a></p>';
+
+    $idEsc = mysqli_real_escape_string($link, $idHtml);
+    // footer_snippet is intentionally NOT updated — it is managed separately in the admin
+    mysqli_query($link,
+        "UPDATE legal_documents
+         SET content_html='$idEsc', title='Income Disclaimer', version_number=2, updated_at=NOW()
+         WHERE slug='income-disclaimer' AND language_code='en' AND market_code='global'
+           AND version_number < 2"
+    );
+
     // ── Migration v2: Full Terms of Use ──────────────────────────────────────
     $touHtml = '<h2>Terms of Use</h2>'
         . '<p><em>Last updated: April 22, 2026</em></p>'
