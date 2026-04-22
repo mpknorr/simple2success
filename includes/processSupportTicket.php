@@ -88,6 +88,52 @@ function getSmtpSetting($link, $key) {
     return $r ? $r['setting_value'] : '';
 }
 
+// Ensure email_templates table exists and seed support_ticket template if missing
+mysqli_query($link, "CREATE TABLE IF NOT EXISTS email_templates (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    name         VARCHAR(100) NOT NULL DEFAULT '',
+    template_key VARCHAR(100) NOT NULL UNIQUE,
+    subject      VARCHAR(255) NOT NULL DEFAULT '',
+    body         LONGTEXT NOT NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)");
+
+$defaultSupportSubj = mysqli_real_escape_string($link, 'Support Ticket #{{ticket_id}} — Lead #{{lead_id}}');
+$defaultSupportBody = mysqli_real_escape_string($link,
+    '<h2 style="font-family:sans-serif;">Support Ticket #{{ticket_id}}</h2>'
+    . '<table cellpadding="6" style="border-collapse:collapse;font-family:sans-serif;">'
+    . '<tr><td><strong>Lead ID:</strong></td><td>#{{lead_id}}</td></tr>'
+    . '<tr><td><strong>Name:</strong></td><td>{{fname}} {{lname}}</td></tr>'
+    . '<tr><td><strong>E-Mail:</strong></td><td>{{email}}</td></tr>'
+    . '<tr><td><strong>Telefon:</strong></td><td>{{phone}}</td></tr>'
+    . '</table>'
+    . '<h3 style="margin-top:16px;font-family:sans-serif;">Nachricht:</h3>'
+    . '<p style="background:#f5f5f5;padding:12px;border-radius:4px;font-family:sans-serif;">{{message}}</p>'
+    . '{{attachment_note}}'
+);
+mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
+    VALUES ('Support Ticket (Admin)', 'support_ticket', '$defaultSupportSubj', '$defaultSupportBody')");
+
+// Load template from DB
+$tpl = mysqli_fetch_assoc(mysqli_query($link,
+    "SELECT subject, body FROM email_templates WHERE template_key = 'support_ticket' LIMIT 1"));
+$tplSubject = $tpl['subject'] ?? "Support Ticket #{$ticketId} — Lead #{$leadId}";
+$tplBody    = $tpl['body']    ?? '';
+
+$attachNote = $attachmentFilename ? '<p style="font-family:sans-serif;"><em>Anhang: ' . htmlspecialchars($attachmentFilename) . '</em></p>' : '';
+
+$mailSubject = str_replace(['{{ticket_id}}', '{{lead_id}}'],
+                           [$ticketId, $leadId],
+                           $tplSubject);
+$mailBody = str_replace(
+    ['{{ticket_id}}', '{{lead_id}}', '{{fname}}', '{{lname}}', '{{email}}', '{{phone}}', '{{message}}', '{{attachment_note}}'],
+    [$ticketId, $leadId, htmlspecialchars($fname), htmlspecialchars($lname),
+     htmlspecialchars($email), htmlspecialchars($phone),
+     nl2br(htmlspecialchars($message)), $attachNote],
+    $tplBody
+);
+
 // Send e-mail to admin
 $adminEmail = getSmtpSetting($link, 'admin_email');
 if (!$adminEmail) {
@@ -109,20 +155,8 @@ try {
     $fromName  = getSmtpSetting($link, 'smtp_from_name');
     $mail->setFrom($fromEmail ?: 'noreply@simple2success.com', $fromName ?: 'Simple2Success');
     $mail->addAddress($adminEmail);
-
-    $mail->Subject = "Support Ticket #{$ticketId} — Lead #{$leadId}";
-    $mail->Body = "
-        <h2>Support Ticket #{$ticketId}</h2>
-        <table cellpadding='6' style='border-collapse:collapse;font-family:sans-serif;'>
-            <tr><td><strong>Lead ID:</strong></td><td>#{$leadId}</td></tr>
-            <tr><td><strong>Name:</strong></td><td>" . htmlspecialchars($fname . ' ' . $lname) . "</td></tr>
-            <tr><td><strong>E-Mail:</strong></td><td>" . htmlspecialchars($email) . "</td></tr>
-            <tr><td><strong>Telefon:</strong></td><td>" . htmlspecialchars($phone) . "</td></tr>
-        </table>
-        <h3 style='margin-top:16px;'>Nachricht:</h3>
-        <p style='background:#f5f5f5;padding:12px;border-radius:4px;'>" . nl2br(htmlspecialchars($message)) . "</p>
-        " . ($attachmentFilename ? "<p><em>Anhang: {$attachmentFilename}</em></p>" : "") . "
-    ";
+    $mail->Subject = $mailSubject;
+    $mail->Body    = $mailBody;
 
     if ($attachmentFilename && file_exists(__DIR__ . '/../' . $attachmentPath)) {
         $mail->addAttachment(__DIR__ . '/../' . $attachmentPath, $attachmentFilename);

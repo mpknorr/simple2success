@@ -23,6 +23,7 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS followup_sequences (
     target       ENUM('lead','member') NOT NULL DEFAULT 'lead',
     day_offset   INT NOT NULL DEFAULT 1,
     subject      VARCHAR(255) NOT NULL,
+    subject_b    VARCHAR(255) NOT NULL DEFAULT '',
     body         LONGTEXT NOT NULL,
     is_active    TINYINT(1) NOT NULL DEFAULT 1,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -47,16 +48,17 @@ if ($action === 'save_sequence') {
     $target     = in_array($_POST['target'] ?? '', ['lead','member']) ? $_POST['target'] : 'lead';
     $day_offset = max(1, (int)($_POST['day_offset'] ?? 1));
     $subj       = mysqli_real_escape_string($link, $_POST['subject'] ?? '');
+    $subj_b     = mysqli_real_escape_string($link, $_POST['subject_b'] ?? '');
     $body       = mysqli_real_escape_string($link, $_POST['body'] ?? '');
     $is_active  = isset($_POST['is_active']) ? 1 : 0;
 
     if (empty($subj) || empty($_POST['body'])) {
         $error = 'Betreff und E-Mail-Text dürfen nicht leer sein.';
     } elseif ($edit_id > 0) {
-        mysqli_query($link, "UPDATE followup_sequences SET target='$target', day_offset=$day_offset, subject='$subj', body='$body', is_active=$is_active WHERE id=$edit_id");
+        mysqli_query($link, "UPDATE followup_sequences SET target='$target', day_offset=$day_offset, subject='$subj', subject_b='$subj_b', body='$body', is_active=$is_active WHERE id=$edit_id");
         $success = 'E-Mail aktualisiert.';
     } else {
-        mysqli_query($link, "INSERT INTO followup_sequences (target, day_offset, subject, body, is_active) VALUES ('$target', $day_offset, '$subj', '$body', $is_active)");
+        mysqli_query($link, "INSERT INTO followup_sequences (target, day_offset, subject, subject_b, body, is_active) VALUES ('$target', $day_offset, '$subj', '$subj_b', '$body', $is_active)");
         $success = 'Neue Follow-Up E-Mail gespeichert.';
     }
 }
@@ -426,8 +428,12 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <input type="number" name="day_offset" class="form-control" value="<?= $edit_seq['day_offset'] ?>" min="1">
           </div>
           <div class="form-group">
-            <label>Betreff</label>
+            <label>Betreff (Variante A)</label>
             <input type="text" name="subject" class="form-control" value="<?= htmlspecialchars($edit_seq['subject']) ?>">
+          </div>
+          <div class="form-group">
+            <label>Betreff (Variante B — A/B-Test) <small class="text-muted">Optional. Leer lassen um A/B-Test zu deaktivieren.</small></label>
+            <input type="text" name="subject_b" class="form-control" value="<?= htmlspecialchars($edit_seq['subject_b'] ?? '') ?>">
           </div>
           <div class="form-group">
             <label>E-Mail-Body</label>
