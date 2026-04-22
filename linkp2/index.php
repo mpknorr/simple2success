@@ -11,6 +11,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<?php require_once __DIR__ . '/../includes/head-tracking.php'; ?>
   <meta charset="utf-8">
   <title>Are You Ready to Soar? — Simple2Success</title>
   <meta content="Something life-changing is happening. Get your 100% free Simple2Success account and see for yourself." name="description">

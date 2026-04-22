@@ -20,6 +20,17 @@ foreach ($getuserdetails as $userData) {
 $success       = '';
 $error         = '';
 $trigger_result = '';
+$success_tracking = '';
+
+// ── Ensure tracking_legal_links table exists (multilingual-ready) ─────────────
+mysqli_query($link, "CREATE TABLE IF NOT EXISTS tracking_legal_links (
+    lang        VARCHAR(10)  NOT NULL DEFAULT 'en',
+    privacy_url VARCHAR(500) NOT NULL DEFAULT '',
+    terms_url   VARCHAR(500) NOT NULL DEFAULT '',
+    cookie_url  VARCHAR(500) NOT NULL DEFAULT '',
+    updated_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (lang)
+)");
 
 function getSetting($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -31,6 +42,49 @@ function saveSetting($link, $key, $value) {
     $k = mysqli_real_escape_string($link, $key);
     $v = mysqli_real_escape_string($link, $value);
     mysqli_query($link, "INSERT INTO settings (setting_key, setting_value) VALUES ('$k', '$v') ON DUPLICATE KEY UPDATE setting_value = '$v'");
+}
+
+// ── POST: Save tracking & consent settings ───────────────────────────────────
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_tracking'])) {
+    $allowed_modes = ['auto', 'manual'];
+
+    saveSetting($link, 'cookiebot_enabled',
+        isset($_POST['cookiebot_enabled']) ? '1' : '0');
+    saveSetting($link, 'cookiebot_cbid',
+        preg_replace('/[^a-f0-9\-]/i', '', trim($_POST['cookiebot_cbid'] ?? '')));
+    $bm = in_array($_POST['cookiebot_blocking_mode'] ?? '', $allowed_modes, true)
+        ? $_POST['cookiebot_blocking_mode'] : 'auto';
+    saveSetting($link, 'cookiebot_blocking_mode', $bm);
+
+    saveSetting($link, 'meta_pixel_enabled',
+        isset($_POST['meta_pixel_enabled']) ? '1' : '0');
+    saveSetting($link, 'meta_pixel_id',
+        preg_replace('/\D/', '', trim($_POST['meta_pixel_id'] ?? '')));
+
+    saveSetting($link, 'tiktok_pixel_enabled',
+        isset($_POST['tiktok_pixel_enabled']) ? '1' : '0');
+    saveSetting($link, 'tiktok_pixel_id',
+        preg_replace('/[^A-Z0-9]/i', '', trim($_POST['tiktok_pixel_id'] ?? '')));
+
+    saveSetting($link, 'default_language',
+        preg_replace('/[^a-z]/', '', strtolower(trim($_POST['default_language'] ?? 'en'))));
+
+    $priv   = filter_var(trim($_POST['privacy_policy_url_default'] ?? ''), FILTER_SANITIZE_URL);
+    $terms  = filter_var(trim($_POST['terms_url_default']          ?? ''), FILTER_SANITIZE_URL);
+    $cookie = filter_var(trim($_POST['cookie_policy_url_default']  ?? ''), FILTER_SANITIZE_URL);
+    saveSetting($link, 'privacy_policy_url_default', $priv);
+    saveSetting($link, 'terms_url_default',          $terms);
+    saveSetting($link, 'cookie_policy_url_default',  $cookie);
+
+    // Upsert English row in multilingual legal links table
+    $ep = mysqli_real_escape_string($link, $priv);
+    $et = mysqli_real_escape_string($link, $terms);
+    $ec = mysqli_real_escape_string($link, $cookie);
+    mysqli_query($link, "INSERT INTO tracking_legal_links (lang, privacy_url, terms_url, cookie_url)
+        VALUES ('en', '$ep', '$et', '$ec')
+        ON DUPLICATE KEY UPDATE privacy_url='$ep', terms_url='$et', cookie_url='$ec'");
+
+    $success_tracking = 'Tracking &amp; Consent settings saved.';
 }
 
 // ── POST: Save SMTP settings ──────────────────────────────────────────────────
@@ -80,6 +134,20 @@ $smtp_from_name   = getSetting($link, 'smtp_from_name');
 $homepage_mode    = getSetting($link, 'homepage_mode') ?: 'default';
 $homepage_target  = getSetting($link, 'homepage_target');
 
+$tr = [
+    'cookiebot_enabled'          => getSetting($link, 'cookiebot_enabled'),
+    'cookiebot_cbid'             => getSetting($link, 'cookiebot_cbid'),
+    'cookiebot_blocking_mode'    => getSetting($link, 'cookiebot_blocking_mode') ?: 'auto',
+    'meta_pixel_enabled'         => getSetting($link, 'meta_pixel_enabled'),
+    'meta_pixel_id'              => getSetting($link, 'meta_pixel_id'),
+    'tiktok_pixel_enabled'       => getSetting($link, 'tiktok_pixel_enabled'),
+    'tiktok_pixel_id'            => getSetting($link, 'tiktok_pixel_id'),
+    'default_language'           => getSetting($link, 'default_language') ?: 'en',
+    'privacy_policy_url_default' => getSetting($link, 'privacy_policy_url_default'),
+    'terms_url_default'          => getSetting($link, 'terms_url_default'),
+    'cookie_policy_url_default'  => getSetting($link, 'cookie_policy_url_default'),
+];
+
 $pages = [
     'Capture Pages' => [
         'link1'  => 'Capture Page 1',
@@ -116,6 +184,12 @@ $pages = [
     <?php if ($success): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="ft-check-circle mr-1"></i> <?= htmlspecialchars($success) ?>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    <?php endif; ?>
+    <?php if ($success_tracking): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="ft-check-circle mr-1"></i> <?= $success_tracking ?>
         <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
     </div>
     <?php endif; ?>
@@ -350,6 +424,226 @@ $pages = [
             </div>
         </div>
     </div><!-- /row Frontend -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- Section C: Tracking & Consent                                          -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="border-left:4px solid #00c8e0;">
+                    <h4 class="card-title m-0">
+                        <i class="ft-shield mr-1" style="color:#00c8e0;"></i>
+                        Tracking &amp; Consent
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+    <div class="row">
+
+        <!-- LEFT: Cookiebot + Meta + TikTok -->
+        <div class="col-lg-8 col-12">
+
+            <!-- Cookiebot -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title m-0">
+                        <i class="ft-shield mr-1" style="color:#00c8e0;"></i>
+                        Cookiebot — GDPR Cookie Consent
+                    </h5>
+                </div>
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="alert" style="background:rgba(0,200,224,.08);border:1px solid rgba(0,200,224,.3);color:#ccc;font-size:12px;">
+                            <i class="ft-info mr-1" style="color:#00c8e0;"></i>
+                            Cookiebot is loaded <strong>before</strong> all other tracking scripts to ensure legal compliance.
+                            Language detection is automatic — fully compatible with the planned multilingual expansion.
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label class="col-sm-4 col-form-label">Enable Cookiebot</label>
+                            <div class="col-sm-8">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="cookiebot_enabled"
+                                           name="cookiebot_enabled" value="1"
+                                           <?= $tr['cookiebot_enabled'] === '1' ? 'checked' : '' ?>>
+                                    <label class="custom-control-label" for="cookiebot_enabled">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Cookiebot CBID</label>
+                            <div class="col-sm-8">
+                                <input type="text" name="cookiebot_cbid" class="form-control"
+                                       value="<?= htmlspecialchars($tr['cookiebot_cbid'], ENT_QUOTES, 'UTF-8') ?>"
+                                       placeholder="e.g. 98933ef8-ebc1-453e-a76e-f5984919d07c"
+                                       maxlength="36">
+                                <small class="text-muted">Found in your Cookiebot dashboard under "Domains".</small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Blocking Mode</label>
+                            <div class="col-sm-8">
+                                <select name="cookiebot_blocking_mode" class="form-control">
+                                    <option value="auto"   <?= $tr['cookiebot_blocking_mode'] === 'auto'   ? 'selected' : '' ?>>auto (recommended)</option>
+                                    <option value="manual" <?= $tr['cookiebot_blocking_mode'] === 'manual' ? 'selected' : '' ?>>manual</option>
+                                </select>
+                                <small class="text-muted"><strong>auto</strong> = Cookiebot automatically blocks scripts until consent is given.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meta Pixel -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title m-0">
+                        <i class="ft-facebook mr-1" style="color:#1877F2;"></i>
+                        Meta Pixel — Facebook &amp; Instagram
+                    </h5>
+                </div>
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="alert" style="background:rgba(24,119,242,.08);border:1px solid rgba(24,119,242,.3);color:#ccc;font-size:12px;">
+                            <i class="ft-info mr-1" style="color:#1877F2;"></i>
+                            Loaded only on public landing pages. Fires <strong>PageView</strong> automatically.
+                            A <strong>Lead</strong> event can be added on successful registration.
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label class="col-sm-4 col-form-label">Enable Meta Pixel</label>
+                            <div class="col-sm-8">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="meta_pixel_enabled"
+                                           name="meta_pixel_enabled" value="1"
+                                           <?= $tr['meta_pixel_enabled'] === '1' ? 'checked' : '' ?>>
+                                    <label class="custom-control-label" for="meta_pixel_enabled">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Meta Pixel ID</label>
+                            <div class="col-sm-8">
+                                <input type="text" name="meta_pixel_id" class="form-control"
+                                       value="<?= htmlspecialchars($tr['meta_pixel_id'], ENT_QUOTES, 'UTF-8') ?>"
+                                       placeholder="e.g. 123456789012345"
+                                       maxlength="20" pattern="\d*">
+                                <small class="text-muted">Found in Meta Business Manager → Events Manager → Pixels.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TikTok Pixel -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title m-0">
+                        <i class="ft-tv mr-1" style="color:#ff0050;"></i>
+                        TikTok Pixel
+                    </h5>
+                </div>
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="alert" style="background:rgba(255,0,80,.08);border:1px solid rgba(255,0,80,.3);color:#ccc;font-size:12px;">
+                            <i class="ft-info mr-1" style="color:#ff0050;"></i>
+                            Loaded only on public landing pages. Fires <strong>PageView</strong> automatically.
+                            A <strong>CompleteRegistration</strong> event can be added on successful registration.
+                        </div>
+                        <div class="form-group row align-items-center">
+                            <label class="col-sm-4 col-form-label">Enable TikTok Pixel</label>
+                            <div class="col-sm-8">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="tiktok_pixel_enabled"
+                                           name="tiktok_pixel_enabled" value="1"
+                                           <?= $tr['tiktok_pixel_enabled'] === '1' ? 'checked' : '' ?>>
+                                    <label class="custom-control-label" for="tiktok_pixel_enabled">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">TikTok Pixel ID</label>
+                            <div class="col-sm-8">
+                                <input type="text" name="tiktok_pixel_id" class="form-control"
+                                       value="<?= htmlspecialchars($tr['tiktok_pixel_id'], ENT_QUOTES, 'UTF-8') ?>"
+                                       placeholder="e.g. C8A1B2C3D4E5F6G7H8I9"
+                                       maxlength="40">
+                                <small class="text-muted">Found in TikTok Ads Manager → Assets → Events → Web Events.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /col-lg-8 -->
+
+        <!-- RIGHT: Legal / Multilingual Prep + Save -->
+        <div class="col-lg-4 col-12">
+
+            <!-- Legal / Multilingual -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title m-0">
+                        <i class="ft-globe mr-1" style="color:#cb2ebc;"></i>
+                        Legal &amp; Multilingual Prep
+                    </h5>
+                </div>
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="alert" style="background:rgba(203,46,188,.08);border:1px solid rgba(203,46,188,.3);color:#ccc;font-size:12px;">
+                            <i class="ft-globe mr-1" style="color:#cb2ebc;"></i>
+                            These are the default (English) legal URLs. When the multilingual system is activated,
+                            each language will have its own URLs stored in the <code>tracking_legal_links</code> table.
+                        </div>
+                        <div class="form-group">
+                            <label>Default Language</label>
+                            <select name="default_language" class="form-control">
+                                <option value="en" <?= $tr['default_language'] === 'en' ? 'selected' : '' ?>>English (en)</option>
+                                <option value="de" <?= $tr['default_language'] === 'de' ? 'selected' : '' ?>>Deutsch (de)</option>
+                                <option value="fr" <?= $tr['default_language'] === 'fr' ? 'selected' : '' ?>>Français (fr)</option>
+                                <option value="es" <?= $tr['default_language'] === 'es' ? 'selected' : '' ?>>Español (es)</option>
+                            </select>
+                            <small class="text-muted">Fallback language when no match found.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Privacy Policy URL <small class="text-muted">(Default/EN)</small></label>
+                            <input type="url" name="privacy_policy_url_default" class="form-control"
+                                   value="<?= htmlspecialchars($tr['privacy_policy_url_default'], ENT_QUOTES, 'UTF-8') ?>"
+                                   placeholder="https://simple2success.com/privacy">
+                        </div>
+                        <div class="form-group">
+                            <label>Terms of Service URL <small class="text-muted">(Default/EN)</small></label>
+                            <input type="url" name="terms_url_default" class="form-control"
+                                   value="<?= htmlspecialchars($tr['terms_url_default'], ENT_QUOTES, 'UTF-8') ?>"
+                                   placeholder="https://simple2success.com/terms">
+                        </div>
+                        <div class="form-group">
+                            <label>Cookie Policy URL <small class="text-muted">(Default/EN)</small></label>
+                            <input type="url" name="cookie_policy_url_default" class="form-control"
+                                   value="<?= htmlspecialchars($tr['cookie_policy_url_default'], ENT_QUOTES, 'UTF-8') ?>"
+                                   placeholder="https://simple2success.com/cookies">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save button -->
+            <div class="card">
+                <div class="card-body">
+                    <button type="submit" name="save_tracking" class="btn btn-primary btn-block">
+                        <i class="ft-save mr-1"></i> Save Tracking &amp; Consent
+                    </button>
+                    <small class="text-muted d-block mt-2 text-center">
+                        Tracking scripts load only on public landing pages — never in Admin or Backoffice.
+                    </small>
+                </div>
+            </div>
+
+        </div><!-- /col-lg-4 -->
+    </div><!-- /row Tracking -->
+    </form>
 
 </div><!-- /content-wrapper -->
 </div><!-- /main-content -->

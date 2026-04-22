@@ -12,6 +12,7 @@ $countdownSeconds = 48 * 3600;
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<?php require_once __DIR__ . '/../includes/head-tracking.php'; ?>
   <meta charset="utf-8">
   <title>Join Simple2Success — Don't Miss This</title>
   <meta content="Take the first step towards achieving your dreams. Join an exclusive Simple2Success team of experts who will help propel you towards unparalleled success." name="description">
