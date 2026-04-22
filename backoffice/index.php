@@ -555,7 +555,7 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
         <li>Clear Daily Actions</li>
         <li>A Real Path You Can Follow</li>
       </ul>
-      <a href="track-click.php?action=start_step" class="et-btn">Continue To Your Next Step &rarr;</a>
+      <a href="start.php" class="et-btn">Continue To Your Next Step &rarr;</a>
     </div>
   </div>
 </section>
@@ -685,7 +685,7 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
         You now have a clear direction, a step-by-step system and the right next move.<br><br>
         On the next page, you will see exactly what to do next.
       </p>
-      <a href="track-click.php?action=start_step" class="et-btn">See The Next Step &rarr;</a>
+      <a href="start.php" class="et-btn">See The Next Step &rarr;</a>
     </div>
 
     <!-- Right: eagle #3 — dynamic / momentum -->

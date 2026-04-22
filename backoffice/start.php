@@ -19,6 +19,15 @@ if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
 
 $userid = $_SESSION['userid'];
 
+// ── Log "Next Step" button click from index.php ───────────────────────────────
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+if (stripos($referer, 'index.php') !== false || substr($referer, -1) === '/') {
+    $logIp   = mysqli_real_escape_string($link, getClientIp());
+    $logPage = mysqli_real_escape_string($link, 'backoffice/index.php');
+    mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, page, ip)
+        VALUES ($userid, 'start_step_click', '$logPage', '$logIp')");
+}
+
 // ── Sponsor's PM partner number (for Step 1 registration link TP=) ───────────
 $user_detailsdata = mysqli_query($link, "SELECT referer FROM users WHERE leadid = $userid");
 $user_referer = '';
