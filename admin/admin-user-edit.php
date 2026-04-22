@@ -513,9 +513,10 @@ $langLabels = [
                             <tbody>
                             <?php
                             $evTypeMap = [
-                                'signup_attempt' => ['label' => 'Re-signup-Versuch auf Landing Page', 'color' => 'rgba(255,193,7,.8)'],
-                                'login'          => ['label' => 'Login in Backoffice', 'color' => 'rgba(40,199,111,.8)'],
-                                'login_failed'   => ['label' => 'Fehlgeschlagener Login', 'color' => 'rgba(234,84,85,.8)'],
+                                'signup_attempt'   => ['label' => 'Re-signup-Versuch auf Landing Page', 'color' => 'rgba(255,193,7,.8)'],
+                                'login'            => ['label' => 'Login in Backoffice',                  'color' => 'rgba(40,199,111,.8)'],
+                                'login_failed'     => ['label' => 'Fehlgeschlagener Login',               'color' => 'rgba(234,84,85,.8)'],
+                                'start_step_click' => ['label' => 'Button "Next Step" geklickt',          'color' => 'rgba(0,207,232,.8)'],
                             ];
                             foreach ($events as $ev):
                                 $type  = $ev['event_type'];
