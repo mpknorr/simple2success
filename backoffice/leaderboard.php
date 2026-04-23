@@ -7,6 +7,9 @@ if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
 }
 
 include '../includes/conn.php';
+require_once '../includes/fake_leaderboard_generator.php';
+
+$userid = (int)$_SESSION['userid'];
 ?>
 <!DOCTYPE html>
 <html class="loading" lang="en">
@@ -101,20 +104,14 @@ include '../includes/conn.php';
                 </div>
 
                 <?php
-                // ── Build query ──────────────────────────────────────────────────
-                $offset = ($page - 1) * $topLimit;
+                // ── Settings ─────────────────────────────────────────────────────
+                $fakeEnabled = getLbSetting($link, 'fake_leaderboard_enabled') === '1';
+                $fakeTarget  = (int)(getLbSetting($link, 'fake_leaderboard_target') ?: 500);
 
+                // ── Build query (no LIMIT/OFFSET — we paginate in PHP) ───────────
                 if ($mode === 'monthly') {
                     $monthStart = $selMonth . '-01';
                     $monthEnd   = date('Y-m-01', strtotime($monthStart . ' +1 month'));
-
-                    $countSql = "
-                        SELECT COUNT(*) AS cnt FROM (
-                            SELECT u.leadid
-                            FROM users u
-                            WHERE u.username IS NOT NULL AND u.username != ''
-                            GROUP BY u.leadid
-                        ) AS sub";
 
                     $sql = "
                         SELECT
@@ -128,14 +125,11 @@ include '../includes/conn.php';
                         FROM users u
                         LEFT JOIN users l ON l.referer = u.leadid
                         WHERE u.username IS NOT NULL AND u.username != ''
-                        GROUP BY u.leadid
-                        ORDER BY month_members DESC, month_leads DESC
-                        LIMIT $topLimit OFFSET $offset";
+                        GROUP BY u.leadid";
 
                     $colLeads   = 'month_leads';
                     $colMembers = 'month_members';
                     $heading    = 'Monthly Leaderboard — ' . date('F Y', strtotime($monthStart));
-
                 } else {
                     $sql = "
                         SELECT
@@ -146,26 +140,53 @@ include '../includes/conn.php';
                         FROM users u
                         LEFT JOIN users l ON l.referer = u.leadid
                         WHERE u.username IS NOT NULL AND u.username != ''
-                        GROUP BY u.leadid
-                        ORDER BY step2_members DESC, total_leads DESC
-                        LIMIT $topLimit OFFSET $offset";
+                        GROUP BY u.leadid";
 
                     $colLeads   = 'total_leads';
                     $colMembers = 'step2_members';
                     $heading    = 'All Time Leaderboard';
                 }
 
-                // Total count for pagination
-                $countSql = "
-                    SELECT COUNT(*) AS cnt
-                    FROM users
-                    WHERE username IS NOT NULL AND username != ''";
-                $cRes      = mysqli_query($link, $countSql);
-                $cRow      = mysqli_fetch_assoc($cRes);
-                $totalRows = (int)$cRow['cnt'];
-                $totalPages = ceil($totalRows / $topLimit);
+                // ── Collect real users ───────────────────────────────────────────
+                $realUsers = [];
+                $rRes = mysqli_query($link, $sql);
+                if ($rRes) {
+                    while ($r = mysqli_fetch_assoc($rRes)) $realUsers[] = $r;
+                }
+                $realCount = count($realUsers);
 
-                $rows = mysqli_query($link, $sql);
+                // ── Merge fakes if enabled & below target ────────────────────────
+                $fakeNeeded = $fakeEnabled ? max(0, $fakeTarget - $realCount) : 0;
+                $fakeUsers  = $fakeNeeded > 0
+                    ? getFakeLeaderboardData($selMonth, $mode, $fakeNeeded)
+                    : [];
+                $allUsers = array_merge($realUsers, $fakeUsers);
+
+                // ── Sort in PHP ──────────────────────────────────────────────────
+                if ($mode === 'monthly') {
+                    usort($allUsers, function($a, $b) {
+                        $d = (int)$b['month_members'] - (int)$a['month_members'];
+                        return $d !== 0 ? $d : ((int)$b['month_leads'] - (int)$a['month_leads']);
+                    });
+                } else {
+                    usort($allUsers, function($a, $b) {
+                        $d = (int)$b['step2_members'] - (int)$a['step2_members'];
+                        return $d !== 0 ? $d : ((int)$b['total_leads'] - (int)$a['total_leads']);
+                    });
+                }
+
+                // ── My rank (across full sorted list) ────────────────────────────
+                $myRank = null;
+                foreach ($allUsers as $idx => $u) {
+                    if ((int)$u['leadid'] === $userid) { $myRank = $idx + 1; break; }
+                }
+
+                // ── Paginate in PHP ──────────────────────────────────────────────
+                $totalRows  = count($allUsers);
+                $totalPages = max(1, (int)ceil($totalRows / $topLimit));
+                $page       = min($page, $totalPages);
+                $offset     = ($page - 1) * $topLimit;
+                $pageUsers  = array_slice($allUsers, $offset, $topLimit);
                 ?>
 
                 <!-- Table -->
@@ -201,9 +222,9 @@ include '../includes/conn.php';
                                             <?php
                                             $rank = $offset + 1;
                                             $hasRows = false;
-                                            while ($row = mysqli_fetch_assoc($rows)):
+                                            foreach ($pageUsers as $row):
                                                 $hasRows = true;
-                                                $isMe    = ($row['leadid'] == $userid);
+                                                $isMe    = ((int)$row['leadid'] === $userid);
                                                 $leads   = (int)$row[$colLeads];
                                                 $members = (int)$row[$colMembers];
 
@@ -244,7 +265,7 @@ include '../includes/conn.php';
                                                     <?php endif; ?>
                                                 </td>
                                             </tr>
-                                            <?php $rank++; endwhile; ?>
+                                            <?php $rank++; endforeach; ?>
                                             <?php if (!$hasRows): ?>
                                             <tr>
                                                 <td colspan="4" style="text-align:center; padding:40px; color:#888;">
@@ -301,6 +322,23 @@ include '../includes/conn.php';
                         </div>
                     </div>
                 </div>
+
+                <!-- Your rank (only if outside current page) -->
+                <?php if ($myRank && ($myRank <= $offset || $myRank > $offset + $topLimit)): ?>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card" style="background:rgba(183,0,224,0.08); border-left:3px solid #b700e0;">
+                            <div class="card-body py-2 px-3">
+                                <p class="mb-0" style="color:#ccc; font-size:14px;">
+                                    <i class="ft-user mr-1" style="color:#b700e0;"></i>
+                                    Your current position: <strong style="color:#b700e0;">#<?= $myRank ?></strong>
+                                    of <?= $totalRows ?> members.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <!-- Info box -->
                 <div class="row">

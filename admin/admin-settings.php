@@ -21,6 +21,7 @@ $success       = '';
 $error         = '';
 $trigger_result = '';
 $success_tracking = '';
+$success_leaderboard = '';
 
 // ── Ensure tracking_legal_links table exists (multilingual-ready) ─────────────
 mysqli_query($link, "CREATE TABLE IF NOT EXISTS tracking_legal_links (
@@ -85,6 +86,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_tracking'])) {
         ON DUPLICATE KEY UPDATE privacy_url='$ep', terms_url='$et', cookie_url='$ec'");
 
     $success_tracking = 'Tracking &amp; Consent settings saved.';
+}
+
+// ── POST: Save leaderboard (fake-padding) settings ────────────────────────────
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_leaderboard'])) {
+    saveSetting($link, 'fake_leaderboard_enabled', isset($_POST['fake_leaderboard_enabled']) ? '1' : '0');
+    $target = (int)($_POST['fake_leaderboard_target'] ?? 500);
+    $target = max(10, min(2000, $target));
+    saveSetting($link, 'fake_leaderboard_target', (string)$target);
+    $success_leaderboard = 'Leaderboard-Einstellungen gespeichert.';
 }
 
 // ── POST: Save SMTP settings ──────────────────────────────────────────────────
@@ -192,6 +202,12 @@ $pages = [
     <?php if ($success_tracking): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="ft-check-circle mr-1"></i> <?= $success_tracking ?>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    <?php endif; ?>
+    <?php if ($success_leaderboard): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="ft-check-circle mr-1"></i> <?= $success_leaderboard ?>
         <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
     </div>
     <?php endif; ?>
@@ -646,6 +662,70 @@ $pages = [
         </div><!-- /col-lg-4 -->
     </div><!-- /row Tracking -->
     </form>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- Section D: Leaderboard Gamification (Fake-Padding)                     -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <?php
+    $lbRealCount = (int)(mysqli_fetch_assoc(mysqli_query($link,
+        "SELECT COUNT(*) AS c FROM users WHERE username IS NOT NULL AND username != ''"))['c'] ?? 0);
+    $lbEnabledVal = getSetting($link, 'fake_leaderboard_enabled');
+    $lbTargetVal  = (int)(getSetting($link, 'fake_leaderboard_target') ?: 500);
+    ?>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="border-left:4px solid #b700e0;">
+                    <h4 class="card-title m-0"><i class="ft-award mr-1" style="color:#b700e0;"></i> Leaderboard Gamification</h4>
+                </div>
+                <div class="card-content">
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="fake_leaderboard_enabled" name="fake_leaderboard_enabled" value="1" <?= $lbEnabledVal === '1' ? 'checked' : '' ?>>
+                                            <label class="custom-control-label" for="fake_leaderboard_enabled">Fake-Leaderboard aktivieren</label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Füllt das Leaderboard mit simulierten Nutzern auf, bis die Zielgröße an echten Step-2-Membern erreicht ist. Simulierte Nutzer werden <strong>nicht</strong> in der Datenbank gespeichert.
+                                        </small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Zielgröße (Minimale Anzahl angezeigter Member)</label>
+                                        <input type="number" name="fake_leaderboard_target" class="form-control" value="<?= $lbTargetVal ?>" min="10" max="2000">
+                                        <small class="text-muted">Erlaubt: 10–2000. Default: 500.</small>
+                                    </div>
+                                    <button type="submit" name="save_leaderboard" class="btn btn-primary">
+                                        <i class="ft-save mr-1"></i> Speichern
+                                    </button>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="alert" style="background:rgba(183,0,224,0.08); border-left:3px solid #b700e0;">
+                                        <h5 style="color:#b700e0; margin-top:0;"><i class="ft-info mr-1"></i> Status</h5>
+                                        <p class="mb-1"><strong>Echte Step-2-Member:</strong> <?= $lbRealCount ?></p>
+                                        <p class="mb-1"><strong>Aktuelle Zielgröße:</strong> <?= $lbTargetVal ?></p>
+                                        <p class="mb-0"><strong>Fakes werden angezeigt:</strong>
+                                            <?php if ($lbEnabledVal === '1' && $lbRealCount < $lbTargetVal): ?>
+                                                <span style="color:#2ecc71;">Ja — <?= max(0, $lbTargetVal - $lbRealCount) ?> Fakes</span>
+                                            <?php else: ?>
+                                                <span style="color:#888;">Nein</span>
+                                            <?php endif; ?>
+                                        </p>
+                                        <hr style="border-color:rgba(183,0,224,0.2);">
+                                        <small class="text-muted d-block">
+                                            Ab <strong><?= $lbTargetVal ?></strong> echten Membern schaltet sich die Fake-Anzeige automatisch ab — unabhängig vom Toggle.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /row Leaderboard -->
 
 </div><!-- /content-wrapper -->
 </div><!-- /main-content -->
