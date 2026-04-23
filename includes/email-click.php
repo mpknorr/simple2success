@@ -37,9 +37,8 @@ if ($uid > 0 && isset($link)) {
 
     $metaStr = 'E-Mail Button geklickt';
     if ($sid > 0) {
-        $seqRow = mysqli_fetch_assoc(mysqli_query($link,
-            "SELECT name FROM followup_sequences WHERE id = $sid LIMIT 1"));
-        if ($seqRow && !empty($seqRow['name'])) {
+        $seqRes = mysqli_query($link, "SELECT name FROM followup_sequences WHERE id = $sid LIMIT 1");
+        if ($seqRes && ($seqRow = mysqli_fetch_assoc($seqRes)) && !empty($seqRow['name'])) {
             $metaStr .= ' — ' . $seqRow['name'];
         }
     }
