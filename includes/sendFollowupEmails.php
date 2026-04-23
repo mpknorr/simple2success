@@ -195,7 +195,7 @@ function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
             FROM users u
             INNER JOIN followup_clicks fc ON fc.user_id = u.leadid
             WHERE (u.username IS NULL OR u.username = '')
-            AND fc.clicked_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+            AND fc.clicked_at >= DATE_SUB(NOW(), INTERVAL 48 HOUR)
             AND fc.clicked_at <= DATE_SUB(NOW(), INTERVAL 2 HOUR)
             AND u.leadid NOT IN (
                 SELECT user_id FROM followup_trigger_log WHERE trigger_type = 'clicked_no_step2'
@@ -247,7 +247,7 @@ function sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url) {
             FROM users u
             WHERE u.username IS NOT NULL AND u.username != ''
             AND u.step2_at IS NOT NULL
-            AND TIMESTAMPDIFF(HOUR, u.step2_at, NOW()) BETWEEN 48 AND 72
+            AND TIMESTAMPDIFF(HOUR, u.step2_at, NOW()) BETWEEN 48 AND 96
             AND u.leadid NOT IN (
                 SELECT user_id FROM followup_trigger_log WHERE trigger_type = 'step2_done_no_step4'
             )";
