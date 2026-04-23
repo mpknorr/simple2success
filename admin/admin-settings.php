@@ -310,11 +310,11 @@ $pages = [
                             <ol class="pl-3 mt-2 mb-0" style="list-style:decimal;">
                                 <li class="mb-2">
                                     <strong>Follow-UP Daily Leads</strong> &mdash; tägliche Sponsor-Benachrichtigung um 20:00<br>
-                                    <code style="display:block;padding:4px 6px;background:rgba(0,0,0,.2);border-radius:3px;word-break:break-all;">0 20 * * * curl "<?= $baseurl ?>/cron/daily_leads.php?token=7ed168b24e108db9a53682af3645256049c2a46b25a9ab43"</code>
+                                    <code style="display:block;padding:4px 6px;background:rgba(0,0,0,.2);border-radius:3px;word-break:break-all;">0 20 * * * curl -L "<?= $baseurl ?>/cron/daily_leads.php?token=7ed168b24e108db9a53682af3645256049c2a46b25a9ab43"</code>
                                 </li>
                                 <li class="mb-2">
-                                    <strong>Follow-UP Leads-Sequenz</strong> &mdash; Step-2-Conversion (alle 15 Min.)<br>
-                                    <code style="display:block;padding:4px 6px;background:rgba(0,0,0,.2);border-radius:3px;word-break:break-all;">*/15 * * * * curl "<?= $baseurl ?>/cron/followup.php?token=ca246a9152344e988c9eb30c9f05460e60c518b01949351e"</code>
+                                    <strong>Follow-UP Leads-Sequenz</strong> &mdash; Tag-X-Sequenzen + Verhaltens-Trigger (täglich 09:00)<br>
+                                    <code style="display:block;padding:4px 6px;background:rgba(0,0,0,.2);border-radius:3px;word-break:break-all;">0 9 * * * curl -L "<?= $baseurl ?>/cron/followup.php?token=ca246a9152344e988c9eb30c9f05460e60c518b01949351e"</code>
                                 </li>
                                 <li class="mb-0">
                                     <strong>Follow-UP Member-Sequenz</strong> &mdash; Step-4-Conversion<br>
