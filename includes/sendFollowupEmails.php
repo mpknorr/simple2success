@@ -220,6 +220,8 @@ function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         if (sendSingleEmailFU($smtpConfig, $toEmail, $toName, $subject, $body)) {
             mysqli_query($link, "INSERT IGNORE INTO followup_trigger_log (user_id, trigger_type) VALUES ($uid, 'clicked_no_step2')");
+            $evMeta = mysqli_real_escape_string($link, 'Trigger: ' . strip_tags($subject));
+            mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, meta) VALUES ($uid, 'email_sent', '$evMeta')");
             $sent++;
         } else {
             $errors[] = "$toEmail: trigger 1 failed";
@@ -269,6 +271,8 @@ function sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url) {
 
         if (sendSingleEmailFU($smtpConfig, $toEmail, $toName, $subject, $body)) {
             mysqli_query($link, "INSERT IGNORE INTO followup_trigger_log (user_id, trigger_type) VALUES ($uid, 'step2_done_no_step4')");
+            $evMeta = mysqli_real_escape_string($link, 'Trigger: ' . strip_tags($subject));
+            mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, meta) VALUES ($uid, 'email_sent', '$evMeta')");
             $sent++;
         } else {
             $errors[] = "$toEmail: trigger 2 failed";
@@ -351,6 +355,8 @@ function sendFollowupEmails($link) {
                     $mail->Body    = $personalBody;
                     $mail->send();
                     mysqli_query($link, "INSERT IGNORE INTO followup_log (user_id, sequence_id) VALUES ($uid, $seq_id)");
+                    $evMeta = mysqli_real_escape_string($link, $seq['name'] . ': ' . strip_tags($personalSubject));
+                    mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, meta) VALUES ($uid, 'email_sent', '$evMeta')");
                     $sent++;
                 } catch (Exception $e) {
                     $errors[] = "$toEmail (seq $seq_id): {$mail->ErrorInfo}";
