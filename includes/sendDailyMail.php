@@ -20,6 +20,8 @@ function getSmtpSettingDL($link, $key) {
  * @return array  ['sent' => int, 'errors' => array]
  */
 function sendDailyLeadsNotifications($link) {
+    global $baseurl;
+
     // Load template from DB
     $tpl = mysqli_fetch_assoc(mysqli_query($link,
         "SELECT subject, body FROM email_templates WHERE template_key = 'daily_leads' LIMIT 1"
@@ -30,6 +32,7 @@ function sendDailyLeadsNotifications($link) {
 
     $tplSubject = $tpl['subject'];
     $tplBody    = $tpl['body'];
+    $loginUrl   = rtrim($baseurl ?: 'https://www.simple2success.com', '/') . '/backoffice/login.php';
 
     // SMTP config
     $smtpHost  = getSmtpSettingDL($link, 'smtp_host');
@@ -86,13 +89,13 @@ function sendDailyLeadsNotifications($link) {
 
         // Personalise subject and body
         $personalSubject = str_replace(
-            ['{{name}}', '{{email}}', '{{leads}}'],
-            [htmlspecialchars($memberName), htmlspecialchars($memberEmail), $leadsHtml],
+            ['{{name}}', '{{email}}', '{{leads}}', '{{login_url}}'],
+            [htmlspecialchars($memberName), htmlspecialchars($memberEmail), $leadsHtml, $loginUrl],
             $tplSubject
         );
         $personalBody = str_replace(
-            ['{{name}}', '{{email}}', '{{leads}}'],
-            [htmlspecialchars($memberName), htmlspecialchars($memberEmail), $leadsHtml],
+            ['{{name}}', '{{email}}', '{{leads}}', '{{login_url}}'],
+            [htmlspecialchars($memberName), htmlspecialchars($memberEmail), $leadsHtml, $loginUrl],
             $tplBody
         );
 

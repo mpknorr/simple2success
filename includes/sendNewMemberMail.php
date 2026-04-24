@@ -20,7 +20,9 @@ function getSmtpSettingMember($link, $key) {
  * @return true|string   true on success, error string on failure
  */
 function sendNewMemberMail($link, $root) {
+    global $baseurl;
     $safeRoot = mysqli_real_escape_string($link, $root);
+    $loginUrl = rtrim($baseurl ?: 'https://www.simple2success.com', '/') . '/backoffice/login.php';
 
     // Get new member's email + sponsor's email/name
     $row = mysqli_fetch_assoc(mysqli_query($link,
@@ -48,13 +50,13 @@ function sendNewMemberMail($link, $root) {
     }
 
     $subject = str_replace(
-        ['{{name}}', '{{member_email}}'],
-        [htmlspecialchars($sponsorName), htmlspecialchars($memberEmail)],
+        ['{{name}}', '{{member_email}}', '{{login_url}}'],
+        [htmlspecialchars($sponsorName), htmlspecialchars($memberEmail), $loginUrl],
         $tpl['subject']
     );
     $body = str_replace(
-        ['{{name}}', '{{member_email}}'],
-        [htmlspecialchars($sponsorName), htmlspecialchars($memberEmail)],
+        ['{{name}}', '{{member_email}}', '{{login_url}}'],
+        [htmlspecialchars($sponsorName), htmlspecialchars($memberEmail), $loginUrl],
         $tpl['body']
     );
 
