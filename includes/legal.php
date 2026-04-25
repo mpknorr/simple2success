@@ -511,3 +511,49 @@ function getLegalPageUrl($baseurl, $slug) {
     }
     return $baseurl . '/legal.php?doc=' . urlencode($slug);
 }
+
+/**
+ * Return published legal docs flagged for visibility in the main footer.
+ * @return array<int, array{slug:string, title:string}>
+ */
+function getLegalFooterLinks($link) {
+    $out = [];
+    $res = @mysqli_query($link,
+        "SELECT slug, title FROM legal_documents
+         WHERE show_in_footer=1 AND status='published'
+         ORDER BY id ASC");
+    if ($res) { while ($r = mysqli_fetch_assoc($res)) $out[] = $r; }
+    return $out;
+}
+
+/**
+ * Return published legal docs flagged for premium-page footer (with footer_snippet).
+ * @return array<int, array{slug:string, title:string, footer_snippet:string}>
+ */
+function getLegalPremiumSnippets($link) {
+    $out = [];
+    $res = @mysqli_query($link,
+        "SELECT slug, title, footer_snippet FROM legal_documents
+         WHERE show_on_premium_pages=1 AND status='published'
+         ORDER BY id ASC");
+    if ($res) {
+        while ($r = mysqli_fetch_assoc($res)) {
+            if (!empty($r['footer_snippet'])) $out[] = $r;
+        }
+    }
+    return $out;
+}
+
+/**
+ * Return published legal docs flagged for registration-form placement.
+ * @return array<int, array{slug:string, title:string}>
+ */
+function getLegalRegistrationLinks($link) {
+    $out = [];
+    $res = @mysqli_query($link,
+        "SELECT slug, title FROM legal_documents
+         WHERE show_on_registration=1 AND status='published'
+         ORDER BY id ASC");
+    if ($res) { while ($r = mysqli_fetch_assoc($res)) $out[] = $r; }
+    return $out;
+}

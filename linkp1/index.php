@@ -1,7 +1,15 @@
 <?php
 require_once __DIR__ . '/../includes/conn.php';
 require_once __DIR__ . '/../includes/legal.php';
-$disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
+$_premSnips = function_exists('getLegalPremiumSnippets') ? getLegalPremiumSnippets($link) : [];
+if (!empty($_premSnips)) {
+    $disclaimerText = '';
+    foreach ($_premSnips as $ps) {
+        $disclaimerText .= '<div>' . $ps['footer_snippet'] . '</div>';
+    }
+} else {
+    $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
+}
 $errorMsg = '';
 if (isset($_GET['err']) && $_GET['err'] === 'eae') {
     $errorMsg = 'This email address is already registered.';
@@ -84,9 +92,18 @@ $source = htmlspecialchars($_GET['source'] ?? '');
       </div>
       <div class="w-clearfix">
         <p class="s2s-footer-para right">
+          <?php
+          $_fb = function_exists('getLegalFooterLinks') ? getLegalFooterLinks($link) : [];
+          if (!empty($_fb) && function_exists('getLegalPageUrl')):
+              foreach ($_fb as $i => $fl):
+                  echo $i > 0 ? ' | ' : '';
+                  echo '<a href="' . htmlspecialchars(getLegalPageUrl($baseurl, $fl['slug'])) . '" class="s2s-footer-link">' . htmlspecialchars($fl['title']) . '</a>';
+              endforeach;
+          else: ?>
           <a href="<?= $baseurl ?>/impress.php" class="s2s-footer-link">Impressum</a> |
           <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy" class="s2s-footer-link">Privacy Policy</a> |
           <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use" class="s2s-footer-link">Terms of Use</a>
+          <?php endif; ?>
         </p>
       </div>
     </div>

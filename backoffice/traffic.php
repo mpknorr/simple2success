@@ -78,7 +78,7 @@ require_once "parts/navbar.php";
                </div>
             </div>
             <!-- Horizontal cards start -->
-            <section id="horizontal-examples">
+          <!--  <section id="horizontal-examples">
                <div class="row">
                   <div class="col-12">
                      <div class="content-header">Our Recommended Traffic Vendor is Traffic4Me:</div>
@@ -123,11 +123,11 @@ require_once "parts/navbar.php";
                      </div>
                   </div>
                </div>
-            </section>
+            </section>-->
             <section id="horizontal-examples">
                <div class="row">
                   <div class="col-12">
-                     <div class="content-header">Our Second Recommended Traffic Vendor is Udimi:</div>
+                     <div class="content-header">Our Recommended Traffic Vendor is Udimi:</div>
                   </div>
                </div>
                <div class="row match-height">
@@ -152,8 +152,24 @@ require_once "parts/navbar.php";
                               <div class="card-body">
                                  <div class="align-self-center">
                                     <div class="px-3">
-                                       <h4 class="card-title mb-3">Buying Advertising on UDIMI</h4>
-                                       <p class="card-text">A word of caution, please be careful when choosing a click supplier to buy from. It is too easy to 'fake' clicks and if you are buying from new or untrustworthy sellers it is entirely possible that they are scamming you with fake clicks or optins. We can not vouch for every seller on udimi as there are new people joining constantly who may or may not be legitimate clicks suppliers with fresh lists of interested people.</p>
+                                       <h4 class="card-title mb-3">Serious Marketers Buy Solo Ads on Udimi</h4>
+                                       <p class="card-text">Buying traffic should not feel like a gamble.<br>
+<br>
+With Udimi, you can see who you are buying from before you spend a dollar. Seller ratings, order history, and performance data help you make a smarter decision with less risk.<br>
+<br>
+That means you are not guessing.<br>
+You are choosing based on proof.<br>
+<br>
+Udimi also gives buyers an extra layer of protection by keeping orders and payments inside the platform. This creates more security, more transparency, and more peace of mind.<br>
+<br>
+For advertisers, that matters.<br>
+
+Because when you are investing in traffic, you want three things:<br>
+quality, safety, and results.<br>
+<br>
+Udimi makes that easier by giving you access to experienced solo ad sellers across multiple niches, while helping you avoid the uncertainty that comes with random traffic sources.<br>
+<br>
+If you want a simpler and more trusted way to buy solo ads, Udimi is one of the first places marketers look.</p>
                                        <a href="https://udimi.com/a/w2zch/" type="button" class="btn btn-primary" target="_blank">Click here to sign up on UDIMI</a>
                                     </div>
                                  </div>
@@ -186,12 +202,15 @@ require_once "parts/navbar.php";
                                  <div class="align-self-center">
                                     <div class="px-3">
                                        <h4 class="card-title mb-3">Buying Advertising on Traffic Authority:</h4>
-                                       <p class="card-text">Welcome to the Traffic Authority review. Here I'm going to cover TrafficAuthority.com thoroughly so you can make an informed decision as to whether you should get involved with this opportunity or not.
-                                          I hope you enjoy my non-biased Traffic Authority review and my hopes is that by the end of it you know the answer to is Traffic Authority a scam or legit.
-                                          I've been doing reviews on make money online programs and opportunities for some time now. I hope this video on TrafficAuthority.com inspires you and helps you get clear on how to achieve your income goals. :)
-                                          Traffic Authority Review l Are The Packages Worth Buying? (TRUTH REVEALED)
+                                       <p class="card-text">Traffic Authority provides premium traffic, tools, and training for online businesses and has been serving marketers for over 18 years.<br>
+<br>
+Their traffic is focused exclusively on USA and Canada, helping advertisers avoid wasted spend on untargeted international clicks. With delivery usually starting within 7 to 14 days, plus the ability to change your link or pause and restart orders, you get both flexibility and control.<br>
+<br>
+Traffic Authority also tests providers rigorously, monitors performance daily, and uses exclusive wholesale deals plus in-house traffic generation to maintain strong traffic quality at competitive pricing.<br>
+<br>
+If you want traffic that is built for better targeting, better control, and better business results, Traffic Authority offers a strong solution.<br>
                                        </p>
-                                       <button type="button" class="btn btn-primary">Order traffic packages here.</button>
+                                      <a href="https://r1.trafficauthority.net/cpcb40 " type="button" class="btn btn-primary" target="_blank">Order traffic packages here.</a>
                                     </div>
                                  </div>
                               </div>
@@ -233,7 +252,7 @@ require_once "parts/navbar.php";
                                           <li>PLUS...</li>
                                        </ul>
                                        </p>
-                                       <button type="button" class="btn btn-primary">Mail Your Offer to 100-200 New Leads Every Day</button>
+                                       <a href="https://www.myleadgensecret.com/sizzle/?rid=2530" type="button" class="btn btn-primary" target="_blank">Mail Your Offer to 100-200 New Leads Every Day</a>
                                     </div>
                                  </div>
                               </div>

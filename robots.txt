@@ -3,6 +3,7 @@ User-agent: *
 # Legal pages — noindex via meta tag, also blocked here as fallback
 Disallow: /impress.php
 Disallow: /legal.php
+Disallow: /unsubscribe.php
 
 # Admin and internal areas
 Disallow: /admin/

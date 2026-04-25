@@ -3,6 +3,7 @@ require_once '../includes/conn.php';
 require_once '../includes/PHPMailer/src/Exception.php';
 require_once '../includes/PHPMailer/src/PHPMailer.php';
 require_once '../includes/PHPMailer/src/SMTP.php';
+require_once '../includes/emailFooter.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -70,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["email"])) {
                 $body
             );
             $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $mail->Body    = $body;
+            $mail->Body    = $body . renderEmailFooter($link, 'password_reset', (int)$user['leadid']);
             $mail->send();
         } catch (Exception $e) {
             // Mail-Fehler still ignorieren — User sieht immer Erfolgsmeldung (Sicherheit)

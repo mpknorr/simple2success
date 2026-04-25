@@ -208,9 +208,19 @@ require_once __DIR__ . '/../includes/conn.php';
 
   <div class="footer-bar">
     &copy; <?= date('Y') ?> Simple2Success. All Rights Reserved. &nbsp;
+    <?php
+    @include_once __DIR__ . '/../includes/legal.php';
+    $_fb = function_exists('getLegalFooterLinks') ? getLegalFooterLinks($link) : [];
+    if (!empty($_fb) && function_exists('getLegalPageUrl')):
+        foreach ($_fb as $i => $fl):
+            echo $i > 0 ? ' | ' : '';
+            echo '<a href="' . htmlspecialchars(getLegalPageUrl($baseurl, $fl['slug'])) . '">' . htmlspecialchars($fl['title']) . '</a>';
+        endforeach;
+    else: ?>
     <a href="<?= $baseurl ?>/impress.php">Impressum</a> |
     <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy">Privacy Policy</a> |
     <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use">Terms of Use</a>
+    <?php endif; ?>
   </div>
 </body>
 </html>

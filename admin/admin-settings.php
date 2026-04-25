@@ -22,6 +22,32 @@ $error         = '';
 $trigger_result = '';
 $success_tracking = '';
 $success_leaderboard = '';
+$success_email_footer = '';
+
+// ── One-time schema migration (idempotent) ───────────────────────────────────
+// Add email_templates.category (transaction/marketing)
+$col = mysqli_fetch_assoc(mysqli_query($link,
+    "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='email_templates' AND COLUMN_NAME='category'"));
+if (!$col) {
+    @mysqli_query($link, "ALTER TABLE email_templates
+        ADD COLUMN category ENUM('transaction','marketing') NOT NULL DEFAULT 'transaction'");
+    @mysqli_query($link, "UPDATE email_templates SET category='marketing'
+        WHERE template_key IN ('daily_leads','trigger_clicked_not_converted','trigger_step2_done_no_step4')");
+}
+// Add users.marketing_optout + unsubscribe_token
+$col = mysqli_fetch_assoc(mysqli_query($link,
+    "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='users' AND COLUMN_NAME='marketing_optout'"));
+if (!$col) {
+    @mysqli_query($link, "ALTER TABLE users ADD COLUMN marketing_optout TINYINT(1) NOT NULL DEFAULT 0");
+}
+$col = mysqli_fetch_assoc(mysqli_query($link,
+    "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='users' AND COLUMN_NAME='unsubscribe_token'"));
+if (!$col) {
+    @mysqli_query($link, "ALTER TABLE users ADD COLUMN unsubscribe_token VARCHAR(64) DEFAULT NULL");
+}
 
 // ── Ensure tracking_legal_links table exists (multilingual-ready) ─────────────
 mysqli_query($link, "CREATE TABLE IF NOT EXISTS tracking_legal_links (
@@ -95,6 +121,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_leaderboard'])) 
     $target = max(10, min(2000, $target));
     saveSetting($link, 'fake_leaderboard_target', (string)$target);
     $success_leaderboard = 'Leaderboard-Einstellungen gespeichert.';
+}
+
+// ── POST: Save email footer settings ──────────────────────────────────────────
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_email_footer'])) {
+    $imp  = filter_var(trim($_POST['email_impressum_url'] ?? ''), FILTER_SANITIZE_URL);
+    $priv = filter_var(trim($_POST['email_privacy_url']   ?? ''), FILTER_SANITIZE_URL);
+    saveSetting($link, 'email_impressum_url', $imp);
+    saveSetting($link, 'email_privacy_url',   $priv);
+    $success_email_footer = 'E-Mail Footer Links saved.';
 }
 
 // ── POST: Save SMTP settings ──────────────────────────────────────────────────
@@ -208,6 +243,12 @@ $pages = [
     <?php if ($success_leaderboard): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="ft-check-circle mr-1"></i> <?= $success_leaderboard ?>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    <?php endif; ?>
+    <?php if ($success_email_footer): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="ft-check-circle mr-1"></i> <?= $success_email_footer ?>
         <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
     </div>
     <?php endif; ?>
@@ -726,6 +767,60 @@ $pages = [
             </div>
         </div>
     </div><!-- /row Leaderboard -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- Section E: E-Mail Footer Links                                         -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <?php
+    $ef_imp  = getSetting($link, 'email_impressum_url');
+    $ef_priv = getSetting($link, 'email_privacy_url');
+    $ef_imp_default  = rtrim($baseurl, '/') . '/impress.php';
+    $ef_priv_default = rtrim($baseurl, '/') . '/legal.php?doc=privacy-policy';
+    ?>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="border-left:4px solid #2ecc71;">
+                    <h4 class="card-title m-0"><i class="ft-mail mr-1" style="color:#2ecc71;"></i> E-Mail Footer Links</h4>
+                </div>
+                <div class="card-content">
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label>Imprint URL</label>
+                                        <input type="url" name="email_impressum_url" class="form-control"
+                                               value="<?= htmlspecialchars($ef_imp) ?>"
+                                               placeholder="<?= htmlspecialchars($ef_imp_default) ?>">
+                                        <small class="text-muted">Leave empty to use default: <code><?= htmlspecialchars($ef_imp_default) ?></code></small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Privacy Policy URL</label>
+                                        <input type="url" name="email_privacy_url" class="form-control"
+                                               value="<?= htmlspecialchars($ef_priv) ?>"
+                                               placeholder="<?= htmlspecialchars($ef_priv_default) ?>">
+                                        <small class="text-muted">Leave empty to use default: <code><?= htmlspecialchars($ef_priv_default) ?></code></small>
+                                    </div>
+                                    <button type="submit" name="save_email_footer" class="btn btn-primary">
+                                        <i class="ft-save mr-1"></i> Save
+                                    </button>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="alert" style="background:rgba(46,204,113,0.08); border-left:3px solid #2ecc71;">
+                                        <h5 style="color:#2ecc71; margin-top:0;"><i class="ft-info mr-1"></i> About</h5>
+                                        <p class="mb-1">These URLs appear in the footer of every outgoing email.</p>
+                                        <p class="mb-1"><strong>Marketing emails</strong> (follow-up sequences, behavioral triggers, daily lead notifications) additionally include a one-click unsubscribe link.</p>
+                                        <p class="mb-0"><strong>Transaction emails</strong> (welcome, password reset, support, new member) do <strong>not</strong> include unsubscribe.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /row Email Footer -->
 
 </div><!-- /content-wrapper -->
 </div><!-- /main-content -->

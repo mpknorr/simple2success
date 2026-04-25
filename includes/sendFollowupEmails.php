@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 require_once __DIR__ . '/PHPMailer/src/Exception.php';
 require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/emailFooter.php';
 
 function getSmtpSettingFU($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -209,6 +210,8 @@ function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
         $toEmail = $rec['email'];
         $toName  = $rec['name'] ?: $toEmail;
 
+        if (emailFooter_shouldSkip($link, $uid, 'trigger_clicked_not_converted')) continue;
+
         $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}'],
                                [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl],
                                $tpl['body']);
@@ -216,6 +219,7 @@ function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
                                $tpl['subject']);
         $body = injectClickTracking($body, $base_url, $uid, 0);
+        $body .= renderEmailFooter($link, 'trigger_clicked_not_converted', $uid);
 
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         if (sendSingleEmailFU($smtpConfig, $toEmail, $toName, $subject, $body)) {
@@ -260,6 +264,8 @@ function sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url) {
         $toEmail = $rec['email'];
         $toName  = $rec['name'] ?: $toEmail;
 
+        if (emailFooter_shouldSkip($link, $uid, 'trigger_step2_done_no_step4')) continue;
+
         $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}'],
                                [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl],
                                $tpl['body']);
@@ -267,6 +273,7 @@ function sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url) {
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
                                $tpl['subject']);
         $body    = injectClickTracking($body, $base_url, $uid, 0);
+        $body   .= renderEmailFooter($link, 'trigger_step2_done_no_step4', $uid);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         if (sendSingleEmailFU($smtpConfig, $toEmail, $toName, $subject, $body)) {
@@ -331,12 +338,17 @@ function sendFollowupEmails($link) {
                 $toEmail = $rec['email'];
                 $toName  = $rec['name'] ?: $toEmail;
 
+                // Skip opted-out marketing recipients
+                $fuKey = 'followup_seq_' . $seq_id;
+                if (emailFooter_shouldSkip($link, $uid, $fuKey)) continue;
+
                 $variant      = getAbVariant($link, $uid);
                 $finalSubject = applyAbVariant($seq['subject'], $seq['subject_b'] ?? '', $variant);
 
                 $personalSubject = str_replace(['{{name}}', '{{email}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail)], $finalSubject);
                 $personalBody    = str_replace(['{{name}}', '{{email}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail)], $body);
                 $personalBody    = injectClickTracking($personalBody, $base_url, $uid, $seq_id);
+                $personalBody   .= renderEmailFooter($link, $fuKey, $uid);
 
                 $mail = new PHPMailer(true);
                 try {

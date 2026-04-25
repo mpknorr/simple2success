@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 require_once __DIR__ . '/PHPMailer/src/Exception.php';
 require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/emailFooter.php';
 
 function getSmtpSettingWelcome($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -48,7 +49,7 @@ function sendWelcomeMail($link, $toEmail, $toName, $plainPassword, $loginUrl) {
         $mail->setFrom($fromEmail ?: 'info@simple2success.com', $fromName ?: 'Simple2Success');
         $mail->addAddress($toEmail, $displayName);
         $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $mail->Body    = $body;
+        $mail->Body    = $body . renderEmailFooter($link, 'welcome_user', 0);
 
         $mail->send();
         return true;

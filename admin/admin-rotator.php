@@ -708,164 +708,164 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
 
     </div><!-- /.tab-content -->
 
-    <!-- ════════ Modals ════════ -->
-    <div class="modal fade" id="modalCreateRotator" tabindex="-1">
-      <div class="modal-dialog"><div class="modal-content">
-        <form method="POST">
-          <input type="hidden" name="action" value="create_link_rotator">
-          <div class="modal-header"><h5 class="modal-title">Neuen Rotator erstellen</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Name *</label>
-              <input type="text" name="name" class="form-control" placeholder="z.B. Summer Campaign" required>
-            </div>
-            <div class="form-group">
-              <label>Slug (URL-Kürzel)</label>
-              <input type="text" name="slug" class="form-control" placeholder="summer-sale (leer lassen = automatisch aus Name)">
-              <small class="text-muted">Nur a–z, 0–9 und Bindestriche. Wird zu: <code><?= htmlspecialchars($baseurl) ?>/r/&lt;slug&gt;</code></small>
-            </div>
-            <div class="form-group">
-              <label>Rotation Mode</label>
-              <select name="rotation_mode" class="form-control">
-                <option value="random">Random (gewichtet)</option>
-                <option value="sequential">Sequential (erster aktiver im Pool)</option>
-                <option value="balanced">Balanced (wenigste Klicks zuerst)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Fallback URL</label>
-              <input type="url" name="fallback_url" class="form-control" placeholder="https://example.com (wenn keine Items verfügbar)">
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-            <button type="submit" class="btn btn-primary">Erstellen</button>
-          </div>
-        </form>
-      </div></div>
-    </div>
-
-    <div class="modal fade" id="modalEditRotator" tabindex="-1">
-      <div class="modal-dialog"><div class="modal-content">
-        <form method="POST">
-          <input type="hidden" name="action" value="edit_link_rotator">
-          <input type="hidden" name="rotator_id" value="">
-          <div class="modal-header"><h5 class="modal-title">Rotator bearbeiten</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Name *</label>
-              <input type="text" name="name" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label>Rotation Mode</label>
-              <select name="rotation_mode" class="form-control">
-                <option value="random">Random (gewichtet)</option>
-                <option value="sequential">Sequential</option>
-                <option value="balanced">Balanced</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Fallback URL</label>
-              <input type="url" name="fallback_url" class="form-control" placeholder="https://example.com">
-            </div>
-            <div class="form-group">
-              <div class="custom-control custom-switch">
-                <input type="checkbox" class="custom-control-input" id="editActive" name="is_active">
-                <label class="custom-control-label" for="editActive">Aktiv</label>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-            <button type="submit" class="btn btn-primary">Speichern</button>
-          </div>
-        </form>
-      </div></div>
-    </div>
-
-    <div class="modal fade" id="modalAddItem" tabindex="-1">
-      <div class="modal-dialog"><div class="modal-content">
-        <form method="POST">
-          <input type="hidden" name="action" value="add_rotator_item">
-          <input type="hidden" name="rotator_id" value="<?= (int)$manage_rid ?>">
-          <div class="modal-header"><h5 class="modal-title">Link hinzufügen</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Name *</label>
-              <input type="text" name="item_name" class="form-control" placeholder="z.B. Landing Page A" required>
-            </div>
-            <div class="form-group">
-              <label>Ziel-URL *</label>
-              <input type="url" name="item_url" class="form-control" placeholder="https://example.com/page" required>
-            </div>
-            <div class="row">
-              <div class="col-6">
-                <div class="form-group">
-                  <label>Weight (Gewichtung)</label>
-                  <input type="number" name="weight" class="form-control" value="1" min="1" max="100">
-                  <small class="text-muted">Höher = öfter ausgewählt</small>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="form-group">
-                  <label>Click Limit</label>
-                  <input type="number" name="click_limit" class="form-control" value="0" min="0">
-                  <small class="text-muted">0 = unbegrenzt</small>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-            <button type="submit" class="btn btn-primary">Hinzufügen</button>
-          </div>
-        </form>
-      </div></div>
-    </div>
-
-    <div class="modal fade" id="modalEditItem" tabindex="-1">
-      <div class="modal-dialog"><div class="modal-content">
-        <form method="POST">
-          <input type="hidden" name="action" value="edit_rotator_item">
-          <input type="hidden" name="item_id" value="">
-          <div class="modal-header"><h5 class="modal-title">Link bearbeiten</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Name *</label>
-              <input type="text" name="item_name" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label>Ziel-URL *</label>
-              <input type="url" name="item_url" class="form-control" required>
-            </div>
-            <div class="row">
-              <div class="col-6">
-                <div class="form-group">
-                  <label>Weight</label>
-                  <input type="number" name="weight" class="form-control" min="1" max="100">
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="form-group">
-                  <label>Click Limit</label>
-                  <input type="number" name="click_limit" class="form-control" min="0">
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-            <button type="submit" class="btn btn-primary">Speichern</button>
-          </div>
-        </form>
-      </div></div>
-    </div>
-
 </div>
 </div>
 <?php require_once "../backoffice/parts/footer.php"; ?>
 <button class="btn btn-primary scroll-top" type="button"><i class="ft-arrow-up"></i></button>
 </div>
+</div>
+
+<!-- ════════ Modals (body-root to avoid stacking-context bugs from .wrapper transforms) ════════ -->
+<div class="modal fade" id="modalCreateRotator" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document"><div class="modal-content">
+    <form method="POST" action="admin-rotator.php?tab=link">
+      <input type="hidden" name="action" value="create_link_rotator">
+      <div class="modal-header"><h5 class="modal-title">Neuen Rotator erstellen</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="z.B. Summer Campaign" required>
+        </div>
+        <div class="form-group">
+          <label>Slug (URL-Kürzel)</label>
+          <input type="text" name="slug" class="form-control" placeholder="summer-sale (leer lassen = automatisch aus Name)">
+          <small class="text-muted">Nur a–z, 0–9 und Bindestriche. Wird zu: <code><?= htmlspecialchars($baseurl) ?>/r/&lt;slug&gt;</code></small>
+        </div>
+        <div class="form-group">
+          <label>Rotation Mode</label>
+          <select name="rotation_mode" class="form-control">
+            <option value="random">Random (gewichtet)</option>
+            <option value="sequential">Sequential (erster aktiver im Pool)</option>
+            <option value="balanced">Balanced (wenigste Klicks zuerst)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fallback URL</label>
+          <input type="url" name="fallback_url" class="form-control" placeholder="https://example.com (wenn keine Items verfügbar)">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+        <button type="submit" class="btn btn-primary">Erstellen</button>
+      </div>
+    </form>
+  </div></div>
+</div>
+
+<div class="modal fade" id="modalEditRotator" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document"><div class="modal-content">
+    <form method="POST" action="admin-rotator.php?tab=link">
+      <input type="hidden" name="action" value="edit_link_rotator">
+      <input type="hidden" name="rotator_id" value="">
+      <div class="modal-header"><h5 class="modal-title">Rotator bearbeiten</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Rotation Mode</label>
+          <select name="rotation_mode" class="form-control">
+            <option value="random">Random (gewichtet)</option>
+            <option value="sequential">Sequential</option>
+            <option value="balanced">Balanced</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fallback URL</label>
+          <input type="url" name="fallback_url" class="form-control" placeholder="https://example.com">
+        </div>
+        <div class="form-group">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="editActive" name="is_active">
+            <label class="custom-control-label" for="editActive">Aktiv</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+        <button type="submit" class="btn btn-primary">Speichern</button>
+      </div>
+    </form>
+  </div></div>
+</div>
+
+<div class="modal fade" id="modalAddItem" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document"><div class="modal-content">
+    <form method="POST" action="admin-rotator.php?tab=link&rotator_id=<?= (int)$manage_rid ?>">
+      <input type="hidden" name="action" value="add_rotator_item">
+      <input type="hidden" name="rotator_id" value="<?= (int)$manage_rid ?>">
+      <div class="modal-header"><h5 class="modal-title">Link hinzufügen</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" name="item_name" class="form-control" placeholder="z.B. Landing Page A" required>
+        </div>
+        <div class="form-group">
+          <label>Ziel-URL *</label>
+          <input type="url" name="item_url" class="form-control" placeholder="https://example.com/page" required>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label>Weight (Gewichtung)</label>
+              <input type="number" name="weight" class="form-control" value="1" min="1" max="100">
+              <small class="text-muted">Höher = öfter ausgewählt</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label>Click Limit</label>
+              <input type="number" name="click_limit" class="form-control" value="0" min="0">
+              <small class="text-muted">0 = unbegrenzt</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+        <button type="submit" class="btn btn-primary">Hinzufügen</button>
+      </div>
+    </form>
+  </div></div>
+</div>
+
+<div class="modal fade" id="modalEditItem" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document"><div class="modal-content">
+    <form method="POST" action="admin-rotator.php?tab=link&rotator_id=<?= (int)$manage_rid ?>">
+      <input type="hidden" name="action" value="edit_rotator_item">
+      <input type="hidden" name="item_id" value="">
+      <div class="modal-header"><h5 class="modal-title">Link bearbeiten</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" name="item_name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Ziel-URL *</label>
+          <input type="url" name="item_url" class="form-control" required>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label>Weight</label>
+              <input type="number" name="weight" class="form-control" min="1" max="100">
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label>Click Limit</label>
+              <input type="number" name="click_limit" class="form-control" min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+        <button type="submit" class="btn btn-primary">Speichern</button>
+      </div>
+    </form>
+  </div></div>
 </div>
 
 <div class="sidenav-overlay"></div>

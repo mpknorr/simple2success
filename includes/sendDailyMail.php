@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 require_once __DIR__ . '/PHPMailer/src/Exception.php';
 require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/emailFooter.php';
 
 function getSmtpSettingDL($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -63,6 +64,9 @@ function sendDailyLeadsNotifications($link) {
         $memberEmail = $member['email'];
         $memberName  = $member['name'] ?: $memberEmail;
 
+        // Skip users who opted out of marketing emails
+        if (emailFooter_shouldSkip($link, $memberId, 'daily_leads')) continue;
+
         // Collect today's leads for this member
         $leadsRes = mysqli_query($link,
             "SELECT email FROM users
@@ -113,7 +117,7 @@ function sendDailyLeadsNotifications($link) {
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($memberEmail, $memberName);
             $mail->Subject = html_entity_decode($personalSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $mail->Body    = $personalBody;
+            $mail->Body    = $personalBody . renderEmailFooter($link, 'daily_leads', $memberId);
             $mail->send();
             $sent++;
         } catch (Exception $e) {

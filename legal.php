@@ -14,7 +14,7 @@ require_once __DIR__ . '/includes/legal.php';
 
 legalEnsureTable($link);
 
-$allowedSlugs = ['privacy-policy', 'terms-of-use'];
+$allowedSlugs = ['privacy-policy', 'terms-of-use', 'income-disclaimer'];
 $slug = isset($_GET['doc']) ? trim($_GET['doc']) : '';
 
 if (!in_array($slug, $allowedSlugs, true)) {
