@@ -87,3 +87,27 @@ ttq.page();
 <?php
     }
 }
+
+// ── Landing page visit tracking (click-to-lead analytics) ────────────────────
+// Detect link1-4 / linkp1-4 from URL path; skip bots
+$_pvUri  = $_SERVER['REQUEST_URI'] ?? '';
+if (preg_match('#/(link[p]?\d+)/#i', $_pvUri, $_pvM)) {
+    $_pvUA    = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+    $_pvIsBot = (bool)preg_match('/bot|crawler|spider|slurp|curl|wget|python|java\//', $_pvUA);
+    if (!$_pvIsBot) {
+        mysqli_query($link, "CREATE TABLE IF NOT EXISTS page_visits (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            page VARCHAR(100) NOT NULL DEFAULT '',
+            source VARCHAR(100) NOT NULL DEFAULT '',
+            ip VARCHAR(45) NOT NULL DEFAULT '',
+            visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_page (page),
+            INDEX idx_source (source),
+            INDEX idx_visited (visited_at)
+        )");
+        $_pvPage   = mysqli_real_escape_string($link, strtolower($_pvM[1]));
+        $_pvSource = mysqli_real_escape_string($link, substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', $_GET['source'] ?? ''), 0, 100));
+        $_pvIp     = mysqli_real_escape_string($link, substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45));
+        mysqli_query($link, "INSERT INTO page_visits (page, source, ip) VALUES ('$_pvPage', '$_pvSource', '$_pvIp')");
+    }
+}

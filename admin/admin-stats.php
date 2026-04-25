@@ -22,6 +22,7 @@ $f_to      = isset($_GET['to'])      && $_GET['to']      !== '' ? $_GET['to']   
 $f_country = isset($_GET['country']) && $_GET['country'] !== '' ? $_GET['country'] : '';
 $f_lang    = isset($_GET['lang'])    && $_GET['lang']    !== '' ? $_GET['lang']    : '';
 $f_page    = isset($_GET['page'])    && $_GET['page']    !== '' ? $_GET['page']    : '';
+$f_source  = isset($_GET['source'])  && $_GET['source']  !== '' ? $_GET['source']  : '';
 
 // Sanitise
 $sf_from    = mysqli_real_escape_string($link, $f_from);
@@ -29,17 +30,20 @@ $sf_to      = mysqli_real_escape_string($link, $f_to);
 $sf_country = mysqli_real_escape_string($link, $f_country);
 $sf_lang    = mysqli_real_escape_string($link, $f_lang);
 $sf_page    = mysqli_real_escape_string($link, $f_page);
+$sf_source  = mysqli_real_escape_string($link, $f_source);
 
 // Build WHERE clause for all queries
 $where = "WHERE timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
 if ($sf_country !== '') $where .= " AND country_detected = '$sf_country'";
 if ($sf_lang    !== '') $where .= " AND lang = '$sf_lang'";
 if ($sf_page    !== '') $where .= " AND page = '$sf_page'";
+if ($sf_source  !== '') $where .= " AND source = '$sf_source'";
 
 // ── Filter dropdown options ───────────────────────────────────────────────────
 $opt_countries = mysqli_query($link, "SELECT DISTINCT country_detected FROM users WHERE country_detected != '' AND country_detected IS NOT NULL ORDER BY country_detected");
 $opt_langs     = mysqli_query($link, "SELECT DISTINCT lang FROM users WHERE lang != '' AND lang IS NOT NULL ORDER BY lang");
 $opt_pages     = mysqli_query($link, "SELECT DISTINCT page FROM users WHERE page != '' AND page IS NOT NULL ORDER BY page");
+$opt_sources   = mysqli_query($link, "SELECT DISTINCT source FROM users WHERE source != '' AND source IS NOT NULL ORDER BY source");
 
 // ── KPI queries ───────────────────────────────────────────────────────────────
 $q = function($sql) use ($link) { return mysqli_fetch_assoc(mysqli_query($link, $sql))['c']; };
@@ -77,6 +81,70 @@ $bd_page    = breakdownQuery($link, 'page',             $where);
 $bd_source  = breakdownQuery($link, 'source',           $where);
 $bd_country = breakdownQuery($link, 'country_detected', $where, 30);
 $bd_lang    = breakdownQuery($link, 'lang',             $where);
+
+function renderLandingPageBreakdown(array $rows, int $totalSignups, bool $hasVisits): void {
+    if (empty($rows)) {
+        echo '<p style="padding:.75rem 1.25rem;color:rgba(255,255,255,.3);font-size:.82rem;margin:0;">Keine Daten.</p>';
+        return;
+    }
+    $max = max(1, $rows[0]['signups'] ?? 1);
+    echo '<div class="table-responsive"><table class="st-table"><thead><tr>';
+    echo '<th>Page</th>';
+    if ($hasVisits) echo '<th class="text-right">Klicks</th>';
+    echo '<th class="text-right">Leads</th>';
+    if ($hasVisits) echo '<th class="text-right">Lead-Rate</th>';
+    echo '<th class="text-right">Step1</th><th class="text-right">Step2</th><th style="min-width:80px;">Anteil</th>';
+    echo '</tr></thead><tbody>';
+    foreach ($rows as $r) {
+        $visits  = (int)($r['visits'] ?? 0);
+        $signups = (int)$r['signups'];
+        $ctr     = $visits > 0 ? round($signups / $visits * 100, 1) : null;
+        $pct_total = $totalSignups > 0 ? round($signups / $totalSignups * 100) : 0;
+        $bar_pct   = $max > 0 ? round($signups / $max * 100) : 0;
+        $s1_pct    = $signups > 0 ? round($r['step1'] / $signups * 100) : 0;
+        $s2_pct    = $signups > 0 ? round($r['step2'] / $signups * 100) : 0;
+        // Lead-rate color: ≥20% green, 10-20% yellow, <10% red
+        $ctrColor  = $ctr === null ? '' : ($ctr >= 20 ? '#28c76f' : ($ctr >= 10 ? '#ff9f43' : '#ea5455'));
+        echo '<tr>';
+        echo '<td><strong>' . htmlspecialchars($r['dim'] ?: '—') . '</strong></td>';
+        if ($hasVisits) {
+            echo '<td class="text-right">' . ($visits > 0 ? number_format($visits) : '<span style="opacity:.3;">—</span>') . '</td>';
+        }
+        echo '<td class="text-right"><strong>' . $signups . '</strong> <small style="opacity:.4;">(' . $pct_total . '%)</small></td>';
+        if ($hasVisits) {
+            echo '<td class="text-right" style="font-weight:700;color:' . $ctrColor . ';">'
+               . ($ctr !== null ? $ctr . '%' : '<span style="opacity:.3;">—</span>') . '</td>';
+        }
+        echo '<td class="text-right" style="color:#00cfe8;">' . $r['step1'] . ' <small style="opacity:.4;">(' . $s1_pct . '%)</small></td>';
+        echo '<td class="text-right" style="color:#9c8bd4;">' . $r['step2'] . ' <small style="opacity:.4;">(' . $s2_pct . '%)</small></td>';
+        echo '<td><div class="st-bar-wrap"><div class="st-bar-fill" style="width:' . $bar_pct . '%;"></div></div></td>';
+        echo '</tr>';
+    }
+    echo '</tbody></table></div>';
+}
+
+// ── Landing page breakdown with visits (click-to-lead) ────────────────────────
+$_pvTableExists = mysqli_num_rows(mysqli_query($link, "SHOW TABLES LIKE 'page_visits'")) > 0;
+$bd_page_visits = [];
+if ($_pvTableExists) {
+    $pvWhere = "visited_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
+    if ($sf_source !== '') $pvWhere .= " AND source = '$sf_source'";
+    $pvSql = "SELECT u.page AS dim,
+                     COUNT(DISTINCT u.leadid) AS signups,
+                     SUM(u.step1_at IS NOT NULL) AS step1,
+                     SUM(u.username IS NOT NULL AND u.username != '') AS step2,
+                     COALESCE(v.visits, 0) AS visits
+              FROM users u
+              LEFT JOIN (
+                  SELECT page, COUNT(*) AS visits FROM page_visits WHERE $pvWhere GROUP BY page
+              ) v ON v.page = u.page
+              $where
+              GROUP BY u.page
+              ORDER BY signups DESC
+              LIMIT 20";
+    $pvRes = mysqli_query($link, $pvSql);
+    if ($pvRes) $bd_page_visits = mysqli_fetch_all($pvRes, MYSQLI_ASSOC);
+}
 
 // ── Daily trend (respects date filter) ───────────────────────────────────────
 $daily_res = mysqli_query($link, "SELECT DATE(timestamp) as day, COUNT(*) as c FROM users
@@ -230,6 +298,7 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
             <?= $f_country ? ' · ' . htmlspecialchars(strtoupper($f_country)) : '' ?>
             <?= $f_lang    ? ' · ' . htmlspecialchars(strtoupper($f_lang))    : '' ?>
             <?= $f_page    ? ' · ' . htmlspecialchars($f_page)                : '' ?>
+            <?= $f_source  ? ' · Source: <strong>' . htmlspecialchars($f_source) . '</strong>' : '' ?>
         </small>
     </div>
 </div>
@@ -278,7 +347,18 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
                 <?php endwhile; ?>
             </select>
         </div>
-        <div class="col-6 col-sm-4 col-lg-2 d-flex align-items-end" style="gap:.4rem;">
+        <div class="col-6 col-sm-4 col-lg-2">
+            <label>Traffic-Quelle</label>
+            <select name="source" class="form-control form-control-sm">
+                <option value="">Alle Quellen</option>
+                <?php while ($r = mysqli_fetch_assoc($opt_sources)): ?>
+                <option value="<?= htmlspecialchars($r['source']) ?>" <?= $f_source === $r['source'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($r['source']) ?>
+                </option>
+                <?php endwhile; ?>
+            </select>
+        </div>
+        <div class="col-12 col-sm-4 col-lg-2 d-flex align-items-end" style="gap:.4rem;">
             <button type="submit" class="btn btn-primary btn-sm s2s-btn-brand flex-grow-1">Filtern</button>
             <a href="admin-stats.php" class="btn btn-secondary btn-sm">Reset</a>
         </div>
@@ -426,9 +506,23 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
 <div class="row mb-1">
     <div class="col-lg-6 col-12 mb-1">
         <div class="card" style="margin-bottom:0;">
-            <div class="st-card-header"><i class="ft-layout" style="color:var(--s2s-brand);"></i><h5>Landing Page</h5></div>
+            <div class="st-card-header">
+                <i class="ft-layout" style="color:var(--s2s-brand);"></i>
+                <h5>Landing Page</h5>
+                <?php if ($_pvTableExists): ?>
+                <span style="margin-left:auto;font-size:.75rem;color:var(--s2s-text-42);">Klicks aus head-tracking</span>
+                <?php else: ?>
+                <span style="margin-left:auto;font-size:.75rem;color:var(--s2s-text-42);opacity:.5;" title="Klick-Tracking startet beim nächsten Seitenbesuch">⚠ Tracking noch nicht aktiv</span>
+                <?php endif; ?>
+            </div>
             <div class="card-content">
-                <?php renderBreakdown('Page', 'ft-layout', $bd_page, (int)$kpi_signups); ?>
+                <?php
+                if ($_pvTableExists && !empty($bd_page_visits)) {
+                    renderLandingPageBreakdown($bd_page_visits, (int)$kpi_signups, true);
+                } else {
+                    renderBreakdown('Page', 'ft-layout', $bd_page, (int)$kpi_signups);
+                }
+                ?>
             </div>
         </div>
     </div>
