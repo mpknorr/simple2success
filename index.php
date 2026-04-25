@@ -95,11 +95,16 @@ $router->get('/r/([a-zA-Z0-9_-]+)', function($slug) use ($link, $baseurl) {
         }
         $target     = $sel['url'];
         $selectedId = (int)$sel['id'];
+        // Item-level source_param overrides URL-level ?source
+        if (!empty($sel['source_param'])) {
+            $source = $sel['source_param'];
+        }
         mysqli_query($link, "UPDATE link_rotator_items SET clicks=clicks+1 WHERE id=$selectedId");
     }
 
-    $ip    = mysqli_real_escape_string($link, $_SERVER['REMOTE_ADDR'] ?? '');
-    $iidSql = $selectedId ? (string)$selectedId : 'NULL';
+    $ip       = mysqli_real_escape_string($link, $_SERVER['REMOTE_ADDR'] ?? '');
+    $iidSql   = $selectedId ? (string)$selectedId : 'NULL';
+    $sourceEsc = mysqli_real_escape_string($link, $source);
     mysqli_query($link, "INSERT INTO link_rotator_stats (rotator_id, item_id, source_param, ip_address)
         VALUES ($rid, $iidSql, '$sourceEsc', '$ip')");
 

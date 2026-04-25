@@ -77,6 +77,11 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS link_rotator_stats (
     INDEX idx_rotator (rotator_id),
     INDEX idx_clicked (clicked_at)
 )");
+// Ensure source_param column exists on items (for per-item source tag)
+$_spCols = mysqli_query($link, "SHOW COLUMNS FROM link_rotator_items LIKE 'source_param'");
+if (mysqli_num_rows($_spCols) === 0) {
+    mysqli_query($link, "ALTER TABLE link_rotator_items ADD COLUMN source_param VARCHAR(100) DEFAULT '' AFTER click_limit");
+}
 
 function rot_setting($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -245,35 +250,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $owner = mysqli_fetch_assoc(mysqli_query($link,
             "SELECT id FROM link_rotators WHERE id=$rid AND user_id=$userid LIMIT 1"));
         if ($owner) {
-            $iname  = mysqli_real_escape_string($link, trim($_POST['item_name'] ?? ''));
-            $url    = filter_var(trim($_POST['item_url'] ?? ''), FILTER_VALIDATE_URL);
-            $urlE   = $url ? mysqli_real_escape_string($link, $url) : '';
-            $weight = max(1, (int)($_POST['weight'] ?? 1));
-            $limit  = max(0, (int)($_POST['click_limit'] ?? 0));
+            $iname      = mysqli_real_escape_string($link, trim($_POST['item_name'] ?? ''));
+            $url        = filter_var(trim($_POST['item_url'] ?? ''), FILTER_VALIDATE_URL);
+            $urlE       = $url ? mysqli_real_escape_string($link, $url) : '';
+            $weight     = max(1, (int)($_POST['weight'] ?? 1));
+            $limit      = max(0, (int)($_POST['click_limit'] ?? 0));
+            $sourceP    = substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', $_POST['source_param'] ?? ''), 0, 100);
+            $sourcePE   = mysqli_real_escape_string($link, $sourceP);
             if (!$iname || !$urlE) {
                 $error = 'Name und gültige URL erforderlich.';
             } else {
                 $maxp = mysqli_fetch_assoc(mysqli_query($link,
                     "SELECT COALESCE(MAX(position),0)+1 AS mp FROM link_rotator_items WHERE rotator_id=$rid"));
                 $pos = (int)$maxp['mp'];
-                mysqli_query($link, "INSERT INTO link_rotator_items (rotator_id, name, url, weight, click_limit, position)
-                    VALUES ($rid, '$iname', '$urlE', $weight, $limit, $pos)");
+                mysqli_query($link, "INSERT INTO link_rotator_items (rotator_id, name, url, weight, click_limit, source_param, position)
+                    VALUES ($rid, '$iname', '$urlE', $weight, $limit, '$sourcePE', $pos)");
                 $success = 'Item hinzugefügt.';
             }
         }
     }
 
     if ($action === 'edit_rotator_item') {
-        $iid    = (int)($_POST['item_id'] ?? 0);
-        $iname  = mysqli_real_escape_string($link, trim($_POST['item_name'] ?? ''));
-        $url    = filter_var(trim($_POST['item_url'] ?? ''), FILTER_VALIDATE_URL);
-        $urlE   = $url ? mysqli_real_escape_string($link, $url) : '';
-        $weight = max(1, (int)($_POST['weight'] ?? 1));
-        $limit  = max(0, (int)($_POST['click_limit'] ?? 0));
+        $iid      = (int)($_POST['item_id'] ?? 0);
+        $iname    = mysqli_real_escape_string($link, trim($_POST['item_name'] ?? ''));
+        $url      = filter_var(trim($_POST['item_url'] ?? ''), FILTER_VALIDATE_URL);
+        $urlE     = $url ? mysqli_real_escape_string($link, $url) : '';
+        $weight   = max(1, (int)($_POST['weight'] ?? 1));
+        $limit    = max(0, (int)($_POST['click_limit'] ?? 0));
+        $sourceP  = substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', $_POST['source_param'] ?? ''), 0, 100);
+        $sourcePE = mysqli_real_escape_string($link, $sourceP);
         if ($iname && $urlE) {
             mysqli_query($link, "UPDATE link_rotator_items i
                 JOIN link_rotators r ON r.id=i.rotator_id AND r.user_id=$userid
-                SET i.name='$iname', i.url='$urlE', i.weight=$weight, i.click_limit=$limit
+                SET i.name='$iname', i.url='$urlE', i.weight=$weight, i.click_limit=$limit, i.source_param='$sourcePE'
                 WHERE i.id=$iid");
             $success = 'Item aktualisiert.';
         } else {
@@ -338,6 +347,55 @@ if ($manage_rid) {
 }
 
 $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
+
+// Stats data for the managed rotator
+$stats_summary   = ['total' => 0, 'fallback' => 0, 'unique_ips' => 0];
+$stats_chart_labels = [];
+$stats_chart_data   = [];
+$stats_per_item  = [];
+$stats_recent    = [];
+if ($manage_rotator) {
+    $rid = (int)$manage_rotator['id'];
+    $sm  = mysqli_fetch_assoc(mysqli_query($link,
+        "SELECT COUNT(*) AS total,
+                SUM(item_id IS NULL OR item_id=0) AS fallback,
+                COUNT(DISTINCT ip_address) AS unique_ips
+         FROM link_rotator_stats WHERE rotator_id=$rid"));
+    if ($sm) $stats_summary = $sm;
+
+    // Clicks per day — last 14 days
+    $dayRes = mysqli_query($link,
+        "SELECT DATE(clicked_at) AS day, COUNT(*) AS cnt
+         FROM link_rotator_stats
+         WHERE rotator_id=$rid AND clicked_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)
+         GROUP BY DATE(clicked_at) ORDER BY day ASC");
+    $dayMap = [];
+    if ($dayRes) { while ($d = mysqli_fetch_assoc($dayRes)) $dayMap[$d['day']] = (int)$d['cnt']; }
+    for ($i = 13; $i >= 0; $i--) {
+        $d = date('Y-m-d', strtotime("-{$i} days"));
+        $stats_chart_labels[] = date('d.m', strtotime($d));
+        $stats_chart_data[]   = $dayMap[$d] ?? 0;
+    }
+
+    // Per-item click stats
+    $piRes = mysqli_query($link,
+        "SELECT i.id, i.name, i.url, i.clicks, i.is_active, i.source_param,
+                COUNT(s.id) AS stat_clicks
+         FROM link_rotator_items i
+         LEFT JOIN link_rotator_stats s ON s.item_id = i.id
+         WHERE i.rotator_id=$rid
+         GROUP BY i.id ORDER BY stat_clicks DESC");
+    if ($piRes) { while ($r = mysqli_fetch_assoc($piRes)) $stats_per_item[] = $r; }
+
+    // Recent clicks
+    $rcRes = mysqli_query($link,
+        "SELECT s.clicked_at, s.ip_address, s.source_param, i.name AS item_name
+         FROM link_rotator_stats s
+         LEFT JOIN link_rotator_items i ON i.id = s.item_id
+         WHERE s.rotator_id=$rid
+         ORDER BY s.clicked_at DESC LIMIT 30");
+    if ($rcRes) { while ($r = mysqli_fetch_assoc($rcRes)) $stats_recent[] = $r; }
+}
 ?>
 <!DOCTYPE html>
 <html class="loading" lang="en">
@@ -659,6 +717,7 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
                     <tr>
                         <th>Name</th>
                         <th>URL</th>
+                        <th class="text-center">Source Tag</th>
                         <th class="text-center">Weight</th>
                         <th class="text-center">Klicks / Limit</th>
                         <th class="text-center">Status</th>
@@ -667,11 +726,18 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
                 </thead>
                 <tbody>
                 <?php if (!$manage_items): ?>
-                    <tr><td colspan="6" class="text-center text-muted py-3">Noch keine Links.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-3">Noch keine Links.</td></tr>
                 <?php else: foreach ($manage_items as $it): ?>
                     <tr>
                         <td><strong><?= htmlspecialchars($it['name']) ?></strong></td>
                         <td><code style="font-size:11px;"><?= htmlspecialchars($it['url']) ?></code></td>
+                        <td class="text-center">
+                            <?php if (!empty($it['source_param'])): ?>
+                            <span class="badge badge-secondary"><?= htmlspecialchars($it['source_param']) ?></span>
+                            <?php else: ?>
+                            <span class="text-muted">—</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="text-center"><?= (int)$it['weight'] ?></td>
                         <td class="text-center">
                             <?= (int)$it['clicks'] ?><?= $it['click_limit'] > 0 ? ' / ' . (int)$it['click_limit'] : '' ?>
@@ -689,7 +755,8 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
                             <button type="button" class="btn btn-sm btn-outline-warning edit-item-btn" data-toggle="modal" data-target="#modalEditItem"
                                 data-id="<?= (int)$it['id'] ?>" data-name="<?= htmlspecialchars($it['name']) ?>"
                                 data-url="<?= htmlspecialchars($it['url']) ?>" data-weight="<?= (int)$it['weight'] ?>"
-                                data-limit="<?= (int)$it['click_limit'] ?>"><i class="ft-edit"></i></button>
+                                data-limit="<?= (int)$it['click_limit'] ?>"
+                                data-source="<?= htmlspecialchars($it['source_param'] ?? '') ?>"><i class="ft-edit"></i></button>
                             <form method="POST" class="d-inline" onsubmit="return confirm('Item löschen?');">
                                 <input type="hidden" name="action" value="delete_rotator_item">
                                 <input type="hidden" name="item_id" value="<?= (int)$it['id'] ?>">
@@ -703,6 +770,101 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
         </div>
     </div>
     <?php endif; ?>
+
+    <?php if ($manage_rotator): ?>
+    <!-- ── Stats Panel ──────────────────────────────────────────────────────── -->
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title mb-0"><i class="ft-bar-chart-2 mr-1" style="color:#b700e0;"></i> Statistics: <?= htmlspecialchars($manage_rotator['name']) ?></h4>
+            <small class="text-muted">Last 14 days + all-time totals</small>
+        </div>
+        <div class="card-body">
+            <!-- Summary row -->
+            <div class="row text-center mb-4">
+                <div class="col-4">
+                    <div style="font-size:32px;font-weight:700;color:#b700e0;"><?= (int)$stats_summary['total'] ?></div>
+                    <small class="text-muted">Total Clicks</small>
+                </div>
+                <div class="col-4">
+                    <div style="font-size:32px;font-weight:700;color:#dc3545;"><?= (int)$stats_summary['fallback'] ?></div>
+                    <small class="text-muted">Fallback Clicks</small>
+                </div>
+                <div class="col-4">
+                    <div style="font-size:32px;font-weight:700;color:#17a2b8;"><?= (int)$stats_summary['unique_ips'] ?></div>
+                    <small class="text-muted">Unique IPs</small>
+                </div>
+            </div>
+            <!-- Chart -->
+            <canvas id="lrClickChart" height="80"></canvas>
+        </div>
+    </div>
+
+    <?php if ($stats_per_item): ?>
+    <div class="card mt-3">
+        <div class="card-header"><h4 class="card-title mb-0">Clicks per Link</h4></div>
+        <div class="card-body p-0">
+            <table class="table mb-0">
+                <thead><tr>
+                    <th>Name</th>
+                    <th>Source Tag</th>
+                    <th class="text-center">Clicks (total)</th>
+                    <th class="text-center">Share</th>
+                    <th class="text-center">Status</th>
+                </tr></thead>
+                <tbody>
+                <?php
+                $totalC = max(1, (int)$stats_summary['total']);
+                foreach ($stats_per_item as $pi):
+                    $share = round((int)$pi['stat_clicks'] / $totalC * 100);
+                ?>
+                <tr>
+                    <td><strong><?= htmlspecialchars($pi['name']) ?></strong><br>
+                        <code style="font-size:10px;"><?= htmlspecialchars(substr($pi['url'], 0, 60)) ?><?= strlen($pi['url']) > 60 ? '…' : '' ?></code></td>
+                    <td><?= !empty($pi['source_param']) ? '<span class="badge badge-secondary">' . htmlspecialchars($pi['source_param']) . '</span>' : '<span class="text-muted">—</span>' ?></td>
+                    <td class="text-center"><span class="badge badge-primary"><?= (int)$pi['stat_clicks'] ?></span></td>
+                    <td class="text-center">
+                        <div class="progress" style="height:8px;width:80px;display:inline-flex;">
+                            <div class="progress-bar" style="width:<?= $share ?>%;background:#b700e0;"></div>
+                        </div>
+                        <small class="ml-1"><?= $share ?>%</small>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge <?= $pi['is_active'] ? 'badge-success' : 'badge-secondary' ?>"><?= $pi['is_active'] ? 'On' : 'Off' ?></span>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($stats_recent): ?>
+    <div class="card mt-3">
+        <div class="card-header"><h4 class="card-title mb-0">Recent Clicks <small class="text-muted font-weight-normal">(last 30)</small></h4></div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead><tr>
+                    <th>Time</th>
+                    <th>IP</th>
+                    <th>Link</th>
+                    <th>Source</th>
+                </tr></thead>
+                <tbody>
+                <?php foreach ($stats_recent as $rc): ?>
+                <tr>
+                    <td style="white-space:nowrap;font-size:12px;"><?= htmlspecialchars($rc['clicked_at']) ?></td>
+                    <td style="font-size:12px;"><?= htmlspecialchars($rc['ip_address']) ?></td>
+                    <td style="font-size:12px;"><?= $rc['item_name'] ? htmlspecialchars($rc['item_name']) : '<span class="text-muted">Fallback</span>' ?></td>
+                    <td style="font-size:12px;"><?= !empty($rc['source_param']) ? '<span class="badge badge-secondary">' . htmlspecialchars($rc['source_param']) . '</span>' : '<span class="text-muted">—</span>' ?></td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
+    <?php endif; ?><!-- /manage_rotator stats -->
 
     </div><!-- /#tab-link -->
 
@@ -733,11 +895,12 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
         </div>
         <div class="form-group">
           <label>Rotation Mode</label>
-          <select name="rotation_mode" class="form-control">
+          <select name="rotation_mode" class="form-control lr-mode-select" data-info="mode-info-create">
             <option value="random">Random (gewichtet)</option>
             <option value="sequential">Sequential (erster aktiver im Pool)</option>
             <option value="balanced">Balanced (wenigste Klicks zuerst)</option>
           </select>
+          <div id="mode-info-create" class="alert alert-info mt-2 mb-0 py-2 px-3" style="font-size:0.82rem;display:none;"></div>
         </div>
         <div class="form-group">
           <label>Fallback URL</label>
@@ -765,11 +928,12 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
         </div>
         <div class="form-group">
           <label>Rotation Mode</label>
-          <select name="rotation_mode" class="form-control">
+          <select name="rotation_mode" class="form-control lr-mode-select" data-info="mode-info-edit">
             <option value="random">Random (gewichtet)</option>
             <option value="sequential">Sequential</option>
             <option value="balanced">Balanced</option>
           </select>
+          <div id="mode-info-edit" class="alert alert-info mt-2 mb-0 py-2 px-3" style="font-size:0.82rem;display:none;"></div>
         </div>
         <div class="form-group">
           <label>Fallback URL</label>
@@ -804,6 +968,10 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
         <div class="form-group">
           <label>Ziel-URL *</label>
           <input type="url" name="item_url" class="form-control" placeholder="https://example.com/page" required>
+        </div>
+        <div class="form-group">
+          <label>Source Tag <small class="text-muted">(optional — appended as ?source= to the destination URL)</small></label>
+          <input type="text" name="source_param" class="form-control" maxlength="100" placeholder="e.g. udimi-gary">
         </div>
         <div class="row">
           <div class="col-6">
@@ -845,6 +1013,10 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
           <label>Ziel-URL *</label>
           <input type="url" name="item_url" class="form-control" required>
         </div>
+        <div class="form-group">
+          <label>Source Tag <small class="text-muted">(optional — appended as ?source= to the destination URL)</small></label>
+          <input type="text" name="source_param" class="form-control" maxlength="100" placeholder="e.g. udimi-gary">
+        </div>
         <div class="row">
           <div class="col-6">
             <div class="form-group">
@@ -876,27 +1048,55 @@ $active_tab = ($_GET['tab'] ?? '') === 'link' || $manage_rid ? 'link' : 'lead';
 <script src="../backoffice/app-assets/js/notification-sidebar.js"></script>
 <script src="../backoffice/app-assets/js/scroll-top.js"></script>
 <script src="../backoffice/assets/js/scripts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
+// ── Rotation mode info texts ────────────────────────────────────────────────
+var lrModeInfo = {
+    random:     'Each click randomly selects from all active links. Weight controls how often each link appears relative to others — a weight of 2 means twice as likely. Best for A/B testing or proportional traffic splits.',
+    sequential: 'Links are served in order (by position). Each new visitor gets the next link in the list, cycling through them evenly. Ideal for filling spots one-by-one in a fixed sequence.',
+    balanced:   'The link with the fewest total clicks is always served next, keeping traffic evenly distributed across all active links regardless of order or weight. Great for equal distribution.'
+};
+function updateModeInfo(select) {
+    var infoId = select.getAttribute('data-info');
+    var box    = document.getElementById(infoId);
+    if (!box) return;
+    var txt = lrModeInfo[select.value];
+    if (txt) { box.textContent = txt; box.style.display = 'block'; }
+    else      { box.style.display = 'none'; }
+}
+document.querySelectorAll('.lr-mode-select').forEach(function(s){
+    s.addEventListener('change', function(){ updateModeInfo(s); });
+    updateModeInfo(s); // show on load if a value is already selected
+});
+
+// ── Edit Rotator modal ──────────────────────────────────────────────────────
 document.querySelectorAll('.edit-btn').forEach(function(b){
     b.addEventListener('click', function(){
         var m = document.getElementById('modalEditRotator');
         m.querySelector('[name=rotator_id]').value    = b.dataset.id;
         m.querySelector('[name=name]').value          = b.dataset.name;
-        m.querySelector('[name=rotation_mode]').value = b.dataset.mode;
+        var modeSelect = m.querySelector('[name=rotation_mode]');
+        modeSelect.value = b.dataset.mode;
         m.querySelector('[name=fallback_url]').value  = b.dataset.fallback;
         m.querySelector('[name=is_active]').checked   = b.dataset.active === '1';
+        updateModeInfo(modeSelect);
     });
 });
+
+// ── Edit Item modal ─────────────────────────────────────────────────────────
 document.querySelectorAll('.edit-item-btn').forEach(function(b){
     b.addEventListener('click', function(){
         var m = document.getElementById('modalEditItem');
-        m.querySelector('[name=item_id]').value     = b.dataset.id;
-        m.querySelector('[name=item_name]').value   = b.dataset.name;
-        m.querySelector('[name=item_url]').value    = b.dataset.url;
-        m.querySelector('[name=weight]').value      = b.dataset.weight;
-        m.querySelector('[name=click_limit]').value = b.dataset.limit;
+        m.querySelector('[name=item_id]').value       = b.dataset.id;
+        m.querySelector('[name=item_name]').value     = b.dataset.name;
+        m.querySelector('[name=item_url]').value      = b.dataset.url;
+        m.querySelector('[name=source_param]').value  = b.dataset.source || '';
+        m.querySelector('[name=weight]').value        = b.dataset.weight;
+        m.querySelector('[name=click_limit]').value   = b.dataset.limit;
     });
 });
+
+// ── Copy button ─────────────────────────────────────────────────────────────
 document.querySelectorAll('.copy-btn').forEach(function(b){
     b.addEventListener('click', function(){
         navigator.clipboard.writeText(b.dataset.url).then(function(){
@@ -906,6 +1106,38 @@ document.querySelectorAll('.copy-btn').forEach(function(b){
         });
     });
 });
+
+// ── Click chart ─────────────────────────────────────────────────────────────
+<?php if ($manage_rotator && !empty($stats_chart_labels)): ?>
+(function(){
+    var ctx = document.getElementById('lrClickChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($stats_chart_labels) ?>,
+            datasets: [{
+                label: 'Clicks per day',
+                data: <?= json_encode($stats_chart_data) ?>,
+                borderColor: '#b700e0',
+                backgroundColor: 'rgba(183,0,224,0.08)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: '#b700e0',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+})();
+<?php endif; ?>
 </script>
 </body>
 </html>
