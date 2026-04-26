@@ -698,8 +698,10 @@ jQuery(function($) {
             const s2   = (r.username && r.username !== '')
                        ? '<span style="background:#9c8bd422;color:#9c8bd4;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step2 ✓</span>' : '';
             const src  = r.source ? '<span style="background:rgba(255,255,255,.07);border-radius:3px;padding:1px 5px;font-size:.72rem;">' + esc(r.source) + '</span>' : '';
-            const dtLabel = type === 'clicks' ? 'Geklickt' : 'Gesendet';
-            const adminUrl = 'admin-users.php?search=' + encodeURIComponent(r.email || '');
+            const dtLabel  = type === 'clicks' ? 'Geklickt' : 'Gesendet';
+            const adminUrl = r.leadid
+                ? 'admin-user-edit.php?id=' + r.leadid
+                : 'admin-users.php?search=' + encodeURIComponent(r.email || '');
 
             html += '<div style="padding:.65rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:.2rem;">'
                   + '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">'

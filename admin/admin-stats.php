@@ -203,9 +203,12 @@ $ev_res   = mysqli_query($link, "SELECT event_type, COUNT(*) AS cnt FROM lead_ev
 $ev_rows  = $ev_res ? mysqli_fetch_all($ev_res, MYSQLI_ASSOC) : [];
 
 $evLabels = [
-    'login'          => '🔓 Logins',
-    'login_failed'   => '⚠️ Fehlgeschlagene Logins',
-    'signup_attempt' => '🔁 Re-signup-Versuche',
+    'login'            => '🔓 Logins',
+    'login_failed'     => '⚠️ Fehlgeschlagene Logins',
+    'signup_attempt'   => '🔁 Re-signup-Versuche',
+    'start_step_click' => '👆 "Nächste Schritte"-Klick (von Dashboard)',
+    'video_play'       => '▶️ Video angeschaut (start.php)',
+    'email_sent'       => '📧 E-Mail gesendet',
 ];
 
 // ── Flag helper ───────────────────────────────────────────────────────────────
@@ -827,7 +830,9 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                        ? '<span style="background:#9c8bd422;color:#9c8bd4;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step2 ✓</span>' : '';
             const src  = r.source ? '<span style="background:rgba(255,255,255,.07);border-radius:3px;padding:1px 5px;font-size:.72rem;">' + esc(r.source) + '</span>' : '';
             const pg   = r.page   ? '<span style="background:rgba(203,46,188,.15);color:#cb2ebc;border-radius:3px;padding:1px 5px;font-size:.72rem;">' + esc(r.page) + '</span>' : '';
-            const adminUrl = 'admin-users.php?search=' + encodeURIComponent(r.email || '');
+            const adminUrl = r.leadid
+                ? 'admin-user-edit.php?id=' + r.leadid
+                : 'admin-users.php?search=' + encodeURIComponent(r.email || '');
 
             html += '<div style="padding:.65rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:.2rem;">'
                   + '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">'

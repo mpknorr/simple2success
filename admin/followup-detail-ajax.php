@@ -19,7 +19,7 @@ if ($seq_id <= 0) {
 
 if ($type === 'clicks') {
     $sql = "SELECT fc.clicked_at AS signup_at,
-                   u.name, u.email, u.country_detected, u.lang, u.source,
+                   u.leadid, u.name, u.email, u.country_detected, u.lang, u.source,
                    u.paidstatus, u.step1_at, u.username
             FROM followup_clicks fc
             JOIN users u ON u.leadid = fc.user_id
@@ -28,7 +28,7 @@ if ($type === 'clicks') {
             LIMIT 200";
 } else {
     $sql = "SELECT fl.sent_at AS signup_at,
-                   u.name, u.email, u.country_detected, u.lang, u.source,
+                   u.leadid, u.name, u.email, u.country_detected, u.lang, u.source,
                    u.paidstatus, u.step1_at, u.username
             FROM followup_log fl
             JOIN users u ON u.leadid = fl.user_id

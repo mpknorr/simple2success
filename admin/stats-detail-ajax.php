@@ -25,7 +25,7 @@ if ($metric === 'resignups') {
         ? "AND le.page = '$esc_dim'"
         : '';
     $sql = "SELECT le.created_at AS signup_at,
-                   u.name, u.email, u.country_detected, u.lang, u.source, u.paidstatus,
+                   u.leadid, u.name, u.email, u.country_detected, u.lang, u.source, u.paidstatus,
                    u.step1_at, u.username
             FROM lead_events le
             LEFT JOIN users u ON u.leadid = le.lead_id
