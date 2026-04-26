@@ -10,11 +10,12 @@ if (!empty($_premSnips)) {
 } else {
     $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 }
-$errorMsg = '';
-if (isset($_GET['err']) && $_GET['err'] === 'eae') {
-    $errorMsg = 'This email address is already registered.';
-}
-$source = htmlspecialchars($_GET['source'] ?? '');
+require_once __DIR__ . '/../includes/lang.php';
+$_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
+$show_form = !$_eae;
+$_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
+$errorMsg  = ''; // kept for backwards compat
+$source    = htmlspecialchars($_GET['source'] ?? '');
 $countdownSeconds = 48 * 3600;
 ?>
 <!DOCTYPE html>
@@ -51,10 +52,13 @@ $countdownSeconds = 48 * 3600;
         </div>
       </div>
 
-      <?php if ($errorMsg): ?>
-        <div class="s2s-form-error"><?= $errorMsg ?></div>
+      <?php if ($_eae): ?>
+        <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
+          <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>
+          <a href="<?= rtrim($baseurl,'/') ?>/backoffice/login.php" style="display:inline-block;background:#cb2ebc;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;"><?= htmlspecialchars($s2s_lang['login_here'][$_pg_lang]) ?></a>
+        </div>
       <?php endif; ?>
-
+      <?php if ($show_form): ?>
       <form method="POST" action="<?= $baseurl ?>/includes/postlead.php" class="s2s-form" target="_top">
         <input type="hidden" name="a" value="1">
         <input type="hidden" name="tr" value="">
@@ -67,6 +71,7 @@ $countdownSeconds = 48 * 3600;
         <input type="email" class="s2s-input-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
         <input type="submit" value="Claim My Free Position!" class="s2s-btn">
       </form>
+      <?php endif; ?>
       <div class="w-form-done">
         <div>Thank you! Check your email for next steps.</div>
       </div>

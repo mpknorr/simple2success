@@ -499,6 +499,14 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           </div>
           <div class="form-group">
             <label>E-Mail-Body</label>
+            <div style="margin-bottom:8px;">
+              <small class="text-muted">Platzhalter:
+                <span class="badge badge-secondary">{{name}}</span> — First name &nbsp;
+                <span class="badge badge-secondary">{{email}}</span> — Email address &nbsp;
+                <span class="badge badge-secondary">{{cta_url}}</span> — CTA-Link &nbsp;
+                <span class="badge badge-secondary" style="background:#cb2ebc;">{{magic_link}}</span> — Auto-Login-Link (one-time, time-limited)
+              </small>
+            </div>
             <?php
             $editorCfg = [
                 'textarea_name' => 'body',

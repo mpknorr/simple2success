@@ -76,6 +76,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['send_test'])) {
         $testBody = str_replace('{{password}}', 'TestPw123!', $testBody);
         $testBody = str_replace('{{login_url}}', $baseurl . '/backoffice/login.php', $testBody);
         $testBody = str_replace('{{cta_url}}', $baseurl . '/backoffice/start.php', $testBody);
+        $testBody = str_replace('{{magic_link}}', $baseurl . '/backoffice/autologin.php?token=DEMO_TOKEN_PREVIEW', $testBody);
+        $testBody = str_replace('{{reset_link}}', $baseurl . '/backoffice/reset-password.php?token=DEMO_RESET_PREVIEW', $testBody);
 
         $mail = new PHPMailer(true);
         try {
@@ -196,6 +198,25 @@ if (!$active && !empty($tpl_list)) { $active = $tpl_list[0]; $active_id = (int)$
                                         <span class="placeholder-badge">{{leads}}</span> — Liste der neuen Lead-E-Mails
                                         <?php elseif ($active['template_key'] === 'new_customer'): ?>
                                         <span class="placeholder-badge">{{customer_email}}</span> — E-Mail des neuen Kunden
+                                        <?php elseif ($active['template_key'] === 'password_reset'): ?>
+                                        <span class="placeholder-badge">{{name}}</span> — First name &nbsp;
+                                        <span class="placeholder-badge">{{reset_link}}</span> — Password reset link
+                                        <?php elseif ($active['template_key'] === 'password_changed'): ?>
+                                        <span class="placeholder-badge">{{name}}</span> — First name &nbsp;
+                                        <span class="placeholder-badge">{{email}}</span> — Username (login email) &nbsp;
+                                        <span class="placeholder-badge">{{password}}</span> — New password &nbsp;
+                                        <span class="placeholder-badge">{{login_url}}</span> — Login URL &nbsp;
+                                        <span class="placeholder-badge" style="background:#cb2ebc;">{{magic_link}}</span> — Auto-Login-Link (1h)
+                                        <?php else: ?>
+                                        <span class="placeholder-badge">{{name}}</span> — First name &nbsp;
+                                        <span class="placeholder-badge">{{email}}</span> — Email address &nbsp;
+                                        <span class="placeholder-badge">{{magic_link}}</span> — Auto-login link (one-time, time-limited) &nbsp;
+                                        <?php if ($active['template_key'] === 'welcome_user'): ?>
+                                        <span class="placeholder-badge">{{password}}</span> — Initial password &nbsp;
+                                        <span class="placeholder-badge">{{login_url}}</span> — Login URL &nbsp;
+                                        <?php else: ?>
+                                        <span class="placeholder-badge">{{cta_url}}</span> — Call-to-action URL &nbsp;
+                                        <?php endif; ?>
                                         <?php endif; ?>
                                     </small>
                                 </div>
@@ -266,6 +287,8 @@ if (!$active && !empty($tpl_list)) { $active = $tpl_list[0]; $active_id = (int)$
                                         $preview = str_replace('{{password}}', 'TestPw123!', $preview);
                                         $preview = str_replace('{{login_url}}', $baseurl . '/backoffice/login.php', $preview);
                                         $preview = str_replace('{{cta_url}}', $baseurl . '/backoffice/start.php', $preview);
+                                        $preview = str_replace('{{magic_link}}', $baseurl . '/backoffice/autologin.php?token=DEMO_TOKEN_PREVIEW', $preview);
+                                        $preview = str_replace('{{reset_link}}', $baseurl . '/backoffice/reset-password.php?token=DEMO_RESET_PREVIEW', $preview);
                                         ?>
                                         <div id="tplPreviewEditHint" style="display:none;background:#1a3a5c;color:#7ec8f7;font-size:12px;padding:5px 12px;border-radius:4px 4px 0 0;border:1px solid #3a7abf;border-bottom:none;">
                                             <i class="ft-edit-2"></i>&nbsp; Klicke auf Text zum Bearbeiten &mdash; &Auml;nderungen werden beim Zur&uuml;ckwechseln &uuml;bernommen

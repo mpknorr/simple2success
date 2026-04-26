@@ -10,11 +10,11 @@ if (!empty($_premSnips)) {
 } else {
     $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 }
-$errorMsg = '';
-if (isset($_GET['err']) && $_GET['err'] === 'eae') {
-    $errorMsg = 'This email address is already registered. Please use a different email or log in.';
-}
-$source = htmlspecialchars($_GET['source'] ?? '');
+require_once __DIR__ . '/../includes/lang.php';
+$_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
+$show_form = !$_eae;
+$_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
+$source    = htmlspecialchars($_GET['source'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,10 +57,13 @@ $source = htmlspecialchars($_GET['source'] ?? '');
       ✦ 10,000+ Members in 40+ Countries &nbsp;·&nbsp; 100% FREE to Start
     </p>
 
-    <?php if ($errorMsg): ?>
-      <div class="form-error"><?= $errorMsg ?></div>
+    <?php if ($_eae): ?>
+      <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
+        <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>
+        <a href="<?= rtrim($baseurl,'/') ?>/backoffice/login.php" style="display:inline-block;background:#cb2ebc;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;"><?= htmlspecialchars($s2s_lang['login_here'][$_pg_lang]) ?></a>
+      </div>
     <?php endif; ?>
-
+    <?php if ($show_form): ?>
     <form method="POST" action="<?= $baseurl ?>/includes/postlead.php" class="hero-form">
       <input type="hidden" name="a" value="1">
       <input type="hidden" name="tr" value="">
@@ -75,6 +78,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
         <span class="btn-arrow">→</span>
       </button>
     </form>
+    <?php endif; ?>
 
     <div class="trust-row">
       <div class="trust-item"><span class="trust-icon">✓</span> 100% Free Registration</div>
@@ -312,6 +316,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
       who are already building their income with the Eagle Team.
     </p>
 
+    <?php if ($show_form): ?>
     <form method="POST" action="<?= $baseurl ?>/includes/postlead.php" class="cta-form">
       <input type="hidden" name="a" value="1">
       <input type="hidden" name="tr" value="">
@@ -323,6 +328,12 @@ $source = htmlspecialchars($_GET['source'] ?? '');
       <input type="email" name="email" placeholder="Best Email" required>
       <button type="submit" class="btn-cta">Get Free Access →</button>
     </form>
+    <?php else: ?>
+    <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
+      <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>
+      <a href="<?= rtrim($baseurl,'/') ?>/backoffice/login.php" style="display:inline-block;background:#cb2ebc;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;"><?= htmlspecialchars($s2s_lang['login_here'][$_pg_lang]) ?></a>
+    </div>
+    <?php endif; ?>
 
     <div class="trust-row" style="margin-top:16px;">
       <div class="trust-item"><span class="trust-icon">✓</span> 100% Free</div>

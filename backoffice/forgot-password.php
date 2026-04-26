@@ -17,6 +17,31 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS password_resets (
     INDEX idx_token (token)
 )");
 
+// Password-Reset-Template seeden falls nicht vorhanden
+$_pwrBanner = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+$_pwrSubj   = mysqli_real_escape_string($link, 'Reset Your Simple2Success Password');
+$_pwrBody   = mysqli_real_escape_string($link,
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+    . '<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">'
+    . '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;"><tr><td align="center" style="padding:20px 0;">'
+    . '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">'
+    . '<tr><td><img src="' . $_pwrBanner . '" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>'
+    . '<tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.8;">'
+    . '<h2 style="color:#cb2ebc;margin-top:0;">Hi {{name}},</h2>'
+    . '<p>You requested a password reset for your Simple2Success account.</p>'
+    . '<p>Click the button below to set a new password. This link is valid for <strong>1 hour</strong>.</p>'
+    . '<div style="text-align:center;margin:28px 0;">'
+    . '<a href="{{reset_link}}" style="background:#cb2ebc;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px;">Reset My Password &rarr;</a>'
+    . '</div>'
+    . '<p style="color:#888;font-size:13px;">If you did not request a password reset, you can safely ignore this email — your password will not change.</p>'
+    . '<p style="color:#888;font-size:13px;">Your Simple2Success Team</p>'
+    . '</td></tr>'
+    . '<tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">Copyright &copy; ' . date('Y') . ' <a href="https://simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>. All rights reserved.</td></tr>'
+    . '</table></td></tr></table></body></html>'
+);
+mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
+    VALUES ('Password Reset', 'password_reset', '$_pwrSubj', '$_pwrBody')");
+
 $sent  = isset($_GET['sent']);
 $error = $_GET['error'] ?? '';
 
@@ -70,6 +95,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["email"])) {
                 [htmlspecialchars($displayName), $resetLink],
                 $body
             );
+            // Never send an empty email — abort silently if body is blank
+            if (empty(trim(strip_tags($body)))) {
+                header("Location: forgot-password.php?sent=1");
+                exit();
+            }
             $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $mail->Body    = $body . renderEmailFooter($link, 'password_reset', (int)$user['leadid']);
             $mail->send();

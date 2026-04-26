@@ -2,11 +2,12 @@
 require_once __DIR__ . '/../includes/conn.php';
 require_once __DIR__ . '/../includes/legal.php';
 $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
-$errorMsg = '';
-if (isset($_GET['err']) && $_GET['err'] === 'eae') {
-    $errorMsg = 'This email address is already registered. Please use a different email or log in.';
-}
-$source = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
+require_once __DIR__ . '/../includes/lang.php';
+$_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
+$show_form = !$_eae;
+$_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
+$errorMsg  = ''; // kept for backwards compat, not used for display
+$source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -149,10 +150,14 @@ $source = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         <p>Enter your details below to claim your free position in the Eagle Team and access the full system.</p>
       </div>
 
-      <?php if ($errorMsg): ?>
-        <div class="form-error"><?= $errorMsg ?></div>
+      <?php if ($_eae): ?>
+        <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
+          <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>
+          <a href="<?= rtrim($baseurl,'/') ?>/backoffice/login.php" style="display:inline-block;background:#cb2ebc;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;"><?= htmlspecialchars($s2s_lang['login_here'][$_pg_lang]) ?></a>
+        </div>
       <?php endif; ?>
 
+      <?php if ($show_form): ?>
       <!-- Form -->
       <form method="POST" action="<?= $baseurl ?>/includes/postlead.php" target="_top">
         <input type="hidden" name="a" value="1">
@@ -177,6 +182,7 @@ $source = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
           <span style="font-size:1.2rem;">→</span>
         </button>
       </form>
+      <?php endif; ?>
 
       <!-- Trust badges -->
       <div class="trust-badges">

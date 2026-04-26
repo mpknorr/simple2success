@@ -10,11 +10,12 @@ if (!empty($_premSnips)) {
 } else {
     $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 }
-$errorMsg = '';
-if (isset($_GET['err']) && $_GET['err'] === 'eae') {
-    $errorMsg = 'This email address is already registered.';
-}
-$source = htmlspecialchars($_GET['source'] ?? '');
+require_once __DIR__ . '/../includes/lang.php';
+$_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
+$show_form = !$_eae;
+$_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
+$errorMsg  = ''; // kept for backwards compat
+$source    = htmlspecialchars($_GET['source'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,9 +40,13 @@ $source = htmlspecialchars($_GET['source'] ?? '');
         <div class="s2s-tagline">Soar Above the Rest with the Simple2Success Team!<br></div>
         <div class="s2s-subline">Start Building Your Income Online — Step by Step, 100% Free</div>
         <div class="s2s-form-outer w-form">
-          <?php if ($errorMsg): ?>
-            <div class="s2s-form-error"><?= $errorMsg ?></div>
+          <?php if ($_eae): ?>
+            <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
+              <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>
+              <a href="<?= rtrim($baseurl,'/') ?>/backoffice/login.php" style="display:inline-block;background:#cb2ebc;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;"><?= htmlspecialchars($s2s_lang['login_here'][$_pg_lang]) ?></a>
+            </div>
           <?php endif; ?>
+          <?php if ($show_form): ?>
           <form method="POST" class="s2s-form" action="<?= $baseurl ?>/includes/postlead.php" target="_top">
             <input type="hidden" name="a" value="1">
             <input type="hidden" name="tr" value="">
@@ -55,6 +60,7 @@ $source = htmlspecialchars($_GET['source'] ?? '');
             </div>
             <input type="submit" value="Claim My Free Position →" class="s2s-btn">
           </form>
+          <?php endif; ?>
         </div>
         <div class="s2s-cta-label">
           <div class="s2s-cta-hint">Lock-In My FREE Position Now!</div>

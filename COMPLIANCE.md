@@ -56,4 +56,31 @@ grep -rni "\bpm\b\|pm-\|fitline\|pmebusiness\|autoship\|teampartner\|quickstart\
 
 ---
 
+## Rule 3: Deploy-Checkliste nach jeder Änderungssession
+
+Nach jeder Arbeitseinheit (Coding-Session) wird immer eine klare Deploy-Übersicht geliefert.
+Diese Regel gilt für den AI-Assistenten — nach jeder Session muss die Übersicht ohne gesonderte Aufforderung erstellt werden.
+
+### Format der Übersicht
+
+```
+## Dateien hochladen auf Live-Server
+| Datei | Was wurde geändert |
+
+## Datenbank
+| Tabelle / Spalte | Aktion | Automatisch oder manuell? |
+```
+
+### Kategorien
+
+- **Hochladen:** Alle geänderten oder neuen Dateien, gruppiert nach "bereits committed" und "noch offen"
+- **Datenbank automatisch:** Tabellen/Spalten mit `CREATE TABLE IF NOT EXISTS` — werden beim ersten Seitenaufruf selbst angelegt, kein phpMyAdmin nötig
+- **Datenbank manuell:** Änderungen an bestehenden Tabellen (ALTER TABLE, neue Spalten ohne Auto-Migration) — müssen explizit in phpMyAdmin ausgeführt werden
+
+### Grundsatz
+
+Wenn eine Datei geändert wurde aber noch nicht committed ist: trotzdem in die Upload-Liste aufnehmen. Der Live-Server kennt nur hochgeladene Dateien, nicht den Git-Status.
+
+---
+
 *Last updated: April 2026*

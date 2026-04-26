@@ -6,6 +6,7 @@ require_once __DIR__ . '/PHPMailer/src/Exception.php';
 require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/src/SMTP.php';
 require_once __DIR__ . '/emailFooter.php';
+require_once __DIR__ . '/helpers.php';
 
 function getSmtpSettingFU($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -212,8 +213,9 @@ function sendClickedButNotConvertedEmails($link, $smtpConfig, $base_url) {
 
         if (emailFooter_shouldSkip($link, $uid, 'trigger_clicked_not_converted')) continue;
 
-        $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}'],
-                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl],
+        $magicLink = generateMagicLink($link, $uid, 'trigger_clicked', 48);
+        $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}', '{{magic_link}}'],
+                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl, $magicLink],
                                $tpl['body']);
         $subject = str_replace(['{{name}}', '{{email}}'],
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
@@ -266,8 +268,9 @@ function sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url) {
 
         if (emailFooter_shouldSkip($link, $uid, 'trigger_step2_done_no_step4')) continue;
 
-        $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}'],
-                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl],
+        $magicLink = generateMagicLink($link, $uid, 'trigger_step2_no_step4', 48);
+        $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}', '{{magic_link}}'],
+                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl, $magicLink],
                                $tpl['body']);
         $subject = str_replace(['{{name}}', '{{email}}'],
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
@@ -345,8 +348,9 @@ function sendFollowupEmails($link) {
                 $variant      = getAbVariant($link, $uid);
                 $finalSubject = applyAbVariant($seq['subject'], $seq['subject_b'] ?? '', $variant);
 
-                $personalSubject = str_replace(['{{name}}', '{{email}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail)], $finalSubject);
-                $personalBody    = str_replace(['{{name}}', '{{email}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail)], $body);
+                $magicLink = generateMagicLink($link, $uid, 'followup_seq_' . $seq_id, 72);
+                $personalSubject = str_replace(['{{name}}', '{{email}}', '{{magic_link}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail), $magicLink], $finalSubject);
+                $personalBody    = str_replace(['{{name}}', '{{email}}', '{{magic_link}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail), $magicLink], $body);
                 $personalBody    = injectClickTracking($personalBody, $base_url, $uid, $seq_id);
                 $personalBody   .= renderEmailFooter($link, $fuKey, $uid);
 
@@ -384,6 +388,10 @@ function sendFollowupEmails($link) {
     // ── 3. Behavioral trigger: Step 2 done, Step 4 not started after 48h ─────
     $t2 = sendStep2DoneNoStep4Emails($link, $smtpConfig, $base_url);
     $sent += $t2['sent']; $errors = array_merge($errors, $t2['errors']);
+
+    // ── 4. Cleanup expired magic link tokens (older than 7 days past expiry) ─
+    mysqli_query($link, "DELETE FROM login_tokens
+        WHERE expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)");
 
     return ['sent' => $sent, 'errors' => $errors];
 }

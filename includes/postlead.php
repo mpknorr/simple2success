@@ -93,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Welcome-Mail senden
             require_once __DIR__ . '/sendWelcomeMail.php';
             $loginUrl = $baseurl . '/backoffice/login.php';
-            sendWelcomeMail($link, $email, $name, $plainPassword, $loginUrl);
+            sendWelcomeMail($link, $email, $name, $plainPassword, $loginUrl, (int)$last_id);
 
             header("Location: ../routeprocess.php");
             exit();

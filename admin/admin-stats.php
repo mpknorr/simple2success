@@ -17,7 +17,7 @@ foreach ($getuserdetails as $userData) {
 }
 
 // ── Filters ──────────────────────────────────────────────────────────────────
-$f_from    = isset($_GET['from'])    && $_GET['from']    !== '' ? $_GET['from']    : date('Y-m-d', strtotime('-30 days'));
+$f_from    = isset($_GET['from'])    && $_GET['from']    !== '' ? $_GET['from']    : date('Y-m-d');
 $f_to      = isset($_GET['to'])      && $_GET['to']      !== '' ? $_GET['to']      : date('Y-m-d');
 $f_country = isset($_GET['country']) && $_GET['country'] !== '' ? $_GET['country'] : '';
 $f_lang    = isset($_GET['lang'])    && $_GET['lang']    !== '' ? $_GET['lang']    : '';
@@ -82,41 +82,56 @@ $bd_source  = breakdownQuery($link, 'source',           $where);
 $bd_country = breakdownQuery($link, 'country_detected', $where, 30);
 $bd_lang    = breakdownQuery($link, 'lang',             $where);
 
-function renderLandingPageBreakdown(array $rows, int $totalSignups, bool $hasVisits): void {
+function renderLandingPageBreakdown(array $rows, int $totalSignups, bool $hasVisits, ?string $trackingStart = null, bool $uniqueClicks = false, string $dateFrom = '', string $dateTo = ''): void {
     if (empty($rows)) {
         echo '<p style="padding:.75rem 1.25rem;color:rgba(255,255,255,.3);font-size:.82rem;margin:0;">Keine Daten.</p>';
         return;
     }
+    // Warning banner if tracking only started recently
+    if ($hasVisits && $trackingStart !== null) {
+        echo '<div style="background:rgba(255,159,67,.08);border-left:3px solid #ff9f43;padding:10px 14px;margin:8px 12px;border-radius:4px;font-size:.8rem;color:rgba(255,255,255,.65);">'
+           . '⚠ Klick-Tracking aktiv seit <strong>' . htmlspecialchars($trackingStart) . '</strong>. '
+           . 'Lead-Rate vor diesem Datum nicht vergleichbar (keine Klicks erfasst).'
+           . '</div>';
+    }
     $max = max(1, $rows[0]['signups'] ?? 1);
     echo '<div class="table-responsive"><table class="st-table"><thead><tr>';
     echo '<th>Page</th>';
-    if ($hasVisits) echo '<th class="text-right">Klicks</th>';
+    if ($hasVisits) echo '<th class="text-right">' . ($uniqueClicks ? 'Unique Klicks' : 'Klicks') . '</th>';
     echo '<th class="text-right">Leads</th>';
     if ($hasVisits) echo '<th class="text-right">Lead-Rate</th>';
+    echo '<th class="text-right">Re-Signups</th>';
     echo '<th class="text-right">Step1</th><th class="text-right">Step2</th><th style="min-width:80px;">Anteil</th>';
     echo '</tr></thead><tbody>';
     foreach ($rows as $r) {
-        $visits  = (int)($r['visits'] ?? 0);
-        $signups = (int)$r['signups'];
-        $ctr     = $visits > 0 ? round($signups / $visits * 100, 1) : null;
+        $visits    = (int)($r['visits'] ?? 0);
+        $signups   = (int)$r['signups'];
+        $resignups = (int)($r['resignups'] ?? 0);
+        $ctr       = $visits > 0 ? round($signups / $visits * 100, 1) : null;
         $pct_total = $totalSignups > 0 ? round($signups / $totalSignups * 100) : 0;
         $bar_pct   = $max > 0 ? round($signups / $max * 100) : 0;
         $s1_pct    = $signups > 0 ? round($r['step1'] / $signups * 100) : 0;
         $s2_pct    = $signups > 0 ? round($r['step2'] / $signups * 100) : 0;
         // Lead-rate color: ≥20% green, 10-20% yellow, <10% red
         $ctrColor  = $ctr === null ? '' : ($ctr >= 20 ? '#28c76f' : ($ctr >= 10 ? '#ff9f43' : '#ea5455'));
+        $dim_esc  = htmlspecialchars($r['dim'] ?: '', ENT_QUOTES);
+        $drillBase = 'data-drill="1" data-page="' . $dim_esc . '" data-from="' . htmlspecialchars($dateFrom, ENT_QUOTES) . '" data-to="' . htmlspecialchars($dateTo, ENT_QUOTES) . '"';
+        $drillStyle = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
+
         echo '<tr>';
         echo '<td><strong>' . htmlspecialchars($r['dim'] ?: '—') . '</strong></td>';
         if ($hasVisits) {
             echo '<td class="text-right">' . ($visits > 0 ? number_format($visits) : '<span style="opacity:.3;">—</span>') . '</td>';
         }
-        echo '<td class="text-right"><strong>' . $signups . '</strong> <small style="opacity:.4;">(' . $pct_total . '%)</small></td>';
+        echo '<td class="text-right" ' . $drillBase . ' data-metric="signups" style="' . $drillStyle . '"><strong>' . $signups . '</strong> <small style="opacity:.4;">(' . $pct_total . '%)</small></td>';
         if ($hasVisits) {
             echo '<td class="text-right" style="font-weight:700;color:' . $ctrColor . ';">'
                . ($ctr !== null ? $ctr . '%' : '<span style="opacity:.3;">—</span>') . '</td>';
         }
-        echo '<td class="text-right" style="color:#00cfe8;">' . $r['step1'] . ' <small style="opacity:.4;">(' . $s1_pct . '%)</small></td>';
-        echo '<td class="text-right" style="color:#9c8bd4;">' . $r['step2'] . ' <small style="opacity:.4;">(' . $s2_pct . '%)</small></td>';
+        echo '<td class="text-right" ' . ($resignups > 0 ? $drillBase . ' data-metric="resignups" style="color:#ff9f43;' . $drillStyle . '"' : 'style="color:#ff9f43;"') . '>'
+           . ($resignups > 0 ? $resignups : '<span style="opacity:.3;">—</span>') . '</td>';
+        echo '<td class="text-right" ' . ($r['step1'] > 0 ? $drillBase . ' data-metric="step1" style="color:#00cfe8;' . $drillStyle . '"' : 'style="color:#00cfe8;"') . '>' . $r['step1'] . ' <small style="opacity:.4;">(' . $s1_pct . '%)</small></td>';
+        echo '<td class="text-right" ' . ($r['step2'] > 0 ? $drillBase . ' data-metric="step2" style="color:#9c8bd4;' . $drillStyle . '"' : 'style="color:#9c8bd4;"') . '>' . $r['step2'] . ' <small style="opacity:.4;">(' . $s2_pct . '%)</small></td>';
         echo '<td><div class="st-bar-wrap"><div class="st-bar-fill" style="width:' . $bar_pct . '%;"></div></div></td>';
         echo '</tr>';
     }
@@ -126,18 +141,34 @@ function renderLandingPageBreakdown(array $rows, int $totalSignups, bool $hasVis
 // ── Landing page breakdown with visits (click-to-lead) ────────────────────────
 $_pvTableExists = mysqli_num_rows(mysqli_query($link, "SHOW TABLES LIKE 'page_visits'")) > 0;
 $bd_page_visits = [];
+$_pvTrackingStart = null; // earliest date in page_visits
+$_pvUniqueClicks = isset($_GET['unique_clicks']) && $_GET['unique_clicks'] === '1';
 if ($_pvTableExists) {
+    $tsRow = mysqli_fetch_assoc(mysqli_query($link, "SELECT DATE(MIN(visited_at)) AS first_day FROM page_visits"));
+    $_pvTrackingStart = $tsRow['first_day'] ?? null;
+
     $pvWhere = "visited_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
     if ($sf_source !== '') $pvWhere .= " AND source = '$sf_source'";
+    $clickExpr = $_pvUniqueClicks
+        ? "COUNT(DISTINCT CONCAT(ip, '|', page, '|', DATE(visited_at)))"
+        : "COUNT(*)";
     $pvSql = "SELECT u.page AS dim,
                      COUNT(DISTINCT u.leadid) AS signups,
                      SUM(u.step1_at IS NOT NULL) AS step1,
                      SUM(u.username IS NOT NULL AND u.username != '') AS step2,
-                     COALESCE(v.visits, 0) AS visits
+                     COALESCE(MAX(v.visits), 0) AS visits,
+                     COALESCE(MAX(re.resignups), 0) AS resignups
               FROM users u
               LEFT JOIN (
-                  SELECT page, COUNT(*) AS visits FROM page_visits WHERE $pvWhere GROUP BY page
+                  SELECT page, $clickExpr AS visits FROM page_visits WHERE $pvWhere GROUP BY page
               ) v ON v.page = u.page
+              LEFT JOIN (
+                  SELECT page, COUNT(*) AS resignups
+                  FROM lead_events
+                  WHERE event_type = 'signup_attempt'
+                    AND created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'
+                  GROUP BY page
+              ) re ON re.page = u.page
               $where
               GROUP BY u.page
               ORDER BY signups DESC
@@ -484,7 +515,7 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
 
 <!-- ══ BREAKDOWN TABLES ════════════════════════════════════════════════════ -->
 <?php
-function renderBreakdown(string $title, string $icon, array $rows, int $totalSignups, callable $labelFn = null): void {
+function renderBreakdown(string $title, string $icon, array $rows, int $totalSignups, ?callable $labelFn = null): void {
     if (empty($rows)) {
         echo '<p style="padding:.75rem 1.25rem;color:rgba(255,255,255,.3);font-size:.82rem;margin:0;">Keine Daten.</p>';
         return;
@@ -518,7 +549,12 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                 <i class="ft-layout" style="color:var(--s2s-brand);"></i>
                 <h5>Landing Page</h5>
                 <?php if ($_pvTableExists): ?>
-                <span style="margin-left:auto;font-size:.75rem;color:var(--s2s-text-42);">Klicks aus head-tracking</span>
+                <?php
+                $ucToggleUrl = '?' . http_build_query(array_merge($_GET, ['unique_clicks' => $_pvUniqueClicks ? '0' : '1']));
+                ?>
+                <a href="<?= htmlspecialchars($ucToggleUrl) ?>" style="margin-left:auto;font-size:.75rem;padding:2px 8px;border:1px solid rgba(255,255,255,.15);border-radius:4px;color:<?= $_pvUniqueClicks ? '#28c76f' : 'var(--s2s-text-42)' ?>;text-decoration:none;" title="Klicks nach IP+Tag deduplizieren">
+                    <?= $_pvUniqueClicks ? '✓ Unique Klicks' : 'Unique Klicks' ?>
+                </a>
                 <?php else: ?>
                 <span style="margin-left:auto;font-size:.75rem;color:var(--s2s-text-42);opacity:.5;" title="Klick-Tracking startet beim nächsten Seitenbesuch">⚠ Tracking noch nicht aktiv</span>
                 <?php endif; ?>
@@ -526,7 +562,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
             <div class="card-content">
                 <?php
                 if ($_pvTableExists && !empty($bd_page_visits)) {
-                    renderLandingPageBreakdown($bd_page_visits, (int)$kpi_signups, true);
+                    renderLandingPageBreakdown($bd_page_visits, (int)$kpi_signups, true, $_pvTrackingStart, $_pvUniqueClicks, $f_from, $f_to);
                 } else {
                     renderBreakdown('Page', 'ft-layout', $bd_page, (int)$kpi_signups);
                 }
@@ -656,6 +692,17 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
 <?php endif; ?>
 
 
+
+<!-- ══ DRILL-DOWN MODAL ═══════════════════════════════════════════════════════ -->
+<div id="ddOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;" onclick="ddClose()"></div>
+<div id="ddPanel" style="display:none;position:fixed;top:0;right:0;height:100vh;width:min(640px,100vw);background:#1a1040;border-left:1px solid rgba(203,46,188,.25);z-index:9001;flex-direction:column;overflow:hidden;">
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:.75rem;">
+        <span id="ddTitle" style="font-weight:700;font-size:1rem;color:#fff;flex:1;"></span>
+        <button onclick="ddClose()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:1.3rem;cursor:pointer;padding:0;line-height:1;">&times;</button>
+    </div>
+    <div id="ddBody" style="overflow-y:auto;flex:1;padding:.25rem 0;"></div>
+</div>
+
 </div><!-- /.content-wrapper -->
 </div><!-- /.main-content -->
 <?php require_once "../backoffice/parts/footer.php"; ?>
@@ -671,6 +718,111 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
 <script src="../backoffice/app-assets/js/notification-sidebar.js"></script>
 <script src="../backoffice/app-assets/js/scroll-top.js"></script>
 <script src="../backoffice/assets/js/scripts.js"></script>
+
+<script>
+// ── Stats Drill-Down ──────────────────────────────────────────────────────────
+(function () {
+    const metricLabels = {
+        signups:  'Leads',
+        step1:    'Step 1 geklickt',
+        step2:    'Step 2 abgeschlossen',
+        resignups:'Re-Signup-Versuche',
+    };
+
+    document.addEventListener('click', function (e) {
+        const cell = e.target.closest('[data-drill="1"]');
+        if (!cell) return;
+        const page   = cell.dataset.page;
+        const metric = cell.dataset.metric;
+        const from   = cell.dataset.from;
+        const to     = cell.dataset.to;
+        ddOpen(page, metric, from, to);
+    });
+
+    window.ddOpen = function (page, metric, from, to) {
+        const overlay = document.getElementById('ddOverlay');
+        const panel   = document.getElementById('ddPanel');
+        const title   = document.getElementById('ddTitle');
+        const body    = document.getElementById('ddBody');
+
+        title.textContent = (metricLabels[metric] || metric) + ' — ' + page;
+        body.innerHTML    = '<p style="padding:1.5rem;color:rgba(255,255,255,.4);font-size:.85rem;">Lade …</p>';
+        overlay.style.display = 'block';
+        panel.style.display   = 'flex';
+
+        const url = 'stats-detail-ajax.php?page=' + encodeURIComponent(page)
+                  + '&metric=' + encodeURIComponent(metric)
+                  + '&from='   + encodeURIComponent(from)
+                  + '&to='     + encodeURIComponent(to);
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => ddRender(data, body))
+            .catch(() => { body.innerHTML = '<p style="padding:1.5rem;color:#ea5455;">Fehler beim Laden.</p>'; });
+    };
+
+    window.ddClose = function () {
+        document.getElementById('ddOverlay').style.display = 'none';
+        document.getElementById('ddPanel').style.display   = 'none';
+    };
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') ddClose();
+    });
+
+    function ddRender(data, container) {
+        if (!data.rows || data.rows.length === 0) {
+            container.innerHTML = '<p style="padding:1.5rem;color:rgba(255,255,255,.35);font-size:.85rem;">Keine Einträge gefunden.</p>';
+            return;
+        }
+        const isRe  = data.metric === 'resignups';
+        const flagOf = iso => {
+            if (!iso || iso.length !== 2) return '';
+            return String.fromCodePoint(
+                0x1F1E6 + iso.toUpperCase().charCodeAt(0) - 65,
+                0x1F1E6 + iso.toUpperCase().charCodeAt(1) - 65
+            );
+        };
+
+        let html = '<div style="padding:.5rem 1.25rem .25rem;font-size:.75rem;color:rgba(255,255,255,.35);">'
+                 + data.total + ' Einträge</div>';
+
+        data.rows.forEach(r => {
+            const dt    = (r.signup_at || '').replace('T', ' ').substring(0, 16);
+            const flag  = flagOf(r.country_detected || '');
+            const paid  = r.paidstatus === 'Paid'
+                        ? '<span style="background:#28c76f22;color:#28c76f;border-radius:3px;padding:1px 5px;font-size:.72rem;">Paid</span>' : '';
+            const s1    = r.step1_at
+                        ? '<span style="background:#00cfe822;color:#00cfe8;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step1 ✓</span>' : '';
+            const s2    = (r.username && r.username !== '')
+                        ? '<span style="background:#9c8bd422;color:#9c8bd4;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step2 ✓</span>' : '';
+            const src   = r.source ? '<span style="opacity:.5;font-size:.72rem;">' + esc(r.source) + '</span>' : '';
+            const adminUrl = 'admin-users.php?search=' + encodeURIComponent(r.email || '');
+
+            html += '<div style="padding:.65rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:.2rem;">'
+                  + '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">'
+                  + '  <a href="' + adminUrl + '" target="_blank" style="color:#fff;font-weight:700;font-size:.88rem;text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + esc(r.name || '') + '">'
+                  + (r.name ? esc(r.name) : '<span style="opacity:.4;">—</span>')
+                  + '  </a>'
+                  + '  <span style="font-size:.75rem;color:rgba(255,255,255,.35);white-space:nowrap;">' + esc(dt) + '</span>'
+                  + '</div>'
+                  + '<div style="font-size:.78rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.email || '') + '</div>'
+                  + '<div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;margin-top:.1rem;">'
+                  + (flag ? '<span style="font-size:.9rem;" title="' + esc((r.country_detected||'').toUpperCase()) + '">' + flag + '</span>' : '')
+                  + (r.lang ? '<span style="opacity:.4;font-size:.72rem;">' + esc(r.lang.toUpperCase()) + '</span>' : '')
+                  + src + paid + s1 + s2
+                  + '</div>'
+                  + '</div>';
+        });
+
+        container.innerHTML = html;
+    }
+
+    function esc(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+})();
+</script>
 
 <?php if (!empty($daily_labels)): ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>

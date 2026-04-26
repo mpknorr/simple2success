@@ -6,6 +6,7 @@ require_once __DIR__ . '/PHPMailer/src/Exception.php';
 require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/src/SMTP.php';
 require_once __DIR__ . '/emailFooter.php';
+require_once __DIR__ . '/helpers.php';
 
 function getSmtpSettingWelcome($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -13,7 +14,7 @@ function getSmtpSettingWelcome($link, $key) {
     return $r ? $r['setting_value'] : '';
 }
 
-function sendWelcomeMail($link, $toEmail, $toName, $plainPassword, $loginUrl) {
+function sendWelcomeMail($link, $toEmail, $toName, $plainPassword, $loginUrl, $userId = 0) {
     // Template aus DB laden
     $tpl = mysqli_fetch_assoc(mysqli_query($link, "SELECT subject, body FROM email_templates WHERE template_key = 'welcome_user' LIMIT 1"));
     if (!$tpl) {
@@ -21,16 +22,18 @@ function sendWelcomeMail($link, $toEmail, $toName, $plainPassword, $loginUrl) {
     }
 
     $displayName = $toName ?: $toEmail;
-    $subject = str_replace(
-        ['{{name}}', '{{email}}', '{{password}}', '{{login_url}}'],
-        [htmlspecialchars($displayName), htmlspecialchars($toEmail), htmlspecialchars($plainPassword), $loginUrl],
-        $tpl['subject']
-    );
-    $body = str_replace(
-        ['{{name}}', '{{email}}', '{{password}}', '{{login_url}}'],
-        [htmlspecialchars($displayName), htmlspecialchars($toEmail), htmlspecialchars($plainPassword), $loginUrl],
-        $tpl['body']
-    );
+
+    // Magic Link generieren (24h) — Fallback auf loginUrl wenn keine userId
+    $magicLink = ($userId > 0)
+        ? generateMagicLink($link, $userId, 'welcome', 24)
+        : $loginUrl;
+
+    $placeholders = ['{{name}}', '{{email}}', '{{password}}', '{{login_url}}', '{{magic_link}}'];
+    $values       = [htmlspecialchars($displayName), htmlspecialchars($toEmail),
+                     htmlspecialchars($plainPassword), $loginUrl, $magicLink];
+
+    $subject = str_replace($placeholders, $values, $tpl['subject']);
+    $body    = str_replace($placeholders, $values, $tpl['body']);
 
     $mail = new PHPMailer(true);
     try {
