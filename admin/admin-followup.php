@@ -730,7 +730,6 @@ jQuery(function($) {
     document.getElementById('fupOverlay').addEventListener('click', fupClose);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') fupClose(); });
 });
-});
 </script>
 </body>
 </html>

@@ -7,6 +7,8 @@ if (isset($_POST["click"])) {
     $userid    = (int)$_POST["userid"];
     $step1ip   = mysqli_real_escape_string($link, getClientIp());
     mysqli_query($link, "UPDATE users SET signuproot='$clickTime', step1_at=NOW(), step1_ip='$step1ip' WHERE leadid=$userid");
+    mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, page, ip)
+        VALUES ($userid, 'step1_button_click', 'backoffice/start.php', '$step1ip')");
     die();
 }
 

@@ -208,7 +208,8 @@ $evLabels = [
     'signup_attempt'   => '🔁 Re-signup-Versuche',
     'start_step_click' => '👆 "Nächste Schritte"-Klick (von Dashboard)',
     'video_play'       => '▶️ Video angeschaut (start.php)',
-    'email_sent'       => '📧 E-Mail gesendet',
+    'email_sent'          => '📧 E-Mail gesendet',
+    'step1_button_click'  => '🔗 Step 1 Registrierungslink geklickt',
 ];
 
 // ── Flag helper ───────────────────────────────────────────────────────────────
