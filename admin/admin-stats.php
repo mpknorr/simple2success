@@ -114,8 +114,10 @@ function renderLandingPageBreakdown(array $rows, int $totalSignups, bool $hasVis
         $s2_pct    = $signups > 0 ? round($r['step2'] / $signups * 100) : 0;
         // Lead-rate color: ≥20% green, 10-20% yellow, <10% red
         $ctrColor  = $ctr === null ? '' : ($ctr >= 20 ? '#28c76f' : ($ctr >= 10 ? '#ff9f43' : '#ea5455'));
-        $dim_esc  = htmlspecialchars($r['dim'] ?: '', ENT_QUOTES);
-        $drillBase = 'data-drill="1" data-page="' . $dim_esc . '" data-from="' . htmlspecialchars($dateFrom, ENT_QUOTES) . '" data-to="' . htmlspecialchars($dateTo, ENT_QUOTES) . '"';
+        $dim_esc   = htmlspecialchars($r['dim'] ?: '', ENT_QUOTES);
+        $df_esc    = htmlspecialchars($dateFrom, ENT_QUOTES);
+        $dt_esc    = htmlspecialchars($dateTo, ENT_QUOTES);
+        $drillBase = 'data-drill="1" data-dim-type="page" data-dim-value="' . $dim_esc . '" data-from="' . $df_esc . '" data-to="' . $dt_esc . '"';
         $drillStyle = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
 
         echo '<tr>';
@@ -489,14 +491,22 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
                         <tbody>
                         <?php
                         $base = max(1, $funnel[0]['count']);
+                        $funnelMetrics = ['signups', 'step1', 'step2', 'paid'];
                         foreach ($funnel as $i => $stage):
                             $pct_signup = $base > 0 ? round($stage['count'] / $base * 100) : 0;
                             $prev_cnt   = $i > 0 ? max(1, $funnel[$i-1]['count']) : $base;
                             $pct_prev   = $prev_cnt > 0 ? round($stage['count'] / $prev_cnt * 100) : 0;
+                            $fm = $funnelMetrics[$i] ?? 'signups';
                         ?>
                         <tr>
                             <td><?= htmlspecialchars($stage['label']) ?></td>
-                            <td style="text-align:right;"><strong><?= $stage['count'] ?></strong></td>
+                            <td style="text-align:right;">
+                                <?php if ($stage['count'] > 0): ?>
+                                <strong data-drill="1" data-dim-type="funnel" data-dim-value="" data-metric="<?= $fm ?>" data-from="<?= htmlspecialchars($f_from, ENT_QUOTES) ?>" data-to="<?= htmlspecialchars($f_to, ENT_QUOTES) ?>" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;"><?= $stage['count'] ?></strong>
+                                <?php else: ?>
+                                <strong><?= $stage['count'] ?></strong>
+                                <?php endif; ?>
+                            </td>
                             <td style="text-align:right;" class="st-funnel-pct-main"><?= $pct_signup ?>%</td>
                             <td style="text-align:right;" class="st-funnel-pct-prev">
                                 <?= $i === 0 ? '—' : $pct_prev . '%' ?>
@@ -515,26 +525,37 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
 
 <!-- ══ BREAKDOWN TABLES ════════════════════════════════════════════════════ -->
 <?php
-function renderBreakdown(string $title, string $icon, array $rows, int $totalSignups, ?callable $labelFn = null): void {
+function renderBreakdown(string $title, string $icon, array $rows, int $totalSignups, ?callable $labelFn = null, string $dimField = '', string $dateFrom = '', string $dateTo = ''): void {
     if (empty($rows)) {
         echo '<p style="padding:.75rem 1.25rem;color:rgba(255,255,255,.3);font-size:.82rem;margin:0;">Keine Daten.</p>';
         return;
     }
+    $hasDrill  = $dimField !== '' && $dateFrom !== '';
+    $drillCss  = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
     $max = max(1, $rows[0]['signups'] ?? 1);
     echo '<div class="table-responsive"><table class="st-table">';
     echo '<thead><tr><th>' . htmlspecialchars($title) . '</th><th>Signups</th><th>Step1</th><th>Step2</th><th style="min-width:80px;">Anteil</th></tr></thead><tbody>';
     foreach ($rows as $r) {
-        $dim  = $r['dim'] ?? '';
+        $dim   = $r['dim'] ?? '';
         $label = $labelFn ? $labelFn($dim) : (htmlspecialchars($dim ?: '—'));
         $pct_total = $totalSignups > 0 ? round($r['signups'] / $totalSignups * 100) : 0;
         $bar_pct   = $max > 0 ? round($r['signups'] / $max * 100) : 0;
         $s1_pct    = $r['signups'] > 0 ? round($r['step1'] / $r['signups'] * 100) : 0;
         $s2_pct    = $r['signups'] > 0 ? round($r['step2'] / $r['signups'] * 100) : 0;
+
+        $da = '';
+        if ($hasDrill) {
+            $dv  = htmlspecialchars($dim, ENT_QUOTES);
+            $df  = htmlspecialchars($dateFrom, ENT_QUOTES);
+            $dt  = htmlspecialchars($dateTo, ENT_QUOTES);
+            $da  = "data-drill=\"1\" data-dim-type=\"$dimField\" data-dim-value=\"$dv\" data-from=\"$df\" data-to=\"$dt\"";
+        }
+
         echo '<tr>';
         echo '<td>' . $label . '</td>';
-        echo '<td><strong>' . $r['signups'] . '</strong> <small style="opacity:.4;">(' . $pct_total . '%)</small></td>';
-        echo '<td style="color:#00cfe8;">' . $r['step1'] . ' <small style="opacity:.4;">(' . $s1_pct . '%)</small></td>';
-        echo '<td style="color:#9c8bd4;">' . $r['step2'] . ' <small style="opacity:.4;">(' . $s2_pct . '%)</small></td>';
+        echo '<td ' . ($hasDrill ? $da . ' data-metric="signups" style="' . $drillCss . '"' : '') . '><strong>' . $r['signups'] . '</strong> <small style="opacity:.4;">(' . $pct_total . '%)</small></td>';
+        echo '<td style="color:#00cfe8;' . ($hasDrill && $r['step1'] > 0 ? $drillCss : '') . '" ' . ($hasDrill && $r['step1'] > 0 ? $da . ' data-metric="step1"' : '') . '>' . $r['step1'] . ' <small style="opacity:.4;">(' . $s1_pct . '%)</small></td>';
+        echo '<td style="color:#9c8bd4;' . ($hasDrill && $r['step2'] > 0 ? $drillCss : '') . '" ' . ($hasDrill && $r['step2'] > 0 ? $da . ' data-metric="step2"' : '') . '>' . $r['step2'] . ' <small style="opacity:.4;">(' . $s2_pct . '%)</small></td>';
         echo '<td><div class="st-bar-wrap"><div class="st-bar-fill" style="width:' . $bar_pct . '%;"></div></div></td>';
         echo '</tr>';
     }
@@ -564,7 +585,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                 if ($_pvTableExists && !empty($bd_page_visits)) {
                     renderLandingPageBreakdown($bd_page_visits, (int)$kpi_signups, true, $_pvTrackingStart, $_pvUniqueClicks, $f_from, $f_to);
                 } else {
-                    renderBreakdown('Page', 'ft-layout', $bd_page, (int)$kpi_signups);
+                    renderBreakdown('Page', 'ft-layout', $bd_page, (int)$kpi_signups, null, 'page', $f_from, $f_to);
                 }
                 ?>
             </div>
@@ -574,7 +595,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
         <div class="card" style="margin-bottom:0;">
             <div class="st-card-header"><i class="ft-cpu" style="color:var(--s2s-brand);"></i><h5>Traffic-Quelle</h5></div>
             <div class="card-content">
-                <?php renderBreakdown('Source', 'ft-cpu', $bd_source, (int)$kpi_signups); ?>
+                <?php renderBreakdown('Source', 'ft-cpu', $bd_source, (int)$kpi_signups, null, 'source', $f_from, $f_to); ?>
             </div>
         </div>
     </div>
@@ -589,7 +610,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                     if (!$iso) return '<span style="opacity:.4;">—</span>';
                     $flag = strlen($iso) === 2 ? mb_chr(ord(strtoupper($iso)[0]) - 65 + 0x1F1E6) . mb_chr(ord(strtoupper($iso)[1]) - 65 + 0x1F1E6) : '';
                     return $flag . ' ' . htmlspecialchars(isoCodeToCountryName($iso));
-                }); ?>
+                }, 'country_detected', $f_from, $f_to); ?>
             </div>
         </div>
     </div>
@@ -600,7 +621,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                 <?php renderBreakdown('Sprache', 'ft-message-square', $bd_lang, (int)$kpi_signups, function($lang) use ($langLabels) {
                     if (!$lang) return '<span style="opacity:.4;">—</span>';
                     return htmlspecialchars(strtoupper($lang)) . ' — ' . htmlspecialchars($langLabels[$lang] ?? $lang);
-                }); ?>
+                }, 'lang', $f_from, $f_to); ?>
             </div>
         </div>
     </div>
@@ -729,31 +750,40 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
         resignups:'Re-Signup-Versuche',
     };
 
+    const dimTypeLabels = {
+        page: 'Seite', source: 'Quelle', country_detected: 'Land',
+        lang: 'Sprache', funnel: 'Gesamt',
+    };
+
     document.addEventListener('click', function (e) {
         const cell = e.target.closest('[data-drill="1"]');
         if (!cell) return;
-        const page   = cell.dataset.page;
-        const metric = cell.dataset.metric;
-        const from   = cell.dataset.from;
-        const to     = cell.dataset.to;
-        ddOpen(page, metric, from, to);
+        ddOpen(
+            cell.dataset.dimType  || '',
+            cell.dataset.dimValue || '',
+            cell.dataset.metric   || 'signups',
+            cell.dataset.from     || '',
+            cell.dataset.to       || ''
+        );
     });
 
-    window.ddOpen = function (page, metric, from, to) {
+    window.ddOpen = function (dimType, dimValue, metric, from, to) {
         const overlay = document.getElementById('ddOverlay');
         const panel   = document.getElementById('ddPanel');
         const title   = document.getElementById('ddTitle');
         const body    = document.getElementById('ddBody');
 
-        title.textContent = (metricLabels[metric] || metric) + ' — ' + page;
+        const dimLabel = dimValue || (dimTypeLabels[dimType] || dimType);
+        title.textContent = (metricLabels[metric] || metric) + (dimLabel ? ' — ' + dimLabel : '');
         body.innerHTML    = '<p style="padding:1.5rem;color:rgba(255,255,255,.4);font-size:.85rem;">Lade …</p>';
         overlay.style.display = 'block';
         panel.style.display   = 'flex';
 
-        const url = 'stats-detail-ajax.php?page=' + encodeURIComponent(page)
-                  + '&metric=' + encodeURIComponent(metric)
-                  + '&from='   + encodeURIComponent(from)
-                  + '&to='     + encodeURIComponent(to);
+        const url = 'stats-detail-ajax.php?dim_type=' + encodeURIComponent(dimType)
+                  + '&dim_value=' + encodeURIComponent(dimValue)
+                  + '&metric='    + encodeURIComponent(metric)
+                  + '&from='      + encodeURIComponent(from)
+                  + '&to='        + encodeURIComponent(to);
 
         fetch(url)
             .then(r => r.json())
@@ -775,7 +805,6 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
             container.innerHTML = '<p style="padding:1.5rem;color:rgba(255,255,255,.35);font-size:.85rem;">Keine Einträge gefunden.</p>';
             return;
         }
-        const isRe  = data.metric === 'resignups';
         const flagOf = iso => {
             if (!iso || iso.length !== 2) return '';
             return String.fromCodePoint(
@@ -788,15 +817,16 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                  + data.total + ' Einträge</div>';
 
         data.rows.forEach(r => {
-            const dt    = (r.signup_at || '').replace('T', ' ').substring(0, 16);
-            const flag  = flagOf(r.country_detected || '');
-            const paid  = r.paidstatus === 'Paid'
-                        ? '<span style="background:#28c76f22;color:#28c76f;border-radius:3px;padding:1px 5px;font-size:.72rem;">Paid</span>' : '';
-            const s1    = r.step1_at
-                        ? '<span style="background:#00cfe822;color:#00cfe8;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step1 ✓</span>' : '';
-            const s2    = (r.username && r.username !== '')
-                        ? '<span style="background:#9c8bd422;color:#9c8bd4;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step2 ✓</span>' : '';
-            const src   = r.source ? '<span style="opacity:.5;font-size:.72rem;">' + esc(r.source) + '</span>' : '';
+            const dt   = (r.signup_at || '').replace('T', ' ').substring(0, 16);
+            const flag = flagOf(r.country_detected || '');
+            const paid = r.paidstatus === 'Paid'
+                       ? '<span style="background:#28c76f22;color:#28c76f;border-radius:3px;padding:1px 5px;font-size:.72rem;">Paid</span>' : '';
+            const s1   = r.step1_at
+                       ? '<span style="background:#00cfe822;color:#00cfe8;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step1 ✓</span>' : '';
+            const s2   = (r.username && r.username !== '')
+                       ? '<span style="background:#9c8bd422;color:#9c8bd4;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step2 ✓</span>' : '';
+            const src  = r.source ? '<span style="background:rgba(255,255,255,.07);border-radius:3px;padding:1px 5px;font-size:.72rem;">' + esc(r.source) + '</span>' : '';
+            const pg   = r.page   ? '<span style="background:rgba(203,46,188,.15);color:#cb2ebc;border-radius:3px;padding:1px 5px;font-size:.72rem;">' + esc(r.page) + '</span>' : '';
             const adminUrl = 'admin-users.php?search=' + encodeURIComponent(r.email || '');
 
             html += '<div style="padding:.65rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:.2rem;">'
@@ -810,7 +840,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                   + '<div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;margin-top:.1rem;">'
                   + (flag ? '<span style="font-size:.9rem;" title="' + esc((r.country_detected||'').toUpperCase()) + '">' + flag + '</span>' : '')
                   + (r.lang ? '<span style="opacity:.4;font-size:.72rem;">' + esc(r.lang.toUpperCase()) + '</span>' : '')
-                  + src + paid + s1 + s2
+                  + src + pg + paid + s1 + s2
                   + '</div>'
                   + '</div>';
         });

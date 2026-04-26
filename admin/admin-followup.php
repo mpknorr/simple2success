@@ -98,8 +98,12 @@ if (isset($_GET['edit'])) {
 }
 
 // Load all sequences as arrays (needed for JS preview data + table loop)
-$_res_lead = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
-$_res_member = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
+$_clicksExist = $click_table && mysqli_num_rows($click_table) > 0;
+$_clickSubq   = $_clicksExist
+    ? "(SELECT COUNT(*) FROM followup_clicks WHERE sequence_id=f.id)"
+    : "0";
+$_res_lead = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count, $_clickSubq AS click_count FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
+$_res_member = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count, $_clickSubq AS click_count FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
 $sequences_lead   = [];
 $sequences_member = [];
 $preview_data     = [];
@@ -305,6 +309,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <th class="col-day">Tag</th>
             <th>Betreff</th>
             <th class="col-sent">Gesendet</th>
+            <th class="col-sent">Klicks</th>
             <th class="col-status">Status</th>
             <th class="col-actions">Aktionen</th>
           </tr></thead>
@@ -313,7 +318,20 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           <tr>
             <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-secondary">Tag <?= $seq['day_offset'] ?></span></td>
             <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
-            <td class="text-center"><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
+            <td class="text-center">
+              <?php if ((int)$seq['sent_count'] > 0): ?>
+                <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>
+              <?php else: ?>
+                <span class="badge badge-secondary">0</span>
+              <?php endif; ?>
+            </td>
+            <td class="text-center">
+              <?php if ((int)($seq['click_count'] ?? 0) > 0): ?>
+                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
+              <?php else: ?>
+                <span class="badge badge-secondary" style="opacity:.4;">0</span>
+              <?php endif; ?>
+            </td>
             <td class="text-center">
               <form method="POST" style="display:inline;">
                 <input type="hidden" name="action" value="toggle_active">
@@ -365,6 +383,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <th class="col-day">Tag</th>
             <th>Betreff</th>
             <th class="col-sent">Gesendet</th>
+            <th class="col-sent">Klicks</th>
             <th class="col-status">Status</th>
             <th class="col-actions">Aktionen</th>
           </tr></thead>
@@ -373,7 +392,20 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           <tr>
             <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-primary">Tag <?= $seq['day_offset'] ?></span></td>
             <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
-            <td class="text-center"><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
+            <td class="text-center">
+              <?php if ((int)$seq['sent_count'] > 0): ?>
+                <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>
+              <?php else: ?>
+                <span class="badge badge-secondary">0</span>
+              <?php endif; ?>
+            </td>
+            <td class="text-center">
+              <?php if ((int)($seq['click_count'] ?? 0) > 0): ?>
+                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
+              <?php else: ?>
+                <span class="badge badge-secondary" style="opacity:.4;">0</span>
+              <?php endif; ?>
+            </td>
             <td class="text-center">
               <form method="POST" style="display:inline;">
                 <input type="hidden" name="action" value="toggle_active">
@@ -534,6 +566,16 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
 
 </div></div></div></div>
 
+<!-- ── Followup Drill-Down Panel ──────────────────────────────────────────── -->
+<div id="fupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;"></div>
+<div id="fupPanel" style="display:none;position:fixed;top:0;right:0;height:100vh;width:min(620px,100vw);background:#1a1040;border-left:1px solid rgba(203,46,188,.25);z-index:9001;flex-direction:column;overflow:hidden;">
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:.75rem;">
+        <span id="fupTitle" style="font-weight:700;font-size:1rem;color:#fff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+        <button onclick="fupClose()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:1.3rem;cursor:pointer;padding:0;line-height:1;">&times;</button>
+    </div>
+    <div id="fupBody" style="overflow-y:auto;flex:1;padding:.25rem 0;"></div>
+</div>
+
 <!-- Followup Preview Modal -->
 <div id="followupPreviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
   <div style="background:#1a1a2e;border-radius:8px;width:92%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);">
@@ -597,12 +639,92 @@ jQuery(function($) {
         info: false,
         order: [[0, 'asc']],
         columnDefs: [
-            { orderable: false, targets: [-1, 3] },
+            { orderable: false, targets: [-1, 2, 3, 4] },
             { type: 'num', targets: [0] }
         ]
     };
     if ($('#followup-lead-datatable').length)   $('#followup-lead-datatable').DataTable(dtOpts);
     if ($('#followup-member-datatable').length) $('#followup-member-datatable').DataTable(dtOpts);
+
+    // ── Followup Drill-Down ───────────────────────────────────────────────────
+    document.addEventListener('click', function (e) {
+        const badge = e.target.closest('.fup-drill');
+        if (!badge) return;
+        fupOpen(badge.dataset.type, badge.dataset.seq, badge.dataset.label);
+    });
+
+    function fupOpen(type, seqId, label) {
+        const overlay = document.getElementById('fupOverlay');
+        const panel   = document.getElementById('fupPanel');
+        const title   = document.getElementById('fupTitle');
+        const body    = document.getElementById('fupBody');
+
+        const typeLabel = type === 'clicks' ? 'Klicker' : 'Empfänger';
+        title.textContent = typeLabel + ' — ' + (label || ('Sequenz #' + seqId));
+        body.innerHTML = '<p style="padding:1.5rem;color:rgba(255,255,255,.4);font-size:.85rem;">Lade …</p>';
+        overlay.style.display = 'block';
+        panel.style.display   = 'flex';
+
+        fetch('followup-detail-ajax.php?type=' + encodeURIComponent(type) + '&seq_id=' + encodeURIComponent(seqId))
+            .then(r => r.json())
+            .then(data => fupRender(data, body, type))
+            .catch(() => { body.innerHTML = '<p style="padding:1.5rem;color:#ea5455;">Fehler beim Laden.</p>'; });
+    }
+
+    function fupRender(data, container, type) {
+        if (!data.rows || data.rows.length === 0) {
+            container.innerHTML = '<p style="padding:1.5rem;color:rgba(255,255,255,.35);font-size:.85rem;">Keine Einträge.</p>';
+            return;
+        }
+        const flagOf = iso => {
+            if (!iso || iso.length !== 2) return '';
+            return String.fromCodePoint(
+                0x1F1E6 + iso.toUpperCase().charCodeAt(0) - 65,
+                0x1F1E6 + iso.toUpperCase().charCodeAt(1) - 65
+            );
+        };
+        const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+        let html = '<div style="padding:.5rem 1.25rem .25rem;font-size:.75rem;color:rgba(255,255,255,.35);">'
+                 + data.total + (type === 'clicks' ? ' Klicker' : ' Empfänger') + '</div>';
+
+        data.rows.forEach(r => {
+            const dt   = (r.signup_at || '').replace('T', ' ').substring(0, 16);
+            const flag = flagOf(r.country_detected || '');
+            const paid = r.paidstatus === 'Paid'
+                       ? '<span style="background:#28c76f22;color:#28c76f;border-radius:3px;padding:1px 5px;font-size:.72rem;">Paid</span>' : '';
+            const s1   = r.step1_at
+                       ? '<span style="background:#00cfe822;color:#00cfe8;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step1 ✓</span>' : '';
+            const s2   = (r.username && r.username !== '')
+                       ? '<span style="background:#9c8bd422;color:#9c8bd4;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step2 ✓</span>' : '';
+            const src  = r.source ? '<span style="background:rgba(255,255,255,.07);border-radius:3px;padding:1px 5px;font-size:.72rem;">' + esc(r.source) + '</span>' : '';
+            const dtLabel = type === 'clicks' ? 'Geklickt' : 'Gesendet';
+            const adminUrl = 'admin-users.php?search=' + encodeURIComponent(r.email || '');
+
+            html += '<div style="padding:.65rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:.2rem;">'
+                  + '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">'
+                  + '  <a href="' + adminUrl + '" target="_blank" style="color:#fff;font-weight:700;font-size:.88rem;text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'
+                  + (r.name ? esc(r.name) : '<span style="opacity:.4;">—</span>')
+                  + '  </a>'
+                  + '  <span style="font-size:.72rem;color:rgba(255,255,255,.3);white-space:nowrap;" title="' + dtLabel + '">' + esc(dt) + '</span>'
+                  + '</div>'
+                  + '<div style="font-size:.78rem;color:rgba(255,255,255,.5);">' + esc(r.email || '') + '</div>'
+                  + '<div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;margin-top:.1rem;">'
+                  + (flag ? '<span style="font-size:.9rem;">' + flag + '</span>' : '')
+                  + (r.lang ? '<span style="opacity:.4;font-size:.72rem;">' + esc(r.lang.toUpperCase()) + '</span>' : '')
+                  + src + paid + s1 + s2
+                  + '</div>'
+                  + '</div>';
+        });
+        container.innerHTML = html;
+    }
+
+    document.getElementById('fupOverlay').addEventListener('click', fupClose);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fupClose(); });
+    function fupClose() {
+        document.getElementById('fupOverlay').style.display = 'none';
+        document.getElementById('fupPanel').style.display   = 'none';
+    }
 });
 </script>
 </body>
