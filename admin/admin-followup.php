@@ -311,7 +311,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           <tbody>
           <?php foreach ($sequences_lead as $seq): ?>
           <tr>
-            <td><span class="badge badge-secondary">Tag <?= $seq['day_offset'] ?></span></td>
+            <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-secondary">Tag <?= $seq['day_offset'] ?></span></td>
             <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
             <td class="text-center"><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
             <td class="text-center">
@@ -371,7 +371,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           <tbody>
           <?php foreach ($sequences_member as $seq): ?>
           <tr>
-            <td><span class="badge badge-primary">Tag <?= $seq['day_offset'] ?></span></td>
+            <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-primary">Tag <?= $seq['day_offset'] ?></span></td>
             <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
             <td class="text-center"><span class="badge badge-info"><?= $seq['sent_count'] ?></span></td>
             <td class="text-center">
@@ -588,7 +588,10 @@ jQuery(function($) {
         searching: false,
         info: false,
         order: [[0, 'asc']],
-        columnDefs: [{ orderable: false, targets: [-1, 3] }]
+        columnDefs: [
+            { orderable: false, targets: [-1, 3] },
+            { type: 'num', targets: [0] }
+        ]
     };
     if ($('#followup-lead-datatable').length)   $('#followup-lead-datatable').DataTable(dtOpts);
     if ($('#followup-member-datatable').length) $('#followup-member-datatable').DataTable(dtOpts);

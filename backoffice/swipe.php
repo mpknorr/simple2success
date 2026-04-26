@@ -492,5 +492,15 @@ HTML;
 </script>
 
 <?php require_once "parts/footer.php"; ?>
+<button class="btn btn-primary scroll-top" type="button"><i class="ft-arrow-up"></i></button>
+
+<div class="sidenav-overlay"></div>
+<div class="drag-target"></div>
+<script src="app-assets/vendors/js/vendors.min.js"></script>
+<script src="app-assets/js/core/app-menu.js"></script>
+<script src="app-assets/js/core/app.js"></script>
+<script src="app-assets/js/notification-sidebar.js"></script>
+<script src="app-assets/js/scroll-top.js"></script>
+<script src="assets/js/scripts.js"></script>
 </body>
 </html>
