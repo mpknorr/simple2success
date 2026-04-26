@@ -156,6 +156,14 @@ while ($row = mysqli_fetch_assoc($daily_res)) {
     $daily_data[]   = (int)$row['c'];
 }
 
+// ── Cron runs ─────────────────────────────────────────────────────────────────
+$_cronTableExists = mysqli_num_rows(mysqli_query($link, "SHOW TABLES LIKE 'cron_runs'")) > 0;
+$cron_runs = [];
+if ($_cronTableExists) {
+    $cr = mysqli_query($link, "SELECT * FROM cron_runs ORDER BY started_at DESC LIMIT 14");
+    if ($cr) $cron_runs = mysqli_fetch_all($cr, MYSQLI_ASSOC);
+}
+
 // ── Activity log summary ──────────────────────────────────────────────────────
 $ev_where = "WHERE created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
 $ev_res   = mysqli_query($link, "SELECT event_type, COUNT(*) AS cnt FROM lead_events $ev_where GROUP BY event_type ORDER BY cnt DESC");
@@ -562,6 +570,64 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
     </div>
 </div>
 
+
+<!-- ══ CRON RUNS ════════════════════════════════════════════════════════════ -->
+<?php if ($_cronTableExists): ?>
+<div class="row mb-2">
+    <div class="col-12">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header">
+                <i class="ft-clock" style="color:var(--s2s-brand);"></i>
+                <h5>Letzte Cron-Ausführungen</h5>
+                <span style="margin-left:auto;font-size:.75rem;color:var(--s2s-text-42);">letzte 14 Einträge</span>
+            </div>
+            <div class="card-content">
+                <div class="card-body p-0">
+                    <?php if (empty($cron_runs)): ?>
+                        <p style="padding:.75rem 1.25rem;color:rgba(255,255,255,.3);font-size:.82rem;margin:0;">Noch keine Ausführungen protokolliert.</p>
+                    <?php else: ?>
+                    <div class="table-responsive">
+                    <table class="st-table">
+                        <thead><tr>
+                            <th>Job</th>
+                            <th>Gestartet</th>
+                            <th>Beendet</th>
+                            <th class="text-right">Laufzeit</th>
+                            <th class="text-right">Versendet</th>
+                            <th>Status</th>
+                            <th>Fehler</th>
+                        </tr></thead>
+                        <tbody>
+                        <?php foreach ($cron_runs as $cr): ?>
+                        <?php
+                            $dur = (strtotime($cr['ended_at']) && strtotime($cr['started_at']))
+                                ? (strtotime($cr['ended_at']) - strtotime($cr['started_at'])) . 's'
+                                : '—';
+                            $statusColor = $cr['status'] === 'ok' ? '#28c76f' : ($cr['status'] === 'empty' ? '#ff9f43' : '#ea5455');
+                            $statusLabel = $cr['status'] === 'ok' ? 'OK' : ($cr['status'] === 'empty' ? 'Leer' : 'Fehler');
+                        ?>
+                        <tr>
+                            <td><strong><?= htmlspecialchars($cr['job_name']) ?></strong></td>
+                            <td><?= htmlspecialchars($cr['started_at']) ?></td>
+                            <td><?= htmlspecialchars($cr['ended_at'] ?? '—') ?></td>
+                            <td class="text-right"><?= $dur ?></td>
+                            <td class="text-right"><strong><?= (int)$cr['sent'] ?></strong></td>
+                            <td><span style="color:<?= $statusColor ?>;font-weight:700;"><?= $statusLabel ?></span></td>
+                            <td style="font-size:.78rem;color:var(--s2s-text-42);max-width:300px;word-break:break-all;">
+                                <?= $cr['errors'] ? htmlspecialchars(mb_substr($cr['errors'], 0, 120)) . (mb_strlen($cr['errors']) > 120 ? '…' : '') : '<span style="opacity:.3;">—</span>' ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- ══ ACTIVITY LOG ════════════════════════════════════════════════════════ -->
 <?php if (!empty($ev_rows)): ?>

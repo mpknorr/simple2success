@@ -23,6 +23,15 @@ function getSmtpSettingDL($link, $key) {
 function sendDailyLeadsNotifications($link) {
     global $baseurl;
 
+    // Ensure duplicate-send protection table exists
+    mysqli_query($link, "CREATE TABLE IF NOT EXISTS daily_leads_log (
+        id         INT AUTO_INCREMENT PRIMARY KEY,
+        member_id  INT NOT NULL,
+        sent_date  DATE NOT NULL,
+        sent_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_member_date (member_id, sent_date)
+    )");
+
     // Load template from DB
     $tpl = mysqli_fetch_assoc(mysqli_query($link,
         "SELECT subject, body FROM email_templates WHERE template_key = 'daily_leads' LIMIT 1"
@@ -63,6 +72,11 @@ function sendDailyLeadsNotifications($link) {
         $memberId    = (int)$member['leadid'];
         $memberEmail = $member['email'];
         $memberName  = $member['name'] ?: $memberEmail;
+
+        // Skip if already notified today (duplicate-send protection)
+        $alreadySent = mysqli_fetch_assoc(mysqli_query($link,
+            "SELECT id FROM daily_leads_log WHERE member_id=$memberId AND sent_date=CURDATE() LIMIT 1"));
+        if ($alreadySent) continue;
 
         // Skip users who opted out of marketing emails
         if (emailFooter_shouldSkip($link, $memberId, 'daily_leads')) continue;
@@ -119,6 +133,7 @@ function sendDailyLeadsNotifications($link) {
             $mail->Subject = html_entity_decode($personalSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $mail->Body    = $personalBody . renderEmailFooter($link, 'daily_leads', $memberId);
             $mail->send();
+            mysqli_query($link, "INSERT IGNORE INTO daily_leads_log (member_id, sent_date) VALUES ($memberId, CURDATE())");
             $sent++;
         } catch (Exception $e) {
             $errors[] = "$memberEmail: {$mail->ErrorInfo}";

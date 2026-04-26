@@ -24,9 +24,27 @@ define('CRON_RUN', true);
 require_once __DIR__ . '/../includes/conn.php';
 require_once __DIR__ . '/../includes/sendFollowupEmails.php';
 
-$result = sendFollowupEmails($link);
+mysqli_query($link, "CREATE TABLE IF NOT EXISTS cron_runs (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    job_name   VARCHAR(64) NOT NULL,
+    started_at DATETIME NOT NULL,
+    ended_at   DATETIME DEFAULT NULL,
+    sent       INT DEFAULT 0,
+    errors     TEXT,
+    status     ENUM('ok','error','empty') DEFAULT 'ok'
+)");
 
-$msg = date('Y-m-d H:i:s') . " | Sent: {$result['sent']} | Errors: " . count($result['errors']);
+$startedAt = date('Y-m-d H:i:s');
+$result = sendFollowupEmails($link);
+$endedAt = date('Y-m-d H:i:s');
+
+$errCount  = count($result['errors']);
+$status    = $errCount > 0 ? 'error' : ($result['sent'] === 0 ? 'empty' : 'ok');
+$errText   = mysqli_real_escape_string($link, implode("\n", $result['errors']));
+mysqli_query($link, "INSERT INTO cron_runs (job_name, started_at, ended_at, sent, errors, status)
+    VALUES ('followup', '$startedAt', '$endedAt', {$result['sent']}, '$errText', '$status')");
+
+$msg = $startedAt . " | Sent: {$result['sent']} | Errors: $errCount | Status: $status";
 if (!empty($result['errors'])) {
     $msg .= "\n  " . implode("\n  ", $result['errors']);
 }
