@@ -631,6 +631,12 @@ document.getElementById('followupPreviewModal').addEventListener('click', functi
     if (e.target === this) closeFollowupPreview();
 });
 
+// Global so onclick="fupClose()" in HTML works
+function fupClose() {
+    document.getElementById('fupOverlay').style.display = 'none';
+    document.getElementById('fupPanel').style.display   = 'none';
+}
+
 // DataTables für beide Followup-Tabellen (Sort an Headern, Actions-Spalte nicht sortierbar)
 jQuery(function($) {
     var dtOpts = {
@@ -723,10 +729,7 @@ jQuery(function($) {
 
     document.getElementById('fupOverlay').addEventListener('click', fupClose);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') fupClose(); });
-    function fupClose() {
-        document.getElementById('fupOverlay').style.display = 'none';
-        document.getElementById('fupPanel').style.display   = 'none';
-    }
+});
 });
 </script>
 </body>
