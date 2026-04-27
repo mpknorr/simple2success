@@ -20,6 +20,14 @@ if (!$cli && !$token_ok) {
 
 define('CRON_RUN', true);
 
+// Prevent parallel runs
+$lockFile = sys_get_temp_dir() . '/followup_cron.lock';
+$lockFp   = fopen($lockFile, 'c');
+if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
+    echo date('Y-m-d H:i:s') . " | Skipped: another instance is running\n";
+    exit(0);
+}
+
 // Bootstrap — conn.php sets $link and $baseurl
 require_once __DIR__ . '/../includes/conn.php';
 require_once __DIR__ . '/../includes/sendFollowupEmails.php';
@@ -50,3 +58,7 @@ if (!empty($result['errors'])) {
 }
 echo $msg . "\n";
 mysqli_close($link);
+
+// Release lock
+flock($lockFp, LOCK_UN);
+fclose($lockFp);

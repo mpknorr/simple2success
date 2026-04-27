@@ -210,6 +210,8 @@ $evLabels = [
     'video_play'       => '▶️ Video angeschaut (start.php)',
     'email_sent'          => '📧 E-Mail gesendet',
     'step1_button_click'  => '🔗 Step 1 Registrierungslink geklickt',
+    'email_hard_bounce'   => '⛔ E-Mail Hard Bounce',
+    'email_spam'          => '🚫 E-Mail als Spam markiert',
 ];
 
 // ── Flag helper ───────────────────────────────────────────────────────────────

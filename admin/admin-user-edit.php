@@ -521,6 +521,8 @@ $langLabels = [
                                 'email_sent'       => ['label' => 'Follow-up E-Mail gesendet',            'color' => 'rgba(253,126,20,.8)'],
                                 'email_click'         => ['label' => 'E-Mail Button geklickt',               'color' => 'rgba(102,217,100,.8)'],
                                 'step1_button_click'  => ['label' => 'Step 1 Registrierungslink geklickt',   'color' => 'rgba(255,99,132,.8)'],
+                                'email_hard_bounce'   => ['label' => 'E-Mail Hard Bounce',                     'color' => 'rgba(234,84,85,.8)'],
+                                'email_spam'          => ['label' => 'E-Mail als Spam markiert',               'color' => 'rgba(234,84,85,.8)'],
                             ];
                             foreach ($events as $ev):
                                 $type  = $ev['event_type'];
