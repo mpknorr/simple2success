@@ -138,6 +138,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_smtp'])) {
     foreach ($fields as $field) {
         saveSetting($link, $field, $_POST[$field] ?? '');
     }
+    // Brevo API Key (nur speichern wenn nicht leer, damit bestehender Key nicht gelöscht wird)
+    if (!empty($_POST['brevo_api_key'])) {
+        saveSetting($link, 'brevo_api_key', trim($_POST['brevo_api_key']));
+    }
     $success = "E-Mail Einstellungen gespeichert.";
 }
 
@@ -176,6 +180,8 @@ $smtp_user        = getSetting($link, 'smtp_user');
 $smtp_password    = getSetting($link, 'smtp_password');
 $smtp_from_email  = getSetting($link, 'smtp_from_email');
 $smtp_from_name   = getSetting($link, 'smtp_from_name');
+$brevo_api_key    = getSetting($link, 'brevo_api_key');
+$brevo_key_set    = !empty($brevo_api_key);
 $homepage_mode    = getSetting($link, 'homepage_mode') ?: 'default';
 $homepage_target  = getSetting($link, 'homepage_target');
 
@@ -278,6 +284,33 @@ $pages = [
                     <div class="card-body">
                         <form method="POST">
                             <div class="form-group row">
+                                <label class="col-sm-4 col-form-label font-weight-bold" style="color:#cb2ebc;">Brevo API Key</label>
+                                <div class="col-sm-8">
+                                    <input type="password" name="brevo_api_key" class="form-control" value="" placeholder="<?= $brevo_key_set ? '●●●●●●●● (gesetzt — leer lassen zum Behalten)' : 'xkeysib-...' ?>">
+                                    <?php if ($brevo_key_set): ?>
+                                        <small class="text-success"><i class="ft-check-circle"></i> API Key ist gesetzt — E-Mails laufen über Brevo API</small>
+                                    <?php else: ?>
+                                        <small class="text-danger"><i class="ft-alert-circle"></i> Kein API Key — E-Mail-Versand funktioniert nicht!</small>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Absender E-Mail</label>
+                                <div class="col-sm-8">
+                                    <input type="email" name="smtp_from_email" class="form-control" value="<?= htmlspecialchars($smtp_from_email) ?>" placeholder="info@simple2success.com">
+                                    <small class="text-muted">Muss in Brevo als Absender verifiziert sein</small>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Absender Name</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="smtp_from_name" class="form-control" value="<?= htmlspecialchars($smtp_from_name) ?>" placeholder="Simple2Success">
+                                </div>
+                            </div>
+                            <hr>
+                            <p class="text-muted font-small-3 mb-2">SMTP-Felder (nur noch für Legacy-Fallback, können leer bleiben):</p>
+                            <div class="form-group row">
                                 <label class="col-sm-4 col-form-label">SMTP Host</label>
                                 <div class="col-sm-8">
                                     <input type="text" name="smtp_host" class="form-control" value="<?= htmlspecialchars($smtp_host) ?>" placeholder="smtp-relay.brevo.com">
@@ -302,18 +335,6 @@ $pages = [
                                 <div class="col-sm-8">
                                     <input type="password" name="smtp_password" class="form-control" value="<?= htmlspecialchars($smtp_password) ?>" placeholder="Brevo API Key">
                                     <small class="text-muted">In Brevo unter: SMTP &amp; API → API Keys</small>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Absender E-Mail</label>
-                                <div class="col-sm-8">
-                                    <input type="email" name="smtp_from_email" class="form-control" value="<?= htmlspecialchars($smtp_from_email) ?>" placeholder="info@simple2success.com">
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Absender Name</label>
-                                <div class="col-sm-8">
-                                    <input type="text" name="smtp_from_name" class="form-control" value="<?= htmlspecialchars($smtp_from_name) ?>" placeholder="Simple2Success">
                                 </div>
                             </div>
                             <button type="submit" name="save_smtp" class="btn btn-primary">
@@ -375,11 +396,15 @@ $pages = [
                         <ol>
                             <li>Anmelden auf <strong>brevo.com</strong></li>
                             <li>Gehe zu: <em>SMTP &amp; API → API Keys</em></li>
-                            <li>API Key kopieren → oben als Passwort eintragen</li>
-                            <li>SMTP Host: <code>smtp-relay.brevo.com</code></li>
-                            <li>Port: <code>587</code></li>
-                            <li>Absender-E-Mail muss in Brevo verifiziert sein</li>
+                            <li>API Key erstellen → oben als <strong>Brevo API Key</strong> eintragen</li>
+                            <li>Absender unter <em>Senders &amp; Domains</em> verifizieren</li>
+                            <li>Webhook: <em>Transactional → Settings → Webhooks</em></li>
                         </ol>
+                        <?php if ($brevo_key_set): ?>
+                            <div class="alert alert-success py-1 px-2 mb-0">✓ API Key aktiv</div>
+                        <?php else: ?>
+                            <div class="alert alert-danger py-1 px-2 mb-0">⚠ API Key fehlt — E-Mails nicht gesendet</div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
