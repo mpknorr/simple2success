@@ -1,38 +1,17 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require_once __DIR__ . '/PHPMailer/src/Exception.php';
-require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
-require_once __DIR__ . '/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/BrevoMailer.php';
 require_once __DIR__ . '/emailFooter.php';
 
-function getSmtpSettingMember($link, $key) {
-    $k = mysqli_real_escape_string($link, $key);
-    $r = mysqli_fetch_assoc(mysqli_query($link, "SELECT setting_value FROM settings WHERE setting_key = '$k'"));
-    return $r ? $r['setting_value'] : '';
-}
-
-/**
- * Send "new member" notification to the sponsor when a user completes Step 2.
- *
- * @param  mysqli $link
- * @param  string $root  The new member's username (as set in welcome.php)
- * @return true|string   true on success, error string on failure
- */
 function sendNewMemberMail($link, $root) {
     global $baseurl;
     $safeRoot = mysqli_real_escape_string($link, $root);
     $loginUrl = rtrim($baseurl ?: 'https://www.simple2success.com', '/') . '/backoffice/login.php';
 
-    // Get new member's email + sponsor's email/name + sponsor leadid
     $row = mysqli_fetch_assoc(mysqli_query($link,
         "SELECT u.email AS member_email, r.leadid AS sponsor_id, r.email AS sponsor_email, r.name AS sponsor_name
          FROM users u
          LEFT JOIN users r ON u.referer = r.leadid
-         WHERE u.username = '$safeRoot'
-         LIMIT 1"
-    ));
+         WHERE u.username = '$safeRoot' LIMIT 1"));
 
     if (!$row || empty($row['sponsor_email'])) {
         return 'sendNewMemberMail: sponsor not found for username ' . $root;
@@ -43,10 +22,8 @@ function sendNewMemberMail($link, $root) {
     $sponsorEmail = $row['sponsor_email'];
     $sponsorName  = $row['sponsor_name'] ?: $sponsorEmail;
 
-    // Load template
     $tpl = mysqli_fetch_assoc(mysqli_query($link,
-        "SELECT subject, body FROM email_templates WHERE template_key = 'new_member' LIMIT 1"
-    ));
+        "SELECT subject, body FROM email_templates WHERE template_key = 'new_member' LIMIT 1"));
     if (!$tpl) {
         return 'sendNewMemberMail: new_member template not found in email_templates';
     }
@@ -54,34 +31,22 @@ function sendNewMemberMail($link, $root) {
     $subject = str_replace(
         ['{{name}}', '{{member_email}}', '{{login_url}}'],
         [htmlspecialchars($sponsorName), htmlspecialchars($memberEmail), $loginUrl],
-        $tpl['subject']
-    );
+        $tpl['subject']);
     $body = str_replace(
         ['{{name}}', '{{member_email}}', '{{login_url}}'],
         [htmlspecialchars($sponsorName), htmlspecialchars($memberEmail), $loginUrl],
-        $tpl['body']
-    );
+        $tpl['body'])
+        . renderEmailFooter($link, 'new_member', $sponsorId);
+    $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-    $mail = new PHPMailer(true);
     try {
-        $mail->isSMTP();
-        $mail->CharSet    = 'UTF-8';
-        $mail->Host       = getSmtpSettingMember($link, 'smtp_host');
-        $mail->SMTPAuth   = true;
-        $mail->Username   = getSmtpSettingMember($link, 'smtp_user');
-        $mail->Password   = getSmtpSettingMember($link, 'smtp_password');
-        $mail->Port       = (int) getSmtpSettingMember($link, 'smtp_port');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->isHTML(true);
-        $fromEmail = getSmtpSettingMember($link, 'smtp_from_email');
-        $fromName  = getSmtpSettingMember($link, 'smtp_from_name');
-        $mail->setFrom($fromEmail ?: 'info@simple2success.com', $fromName ?: 'Simple2Success');
-        $mail->addAddress($sponsorEmail, $sponsorName);
-        $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $mail->Body    = $body . renderEmailFooter($link, 'new_member', $sponsorId);
-        $mail->send();
+        $mailer = new BrevoMailer($link);
+        $mailer->sendEmail($sponsorEmail, $sponsorName, $subject, $body,
+            ['admin-notification', 'new-member'],
+            ['user_id' => $sponsorId, 'email_type' => 'new_member']);
         return true;
-    } catch (Exception $e) {
-        return "sendNewMemberMail error: {$mail->ErrorInfo}";
+    } catch (\Exception $e) {
+        error_log("sendNewMemberMail [$sponsorEmail]: " . $e->getMessage());
+        return 'sendNewMemberMail error: ' . $e->getMessage();
     }
 }

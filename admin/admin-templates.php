@@ -1,9 +1,5 @@
 <?php
-require_once '../includes/PHPMailer/src/Exception.php';
-require_once '../includes/PHPMailer/src/PHPMailer.php';
-require_once '../includes/PHPMailer/src/SMTP.php';
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception as MailException;
+require_once '../includes/BrevoMailer.php';
 
 session_start();
 if (empty($_SESSION["userid"]) || empty($_SESSION["is_admin"])) {
@@ -60,12 +56,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['send_test'])) {
     } elseif (!filter_var($testTo, FILTER_VALIDATE_EMAIL)) {
         $error = "Bitte eine gültige E-Mail-Adresse angeben.";
     } else {
-        function getTplSmtp($link, $key) {
-            $k = mysqli_real_escape_string($link, $key);
-            $r = mysqli_fetch_assoc(mysqli_query($link, "SELECT setting_value FROM settings WHERE setting_key = '$k'"));
-            return $r ? $r['setting_value'] : '';
-        }
-
         // Platzhalter mit Beispieldaten füllen
         $testBody = $tplRow['body'];
         $testBody = str_replace('{{leads}}', '<ul><li>max.mustermann@example.com</li><li>anna.beispiel@example.com</li></ul>', $testBody);
@@ -79,27 +69,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['send_test'])) {
         $testBody = str_replace('{{magic_link}}', $baseurl . '/backoffice/autologin.php?token=DEMO_TOKEN_PREVIEW', $testBody);
         $testBody = str_replace('{{reset_link}}', $baseurl . '/backoffice/reset-password.php?token=DEMO_RESET_PREVIEW', $testBody);
 
-        $mail = new PHPMailer(true);
         try {
-            $mail->isSMTP();
-            $mail->CharSet    = 'UTF-8';
-            $mail->Host       = getTplSmtp($link, 'smtp_host');
-            $mail->SMTPAuth   = true;
-            $mail->Username   = getTplSmtp($link, 'smtp_user');
-            $mail->Password   = getTplSmtp($link, 'smtp_password');
-            $mail->Port       = (int) getTplSmtp($link, 'smtp_port');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->isHTML(true);
-            $fromEmail = getTplSmtp($link, 'smtp_from_email') ?: 'noreply@simple2success.com';
-            $fromName  = getTplSmtp($link, 'smtp_from_name') ?: 'Simple2Success';
-            $mail->setFrom($fromEmail, $fromName);
-            $mail->addAddress($testTo);
-            $mail->Subject = '[TEST] ' . html_entity_decode($tplRow['subject'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $mail->Body    = $testBody;
-            $mail->send();
+            $tpl_mailer = new BrevoMailer($link);
+            $tpl_mailer->sendEmail($testTo, $testTo,
+                '[TEST] ' . html_entity_decode($tplRow['subject'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                $testBody,
+                ['test', 'admin-template-test'],
+                ['template_id' => $id, 'email_type' => 'template_test']);
             $success = "Test-E-Mail erfolgreich gesendet an <strong>" . htmlspecialchars($testTo) . "</strong>.";
-        } catch (MailException $e) {
-            $error = "Fehler beim Senden: " . htmlspecialchars($mail->ErrorInfo);
+        } catch (\Exception $e) {
+            $error = "Fehler beim Senden: " . htmlspecialchars($e->getMessage());
         }
     }
 }

@@ -6,6 +6,7 @@ if (empty($_SESSION["userid"]) || empty($_SESSION["is_admin"])) {
     exit();
 }
 require_once '../includes/conn.php';
+require_once '../includes/BrevoMailer.php';
 require_once '../includes/sendNewsletter.php';
 
 $userid = $_SESSION["userid"];
@@ -137,29 +138,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $testBody    = str_replace(['{{name}}','{{email}}'], ['Max Mustermann', $testTo], $tplRow['body']);
             $testSubject = '[TEST] ' . $tplRow['subject'];
-            // Direct single send via PHPMailer (classes already loaded via sendNewsletter.php)
-            $smtpHost  = getSmtpSettingNL($link, 'smtp_host');
-            $smtpUser  = getSmtpSettingNL($link, 'smtp_user');
-            $smtpPass  = getSmtpSettingNL($link, 'smtp_password');
-            $smtpPort  = (int) getSmtpSettingNL($link, 'smtp_port');
-            $fromEmail = getSmtpSettingNL($link, 'smtp_from_email') ?: 'info@simple2success.com';
-            $fromName  = getSmtpSettingNL($link, 'smtp_from_name')  ?: 'Simple2Success';
-            $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
             try {
-                $mail->isSMTP(); $mail->CharSet = 'UTF-8';
-                $mail->Host = $smtpHost; $mail->SMTPAuth = true;
-                $mail->Username = $smtpUser; $mail->Password = $smtpPass;
-                $mail->Port = $smtpPort;
-                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->isHTML(true);
-                $mail->setFrom($fromEmail, $fromName);
-                $mail->addAddress($testTo);
-                $mail->Subject = html_entity_decode($testSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                $mail->Body    = $testBody;
-                $mail->send();
+                $nl_mailer = new BrevoMailer($link);
+                $nl_mailer->sendEmail($testTo, $testTo,
+                    html_entity_decode($testSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                    $testBody,
+                    ['test', 'newsletter-test'],
+                    ['template_id' => $tid, 'email_type' => 'newsletter_test']);
                 $success = 'Test-E-Mail gesendet an <strong>' . htmlspecialchars($testTo) . '</strong>.';
-            } catch (\PHPMailer\PHPMailer\Exception $e) {
-                $error = 'Fehler: ' . htmlspecialchars($mail->ErrorInfo);
+            } catch (\Exception $e) {
+                $error = 'Fehler: ' . htmlspecialchars($e->getMessage());
             }
         }
         $activeTab = 'templates';

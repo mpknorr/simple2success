@@ -1,20 +1,8 @@
 <?php
 require_once '../includes/conn.php';
 require_once '../includes/helpers.php';
-require_once '../includes/PHPMailer/src/Exception.php';
-require_once '../includes/PHPMailer/src/PHPMailer.php';
-require_once '../includes/PHPMailer/src/SMTP.php';
+require_once '../includes/BrevoMailer.php';
 require_once '../includes/emailFooter.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception as MailException;
-
-// SMTP helper (local, avoids function redeclaration)
-function getRpSmtp($link, $key) {
-    $k = mysqli_real_escape_string($link, $key);
-    $r = mysqli_fetch_assoc(mysqli_query($link, "SELECT setting_value FROM settings WHERE setting_key='$k'"));
-    return $r ? $r['setting_value'] : '';
-}
 
 // Seed password_changed confirmation template if missing
 $_pcBanner = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
@@ -102,25 +90,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $resetRow) {
                 );
                 $pcSubject = html_entity_decode($tpl['subject'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-                $mail = new PHPMailer(true);
                 try {
-                    $mail->isSMTP();
-                    $mail->CharSet    = 'UTF-8';
-                    $mail->Host       = getRpSmtp($link, 'smtp_host');
-                    $mail->SMTPAuth   = true;
-                    $mail->Username   = getRpSmtp($link, 'smtp_user');
-                    $mail->Password   = getRpSmtp($link, 'smtp_password');
-                    $mail->Port       = (int)getRpSmtp($link, 'smtp_port');
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->isHTML(true);
-                    $fromEmail = getRpSmtp($link, 'smtp_from_email') ?: 'noreply@simple2success.com';
-                    $fromName  = getRpSmtp($link, 'smtp_from_name')  ?: 'Simple2Success';
-                    $mail->setFrom($fromEmail, $fromName);
-                    $mail->addAddress($resetRow['email'], $displayName);
-                    $mail->Subject = $pcSubject;
-                    $mail->Body    = $pcBody . renderEmailFooter($link, 'password_changed', $userId);
-                    $mail->send();
-                } catch (MailException $e) {
+                    $rp_mailer = new BrevoMailer($link);
+                    $rp_mailer->sendEmail($resetRow['email'], $displayName, $pcSubject,
+                        $pcBody . renderEmailFooter($link, 'password_changed', $userId),
+                        ['transactional', 'password-changed'],
+                        ['user_id' => $userId, 'email_type' => 'password_changed']);
+                } catch (\Exception $e) {
+                    error_log("reset-password [{$resetRow['email']}]: " . $e->getMessage());
                     // Silent — redirect always happens
                 }
             }

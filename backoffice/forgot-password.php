@@ -1,12 +1,7 @@
 <?php
 require_once '../includes/conn.php';
-require_once '../includes/PHPMailer/src/Exception.php';
-require_once '../includes/PHPMailer/src/PHPMailer.php';
-require_once '../includes/PHPMailer/src/SMTP.php';
+require_once '../includes/BrevoMailer.php';
 require_once '../includes/emailFooter.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 // Tabelle für Reset-Tokens anlegen (falls nicht vorhanden)
 mysqli_query($link, "CREATE TABLE IF NOT EXISTS password_resets (
@@ -63,48 +58,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["email"])) {
         $resetLink = $baseurl . '/backoffice/reset-password.php?token=' . urlencode($token);
         $displayName = $user['name'] ?: $email;
 
-        // SMTP-Einstellungen aus DB
-        function getFpSmtp($link, $key) {
-            $k = mysqli_real_escape_string($link, $key);
-            $r = mysqli_fetch_assoc(mysqli_query($link, "SELECT setting_value FROM settings WHERE setting_key = '$k'"));
-            return $r ? $r['setting_value'] : '';
-        }
-
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->CharSet    = 'UTF-8';
-            $mail->Host       = getFpSmtp($link, 'smtp_host');
-            $mail->SMTPAuth   = true;
-            $mail->Username   = getFpSmtp($link, 'smtp_user');
-            $mail->Password   = getFpSmtp($link, 'smtp_password');
-            $mail->Port       = (int) getFpSmtp($link, 'smtp_port');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->isHTML(true);
-            $fromEmail = getFpSmtp($link, 'smtp_from_email') ?: 'noreply@simple2success.com';
-            $fromName  = getFpSmtp($link, 'smtp_from_name') ?: 'Simple2Success';
-            $mail->setFrom($fromEmail, $fromName);
-            $mail->addAddress($email, $displayName);
-
-            $tpl = mysqli_fetch_assoc(mysqli_query($link,
-                "SELECT subject, body FROM email_templates WHERE template_key = 'password_reset' LIMIT 1"));
-            $subject = $tpl['subject'] ?? 'Reset Your Simple2Success Password';
-            $body    = $tpl['body'] ?? '';
-            $body = str_replace(
-                ['{{name}}', '{{reset_link}}'],
-                [htmlspecialchars($displayName), $resetLink],
-                $body
-            );
-            // Never send an empty email — abort silently if body is blank
-            if (empty(trim(strip_tags($body)))) {
-                header("Location: forgot-password.php?sent=1");
-                exit();
+        $tpl = mysqli_fetch_assoc(mysqli_query($link,
+            "SELECT subject, body FROM email_templates WHERE template_key = 'password_reset' LIMIT 1"));
+        $fpSubject = $tpl['subject'] ?? 'Reset Your Simple2Success Password';
+        $fpBody    = $tpl['body'] ?? '';
+        $fpBody = str_replace(
+            ['{{name}}', '{{reset_link}}'],
+            [htmlspecialchars($displayName), $resetLink],
+            $fpBody);
+        if (!empty(trim(strip_tags($fpBody)))) {
+            try {
+                $mailer = new BrevoMailer($link);
+                $mailer->sendEmail($email, $displayName,
+                    html_entity_decode($fpSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                    $fpBody . renderEmailFooter($link, 'password_reset', (int)$user['leadid']),
+                    ['transactional', 'password-reset'],
+                    ['user_id' => (int)$user['leadid'], 'email_type' => 'password_reset']);
+            } catch (\Exception $e) {
+                error_log("forgot-password [$email]: " . $e->getMessage());
             }
-            $mail->Subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $mail->Body    = $body . renderEmailFooter($link, 'password_reset', (int)$user['leadid']);
-            $mail->send();
-        } catch (Exception $e) {
-            // Mail-Fehler still ignorieren — User sieht immer Erfolgsmeldung (Sicherheit)
         }
 
         header("Location: forgot-password.php?sent=1");

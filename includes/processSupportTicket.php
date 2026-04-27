@@ -14,12 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once 'conn.php';
 require_once __DIR__ . '/emailFooter.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require 'PHPMailer/src/Exception.php';
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/BrevoMailer.php';
 
 $leadId = (int)$_SESSION['userid'];
 
@@ -82,13 +77,6 @@ $insertSql = "INSERT INTO support_tickets (lead_id, fname, lname, email, phone, 
 mysqli_query($link, $insertSql);
 $ticketId = mysqli_insert_id($link);
 
-// SMTP helper
-function getSmtpSetting($link, $key) {
-    $k = mysqli_real_escape_string($link, $key);
-    $r = mysqli_fetch_assoc(mysqli_query($link, "SELECT setting_value FROM settings WHERE setting_key = '$k'"));
-    return $r ? $r['setting_value'] : '';
-}
-
 // Ensure email_templates table exists and seed support_ticket template if missing
 mysqli_query($link, "CREATE TABLE IF NOT EXISTS email_templates (
     id           INT AUTO_INCREMENT PRIMARY KEY,
@@ -136,35 +124,24 @@ $mailBody = str_replace(
 );
 
 // Send e-mail to admin
-$adminEmail = getSmtpSetting($link, 'admin_email');
+$r = mysqli_fetch_assoc(mysqli_query($link, "SELECT setting_value FROM settings WHERE setting_key='admin_email' LIMIT 1"));
+$adminEmail = $r ? $r['setting_value'] : '';
 if (!$adminEmail) {
-    $adminEmail = getSmtpSetting($link, 'smtp_from_email');
+    $r2 = mysqli_fetch_assoc(mysqli_query($link, "SELECT setting_value FROM settings WHERE setting_key='smtp_from_email' LIMIT 1"));
+    $adminEmail = $r2 ? $r2['setting_value'] : '';
 }
 
-$mail = new PHPMailer(true);
 try {
-    $mail->isSMTP();
-    $mail->CharSet  = 'UTF-8';
-    $mail->Host     = getSmtpSetting($link, 'smtp_host');
-    $mail->SMTPAuth = true;
-    $mail->Username = getSmtpSetting($link, 'smtp_user');
-    $mail->Password = getSmtpSetting($link, 'smtp_password');
-    $mail->Port     = (int) getSmtpSetting($link, 'smtp_port');
-    $mail->isHTML(true);
-
-    $fromEmail = getSmtpSetting($link, 'smtp_from_email');
-    $fromName  = getSmtpSetting($link, 'smtp_from_name');
-    $mail->setFrom($fromEmail ?: 'noreply@simple2success.com', $fromName ?: 'Simple2Success');
-    $mail->addAddress($adminEmail);
-    $mail->Subject = html_entity_decode($mailSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    $mail->Body    = $mailBody . renderEmailFooter($link, 'support_ticket', 0);
-
-    if ($attachmentFilename && file_exists(__DIR__ . '/../' . $attachmentPath)) {
-        $mail->addAttachment(__DIR__ . '/../' . $attachmentPath, $attachmentFilename);
-    }
-
-    $mail->send();
-} catch (Exception $e) {
+    $mailer = new BrevoMailer($link);
+    $mailer->sendEmail(
+        $adminEmail, 'Admin',
+        html_entity_decode($mailSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+        $mailBody . renderEmailFooter($link, 'support_ticket', 0),
+        ['transactional', 'support-ticket'],
+        ['lead_id' => $leadId, 'ticket_id' => $ticketId, 'email_type' => 'support_ticket']
+    );
+} catch (\Exception $e) {
+    error_log("processSupportTicket [$adminEmail]: " . $e->getMessage());
     // Mail failed but ticket is saved — still redirect as success
 }
 

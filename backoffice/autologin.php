@@ -8,11 +8,7 @@
  */
 require_once '../includes/conn.php';
 require_once '../includes/helpers.php';
-require_once '../includes/PHPMailer/src/Exception.php';
-require_once '../includes/PHPMailer/src/PHPMailer.php';
-require_once '../includes/PHPMailer/src/SMTP.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
+require_once '../includes/BrevoMailer.php';
 use PHPMailer\PHPMailer\Exception as MailException;
 
 // ── UI strings (English — multilingual structure ready for future extension) ──
@@ -63,14 +59,6 @@ if (strtotime($row['expires_at']) < time()) {
     $newMagicLink = generateMagicLink($link, (int)$row['user_id'], 'expired_resend', 2);
     $displayName  = $row['name'] ?: $row['email'];
 
-    // Send new-link email via PHPMailer + SMTP from settings
-    function _alSmtp($link, $key) {
-        $k = mysqli_real_escape_string($link, $key);
-        $r = mysqli_fetch_assoc(mysqli_query($link,
-            "SELECT setting_value FROM settings WHERE setting_key='$k'"));
-        return $r ? $r['setting_value'] : '';
-    }
-
     $expiredBody =
         '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
         . '<body style="font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;">'
@@ -85,25 +73,14 @@ if (strtotime($row['expires_at']) < time()) {
         . '<p style="color:#888;font-size:13px;">Your Simple2Success Team</p>'
         . '</td></tr></table></body></html>';
 
-    $mail = new PHPMailer(true);
     try {
-        $mail->isSMTP();
-        $mail->CharSet    = 'UTF-8';
-        $mail->Host       = _alSmtp($link, 'smtp_host');
-        $mail->SMTPAuth   = true;
-        $mail->Username   = _alSmtp($link, 'smtp_user');
-        $mail->Password   = _alSmtp($link, 'smtp_password');
-        $mail->Port       = (int)_alSmtp($link, 'smtp_port');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->isHTML(true);
-        $fromEmail = _alSmtp($link, 'smtp_from_email') ?: 'noreply@simple2success.com';
-        $fromName  = _alSmtp($link, 'smtp_from_name')  ?: 'Simple2Success';
-        $mail->setFrom($fromEmail, $fromName);
-        $mail->addAddress($row['email'], $displayName);
-        $mail->Subject = 'Your new login link — Simple2Success';
-        $mail->Body    = $expiredBody;
-        $mail->send();
-    } catch (MailException $e) {
+        $al_mailer = new BrevoMailer($link);
+        $al_mailer->sendEmail($row['email'], $displayName,
+            'Your new login link — Simple2Success', $expiredBody,
+            ['transactional', 'magic-link'],
+            ['user_id' => (int)$row['user_id'], 'email_type' => 'expired_magic_link']);
+    } catch (\Exception $e) {
+        error_log("autologin [{$row['email']}]: " . $e->getMessage());
         // Silent — user still sees the expiry page
     }
 
