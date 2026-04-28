@@ -68,14 +68,18 @@ function webhook_update_followup_log($link, string $mid, string $event): bool {
                       AND status NOT IN ('clicked','spam','bounced')";
             break;
         case 'hardBounce':
+            $sql = "UPDATE followup_log
+                    SET status = 'bounced', bounced_at = NOW(), bounce_type = 'hard'
+                    WHERE brevo_message_id = '$mid'";
+            break;
         case 'softBounce':
             $sql = "UPDATE followup_log
-                    SET status = 'bounced', bounced_at = NOW()
+                    SET status = 'bounced', bounced_at = NOW(), bounce_type = 'soft'
                     WHERE brevo_message_id = '$mid'";
             break;
         case 'spam':
             $sql = "UPDATE followup_log
-                    SET status = 'spam'
+                    SET status = 'spam', spam_at = NOW()
                     WHERE brevo_message_id = '$mid'";
             break;
         default:

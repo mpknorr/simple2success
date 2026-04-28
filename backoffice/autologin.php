@@ -9,7 +9,7 @@
 require_once '../includes/conn.php';
 require_once '../includes/helpers.php';
 require_once '../includes/BrevoMailer.php';
-use PHPMailer\PHPMailer\Exception as MailException;
+require_once '../includes/emailFooter.php';
 
 // ── UI strings (English — multilingual structure ready for future extension) ──
 $txt_expired_title = 'Your login link has expired';
@@ -71,7 +71,9 @@ if (strtotime($row['expires_at']) < time()) {
         . '</div>'
         . '<p style="color:#888;font-size:13px;">If you did not request this, you can ignore this email.</p>'
         . '<p style="color:#888;font-size:13px;">Your Simple2Success Team</p>'
-        . '</td></tr></table></body></html>';
+        . '</td></tr></table>'
+        . renderEmailFooter($link, 'magic_link_expired', (int)$row['user_id'])
+        . '</body></html>';
 
     try {
         $al_mailer = new BrevoMailer($link);

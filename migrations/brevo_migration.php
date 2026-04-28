@@ -207,4 +207,27 @@ if (!column_exists($link, 'followup_trigger_log', 'status')) {
 }
 
 migrate_log('');
+
+// ── 5. followup_log: spam_at + bounce_type ────────────────────────────────────
+migrate_log("--- followup_log: spam_at + bounce_type ---");
+
+if (!column_exists($link, 'followup_log', 'spam_at')) {
+    run_sql($link,
+        "ALTER TABLE followup_log ADD COLUMN spam_at TIMESTAMP NULL AFTER bounced_at",
+        "spam_at hinzugefügt"
+    );
+} else {
+    migrate_log("  ✓ spam_at bereits vorhanden");
+}
+
+if (!column_exists($link, 'followup_log', 'bounce_type')) {
+    run_sql($link,
+        "ALTER TABLE followup_log ADD COLUMN bounce_type VARCHAR(10) NULL AFTER spam_at",
+        "bounce_type hinzugefügt"
+    );
+} else {
+    migrate_log("  ✓ bounce_type bereits vorhanden");
+}
+
+migrate_log('');
 migrate_log("=== Migration abgeschlossen ===");

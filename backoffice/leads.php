@@ -22,7 +22,26 @@ include '../includes/conn.php';
 <html class="loading" lang="en">
 <?php
 require_once "parts/head.php";
-$sql = "SELECT * FROM users WHERE referer = $userid AND email != '$useremail'";
+$sql = "SELECT u.*,
+    COALESCE(es.email_status, 'unknown') AS email_status,
+    es.last_event_at
+FROM users u
+LEFT JOIN (
+    SELECT user_id,
+        CASE
+            WHEN SUM(status = 'spam') > 0                              THEN 'spam'
+            WHEN SUM(status = 'bounced' AND bounce_type = 'hard') > 0  THEN 'hard_bounce'
+            WHEN SUM(status = 'bounced') > 0                           THEN 'soft_bounce'
+            WHEN SUM(status IN ('opened','clicked')) > 0               THEN 'engaged'
+            WHEN SUM(status = 'delivered') > 0                         THEN 'delivered'
+            WHEN COUNT(*) > 0                                           THEN 'sent'
+            ELSE 'unknown'
+        END AS email_status,
+        MAX(COALESCE(spam_at, bounced_at, opened_at, delivered_at, sent_at)) AS last_event_at
+    FROM followup_log
+    GROUP BY user_id
+) es ON es.user_id = u.leadid
+WHERE u.referer = $userid AND u.email != '$useremail'";
 $leads = mysqli_query($link, $sql);
 ?>
 <link rel="stylesheet" type="text/css" href="app-assets/vendors/css/datatables/dataTables.bootstrap4.min.css">
@@ -136,6 +155,7 @@ require_once "parts/sidebar.php";
                                                                 <th>PM Partner ID</th>
                                                                 <th>Paid</th>
                                                                 <th>Date</th>
+                                                                <th>E-Mail Status</th>
                                                                 <th class="no-export">Details</th>
                                                             </tr>
                                                         </thead>
@@ -161,6 +181,20 @@ require_once "parts/sidebar.php";
                                                                 <td><?= htmlspecialchars($lead['username']) ?></td>
                                                                 <td><?= htmlspecialchars($lead['paidstatus']) ?></td>
                                                                 <td><?= date('Y-m-d', strtotime($lead['timestamp'])) ?></td>
+                                                                <td><?php
+                                                                    $es = $lead['email_status'] ?? 'unknown';
+                                                                    $badges = [
+                                                                        'spam'         => ['🚫 Spam',        '#ea545533', '#ea5455'],
+                                                                        'hard_bounce'  => ['⛔ Hard Bounce',  '#ea545533', '#ea5455'],
+                                                                        'soft_bounce'  => ['⚠️ Soft Bounce',  '#ff980033', '#ff9800'],
+                                                                        'engaged'      => ['👁 Geöffnet',     '#00cfe833', '#00cfe8'],
+                                                                        'delivered'    => ['✅ Zugestellt',   '#28c76f33', '#28c76f'],
+                                                                        'sent'         => ['→ Gesendet',     'rgba(255,255,255,.06)', 'rgba(255,255,255,.4)'],
+                                                                        'unknown'      => ['—',              'transparent', 'rgba(255,255,255,.2)'],
+                                                                    ];
+                                                                    [$label, $bg, $color] = $badges[$es] ?? $badges['unknown'];
+                                                                    echo '<span style="background:' . $bg . ';color:' . $color . ';border-radius:4px;padding:2px 7px;font-size:.75rem;white-space:nowrap;">' . $label . '</span>';
+                                                                ?></td>
                                                                 <td class="no-export">
                                                                     <a href="leads-view.php?id=<?= $lead['leadid'] ?>">
                                                                         <i class="ft-edit"></i>

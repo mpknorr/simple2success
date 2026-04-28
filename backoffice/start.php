@@ -144,44 +144,6 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
       <div class="content-wrapper">
 
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION 1 — HERO
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-hero">
-          <div class="row">
-            <div class="col-12">
-              <div class="card s2s-primary-card" style="background:linear-gradient(135deg,#0d0d1a 0%,#1a1a2e 60%,#200a30 100%);overflow:hidden;position:relative;">
-                <!-- Eagle decorative -->
-                <img src="app-assets/img/photos/eagle6c.jpg" alt=""
-                     style="position:absolute;right:0;bottom:0;height:100%;max-height:340px;
-                            object-fit:contain;opacity:.22;pointer-events:none;
-                            filter:grayscale(20%) contrast(1.1);">
-                <div class="card-body" style="padding:2.5rem 2rem 2.25rem;position:relative;z-index:2;">
-                  <div class="row align-items-center">
-                    <div class="col-lg-9 col-12">
-                      <h1 style="color:var(--s2s-text-100);font-size:var(--s2s-size-h1);font-weight:800;margin-bottom:var(--s2s-sp-2);line-height:var(--s2s-lh-tight);">
-                        Complete <span style="color:var(--s2s-brand);">Step 1</span> and Unlock Step 2
-                      </h1>
-                      <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);max-width:580px;margin:0 0 1.6rem;line-height:var(--s2s-lh-body);">
-                        Sign up with PM-International using the button below.<br>
-                        Then return here, enter your Partner ID, and save it to complete Step 2.
-                      </p>
-                      <a id="sforpm"
-                         href="https://www.pmebusiness.com/registrationv2/?TP=<?= htmlspecialchars($referer_username) ?>"
-                         target="_blank"
-                         class="btn btn-lg"
-                         style="background:#b700e0;border-color:#b700e0;color:#fff;font-size:1.05rem;padding:.75rem 2.25rem;box-shadow:0 4px 20px rgba(183,0,224,.4);font-weight:600;">
-                        <i class="ft-external-link mr-2"></i> Join PM-International Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
 
 
         <!-- ═══════════════════════════════════════════════════════════
@@ -220,193 +182,155 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
 
 
         <!-- ═══════════════════════════════════════════════════════════
-             SECTION 4 — WHY PM-INTERNATIONAL (trust points)
+             SECTION VIDEO-MAIN — BUSINESS PRESENTATION
         ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-why-pm" style="margin-top:.5rem;">
+        <section class="s2s-presentation" style="margin-top:.5rem;">
           <div class="row">
             <div class="col-12">
               <div class="card">
-                <div class="card-content">
-                  <div class="card-header">
-                    <h4 class="card-title">Why PM-International?</h4>
-                  </div>
-                  <div class="card-body" style="padding-top:.5rem;">
-                    <div class="row">
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-calendar"></i>
-                          <div>
-                            <h6>Founded in 1993</h6>
-                            <p>Over 30 years of operational experience in the international health and nutrition market.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-package"></i>
-                          <div>
-                            <h6>1 Billion+ Products Sold</h6>
-                            <p>More than one billion FitLine products sold worldwide — a globally proven brand.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-shield"></i>
-                          <div>
-                            <h6>70+ Registered Patents</h6>
-                            <p>Proprietary NTC technology protected by more than 70 patents across multiple markets.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-award"></i>
-                          <div>
-                            <h6>1,000+ Top Athletes</h6>
-                            <p>Trusted by over 1,000 professional athletes and sports organisations worldwide.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION 5 — BUSINESS PRESENTATION (videos)
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-presentation" style="margin-top:.5rem;">
-          <div class="row match-height">
-
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h4 class="card-title">Watch the Business Presentation</h4>
-                </div>
-                <div class="card-body" style="padding-bottom:.25rem;">
-                  <p style="opacity:.8;margin-bottom:1.25rem;">
-                    Understand the opportunity and why Step 1 matters before you move forward.
-                    The presentation below gives you the full picture on PM-International and the Eagle Team system.
+                <div class="card-body" style="padding:2rem 2rem 1.5rem;">
+                  <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;
+                               color:rgba(183,0,224,.85);text-transform:uppercase;
+                               display:block;margin-bottom:.6rem;">Step 1 — Start Here</span>
+                  <h3 style="color:var(--s2s-text-100);font-size:var(--s2s-size-h3);
+                             font-weight:800;margin-bottom:.75rem;line-height:var(--s2s-lh-tight);">
+                    Before You Register —<br>
+                    <span style="color:var(--s2s-brand);">Watch This First</span>
+                  </h3>
+                  <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
+                            max-width:640px;margin:0;line-height:var(--s2s-lh-body);">
+                    This presentation shows you exactly what you're joining,
+                    how the income system works, and why it's already running in 40+ countries.
                   </p>
                 </div>
-              </div>
-            </div>
-
-            <!-- Video 1 -->
-            <div class="col-lg-6 col-12">
-              <div class="card">
-                <div class="card-content">
-                  <div style="padding:62.5% 0 0 0;position:relative;">
+                <div class="card-body" style="padding-bottom:.75rem;">
+                  <div style="padding:56.25% 0 0 0;position:relative;">
                     <iframe id="vimeo-start-1"
                             src="https://player.vimeo.com/video/1183822471?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
                             frameborder="0"
                             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                             referrerpolicy="strict-origin-when-cross-origin"
                             style="position:absolute;top:0;left:0;width:100%;height:100%;"
-                            title="PM-International Presentation - English"></iframe>
+                            title="Business Presentation"></iframe>
                   </div>
                   <script src="https://player.vimeo.com/api/player.js"></script>
-                  <div class="card-body">
-                    <h5 style="margin-bottom:.4rem;">Your Partnership with PM-International and the Eagle Team</h5>
-                    <p style="font-size:.95rem;opacity:.8;margin:0;">
-                      Our team works in partnership with PM-International — a globally established company with a proven track record
-                      in health, wellness and nutrition products. We handle the marketing system. You follow the plan.
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            <!-- Video 2 -->
-            <div class="col-lg-6 col-12">
-              <div class="card">
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION VIDEO-BOOSTER — INSPIRE
+        ════════════════════════════════════════════════════════════ -->
+        <section class="s2s-booster" style="margin-top:.5rem;">
+          <div class="row">
+            <div class="col-12">
+              <div class="card-body" style="padding:.5rem 0 .25rem;">
+                <p style="font-size:.78rem;font-weight:700;letter-spacing:.07em;color:rgba(183,0,224,.7);text-transform:uppercase;text-align:center;margin-bottom:1rem;">
+                  See What's Possible
+                </p>
+              </div>
+            </div>
+
+            <!-- Video 2: From Our Founder -->
+            <div class="col-lg-4 col-md-6 col-12" style="margin-top:.5rem;">
+              <div class="card" style="height:100%;">
                 <div class="card-content">
-                  <div style="padding:62.5% 0 0 0;position:relative;">
+                  <div style="padding:56.25% 0 0 0;position:relative;">
                     <iframe id="vimeo-start-2"
                             src="https://player.vimeo.com/video/1183845597?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
                             frameborder="0"
                             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                             referrerpolicy="strict-origin-when-cross-origin"
                             style="position:absolute;top:0;left:0;width:100%;height:100%;"
-                            title="PM-International Presentation 2"></iframe>
+                            title="From Our Founder"></iframe>
                   </div>
-                  <div class="card-body">
-                    <h5 style="margin-bottom:.4rem;">Discover PM-International</h5>
-                    <p style="font-size:.95rem;opacity:.8;margin:0;">
-                      PM-International is active in over 40 countries with a strong partner network and a clear focus
-                      on high-quality health and nutrition products. When you register, you become part of this network.
+                  <div class="card-body" style="padding:.75rem 1rem .85rem;">
+                    <h6 style="margin:0 0 .25rem;font-weight:700;font-size:.95rem;">From Our Founder</h6>
+                    <p style="font-size:.82rem;opacity:.65;margin:0;line-height:1.5;">
+                      "If I can do it, so can you." — Rolf Sorg
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- TODO: Video 3 (Incentive Trips) — nur nach Angabe echter Vimeo-ID aktivieren -->
+            <!-- TODO: Video 4 (Direct Cash)     — nur nach Angabe echter Vimeo-ID aktivieren -->
+
           </div>
         </section>
 
 
         <!-- ═══════════════════════════════════════════════════════════
-             SECTION 6 — STEP 1 ACTION CARD (primary)
+             SECTION BRIDGE — CONFIRM (Registration CTA, 3-column layout)
         ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-step1-action" style="margin-top:.5rem;">
+        <section id="step1-action" style="margin-top:.5rem;">
           <div class="row">
             <div class="col-12">
-              <div class="card s2s-primary-card" style="background:rgba(183,0,224,.06);">
-                <div class="card-content">
-                  <div class="card-header" style="border-bottom:1px solid rgba(183,0,224,.2);">
-                    <h4 class="card-title" style="color:#b700e0;">
-                      <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#b700e0;color:#fff;font-size:.9rem;margin-right:10px;">1</span>
-                      Activate Your PM Partner Status &amp; Choose Your Start
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-lg-8 col-12">
-                        <p style="font-size:1rem;margin-bottom:.75rem;">
-                          This step activates your personal partner link — the foundation for all your commissions and team bonuses.
-                          Click the button below to open the PM-International registration page in a new tab.
-                          Your sponsor link is already pre-set — simply complete the registration form.
-                        </p>
+              <div class="card s2s-primary-card"
+                   style="background:linear-gradient(135deg,#0d0d1a 0%,#1a1a2e 60%,#200a30 100%);
+                          overflow:hidden;position:relative;border:1px solid rgba(183,0,224,.2);
+                          box-shadow:0 0 40px rgba(183,0,224,.12);">
+                <div class="card-body" style="padding:2.25rem 2rem 2rem;position:relative;z-index:2;">
+                  <div class="row align-items-center">
 
-                        <p style="font-size:1rem;margin-bottom:.5rem;">
-                          <strong>🔥 Fast-Track Your Success (Highly Recommended):</strong>
-                          To start earning commissions from day one, we strongly recommend selecting one of the
-                          product start options directly during registration:
-                        </p>
-
-                        <ul style="opacity:.9;font-size:.92rem;padding-left:1.2rem;margin-bottom:1rem;">
-                          <li><strong>Teampartner Start</strong> — The reliable way to begin your journey</li>
-                          <li><strong>Manager Quickstart</strong> — The fastest way to maximize your commissions from day one</li>
-                        </ul>
-
-                        <ol style="opacity:.8;font-size:.92rem;padding-left:1.2rem;margin-bottom:1rem;">
-                          <li>Click the button — it opens in a new tab, keep this page open</li>
-                          <li>Complete the registration &amp; select your preferred Start Option</li>
-                          <li>You will receive your personal PM Partner ID by email</li>
-                          <li><strong>Return here immediately</strong> to enter your Partner ID and complete Step 2</li>
-                        </ol>
-                      </div>
-                      <div class="col-lg-4 col-12 text-center">
-                        <a id="sforpm"
-                           href="https://www.pmebusiness.com/registrationv2/?TP=<?= htmlspecialchars($referer_username) ?>"
-                           target="_blank"
-                           class="btn btn-lg btn-block"
-                           style="background:#b700e0;border-color:#b700e0;color:#fff;font-size:1.05rem;padding:.75rem 1.5rem;white-space:normal;">
-                          <i class="ft-external-link mr-2"></i>
-                          Join PM-International Now
-                        </a>
-                        <?php if (empty($referer_username)): ?>
-                        <small style="color:rgba(255,200,0,.7);display:block;margin-top:.5rem;">
-                          <i class="ft-info mr-1"></i> No sponsor ID linked — you will register directly with PM-International.
-                        </small>
-                        <?php endif; ?>
-                      </div>
+                    <!-- SPALTE 1: Text (links) -->
+                    <div class="col-lg-5 col-12" style="padding-right:1.5rem;">
+                      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;
+                                   color:rgba(183,0,224,.85);text-transform:uppercase;
+                                   display:block;margin-bottom:.6rem;">Your Next Move</span>
+                      <h1 style="color:var(--s2s-text-100);font-size:var(--s2s-size-h1);
+                                 font-weight:800;margin-bottom:var(--s2s-sp-2);
+                                 line-height:var(--s2s-lh-tight);">
+                        Complete <span style="color:var(--s2s-brand);">Step 1</span><br>
+                        and Unlock Step 2
+                      </h1>
+                      <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
+                                margin:0;line-height:var(--s2s-lh-body);">
+                        Sign up with PM-International — it's free and takes less than 3 minutes.
+                        Then return here, enter your Partner ID, and your system is active.
+                      </p>
                     </div>
+
+                    <!-- SPALTE 2: Button (Mitte) -->
+                    <div class="col-lg-3 col-12 text-center"
+                         style="padding:1.5rem 1rem;display:flex;flex-direction:column;
+                                align-items:center;justify-content:center;">
+                      <a id="sforpm"
+                         href="https://www.pmebusiness.com/registrationv2/?TP=<?= htmlspecialchars($referer_username) ?>"
+                         target="_blank"
+                         class="btn btn-lg btn-block"
+                         style="background:#b700e0;border-color:#b700e0;color:#fff;
+                                font-size:1.05rem;padding:.85rem 1.75rem;
+                                box-shadow:0 4px 24px rgba(183,0,224,.45);
+                                font-weight:700;white-space:normal;
+                                border-radius:8px;line-height:1.4;">
+                        <i class="ft-external-link mr-2"></i>
+                        Join PM-International Now
+                      </a>
+                      <?php if (empty($referer_username)): ?>
+                      <small style="color:rgba(255,200,0,.7);display:block;margin-top:.6rem;font-size:.78rem;">
+                        <i class="ft-info mr-1"></i> No sponsor ID linked — you will register directly with PM-International.
+                      </small>
+                      <?php endif; ?>
+                      <p style="font-size:.78rem;opacity:.45;margin-top:.6rem;margin-bottom:0;line-height:1.4;">
+                        Opens in a new tab.<br>Keep this page open.
+                      </p>
+                    </div>
+
+                    <!-- SPALTE 3: Adler-Bild (rechts, nur desktop) -->
+                    <div class="col-lg-4 d-none d-lg-flex align-items-center justify-content-end"
+                         style="padding:0;overflow:hidden;min-height:200px;">
+                      <img src="app-assets/img/photos/eagle6c.jpg" alt=""
+                           style="width:100%;max-height:280px;object-fit:contain;
+                                  object-position:right center;
+                                  filter:drop-shadow(0 0 24px rgba(183,0,224,.35));
+                                  pointer-events:none;">
+                    </div>
+
                   </div>
                 </div>
               </div>
@@ -501,6 +425,64 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                         <div style="text-align:center;opacity:.4;">
                           <i class="ft-key" style="font-size:5rem;color:#b700e0;display:block;margin-bottom:.75rem;"></i>
                           <span style="font-size:.82rem;">Your Partner ID is your key to activating your system</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 4 — WHY PM-INTERNATIONAL (trust points)
+        ════════════════════════════════════════════════════════════ -->
+        <section class="s2s-why-pm" style="margin-top:.5rem;">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-content">
+                  <div class="card-header">
+                    <h4 class="card-title">Why PM-International?</h4>
+                  </div>
+                  <div class="card-body" style="padding-top:.5rem;">
+                    <div class="row">
+                      <div class="col-xl-3 col-md-6 col-12">
+                        <div class="s2s-trust-item">
+                          <i class="ft-calendar"></i>
+                          <div>
+                            <h6>Founded in 1993</h6>
+                            <p>Over 30 years of operational experience in the international health and nutrition market.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xl-3 col-md-6 col-12">
+                        <div class="s2s-trust-item">
+                          <i class="ft-package"></i>
+                          <div>
+                            <h6>1 Billion+ Products Sold</h6>
+                            <p>More than one billion FitLine products sold worldwide — a globally proven brand.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xl-3 col-md-6 col-12">
+                        <div class="s2s-trust-item">
+                          <i class="ft-shield"></i>
+                          <div>
+                            <h6>70+ Registered Patents</h6>
+                            <p>Proprietary NTC technology protected by more than 70 patents across multiple markets.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xl-3 col-md-6 col-12">
+                        <div class="s2s-trust-item">
+                          <i class="ft-award"></i>
+                          <div>
+                            <h6>1,000+ Top Athletes</h6>
+                            <p>Trusted by over 1,000 professional athletes and sports organisations worldwide.</p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -808,20 +790,48 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
 </script>
 <script>
 (function() {
+  if (typeof Vimeo === 'undefined') return;
   var trackUrl = '../includes/track-video.php';
-  var page     = window.location.pathname;
-  document.querySelectorAll('iframe[src*="vimeo"]').forEach(function(iframe) {
-    var player = new Vimeo.Player(iframe);
-    var played = false;
-    player.on('play', function() {
-      if (played) return;
-      played = true;
-      fetch(trackUrl, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'video=' + encodeURIComponent(iframe.title || iframe.id) + '&page=' + encodeURIComponent(page)
-      });
+  var page = window.location.pathname;
+
+  function send(evt, title) {
+    fetch(trackUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'event='  + encodeURIComponent(evt)
+          + '&video=' + encodeURIComponent(title)
+          + '&page='  + encodeURIComponent(page),
+      credentials: 'same-origin'
+    }).catch(function(){});
+  }
+
+  // Video 1 — Business Presentation (with milestones)
+  var el1 = document.getElementById('vimeo-start-1');
+  if (el1) {
+    var p1 = new Vimeo.Player(el1), t1 = {};
+    p1.on('play', function() {
+      if (!t1.p) { t1.p = 1; send('video_play', 'Business Presentation'); }
     });
+    p1.on('timeupdate', function(d) {
+      if (!d) return;
+      if (!t1.p25 && d.percent >= .25) { t1.p25 = 1; send('video_25',  'Business Presentation'); }
+      if (!t1.p50 && d.percent >= .50) { t1.p50 = 1; send('video_50',  'Business Presentation'); }
+      if (!t1.p75 && d.percent >= .75) { t1.p75 = 1; send('video_75',  'Business Presentation'); }
+    });
+    p1.on('ended', function() {
+      if (!t1.c) { t1.c = 1; send('video_complete', 'Business Presentation'); }
+    });
+  }
+
+  // Videos 2/3/4 — play event only
+  [['vimeo-start-2', 'video2_play', 'From Our Founder'],
+   ['vimeo-start-3', 'video3_play', 'Incentive Trips'],
+   ['vimeo-start-4', 'video4_play', 'Direct Cash']
+  ].forEach(function(cfg) {
+    var el = document.getElementById(cfg[0]);
+    if (!el) return;
+    var p = new Vimeo.Player(el), fired = false;
+    p.on('play', function() { if (!fired) { fired = true; send(cfg[1], cfg[2]); } });
   });
 })();
 </script>

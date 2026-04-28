@@ -102,8 +102,24 @@ $_clicksExist = $click_table && mysqli_num_rows($click_table) > 0;
 $_clickSubq   = $_clicksExist
     ? "(SELECT COUNT(*) FROM followup_clicks WHERE sequence_id=f.id)"
     : "0";
-$_res_lead = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count, $_clickSubq AS click_count FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
-$_res_member = mysqli_query($link, "SELECT f.*, (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count, $_clickSubq AS click_count FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
+$_res_lead = mysqli_query($link, "SELECT f.*,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('delivered','opened','clicked')) AS delivered_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('opened','clicked')) AS opened_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='bounced') AS bounce_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
+    $_clickSubq AS click_count
+    FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
+$_res_member = mysqli_query($link, "SELECT f.*,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('delivered','opened','clicked')) AS delivered_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('opened','clicked')) AS opened_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='bounced') AS bounce_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
+    $_clickSubq AS click_count
+    FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
 $sequences_lead   = [];
 $sequences_member = [];
 $preview_data     = [];
@@ -282,7 +298,11 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
 .followup-table .col-day { width: 70px; }
 .followup-table .col-sent,
 .followup-table .col-status { width: 90px; text-align: center; }
+.followup-table .col-delivery { width: 180px; text-align: center; }
 .followup-table .col-actions { width: 215px; text-align: right; white-space: nowrap; }
+.fup-stat { display:inline-flex;align-items:center;gap:2px;border-radius:3px;padding:1px 6px;font-size:.72rem;font-weight:600;cursor:pointer;transition:opacity .15s; }
+.fup-stat:hover { opacity:.8; }
+.fup-stat-row { display:flex;flex-wrap:wrap;gap:3px;justify-content:center; }
 .followup-table .col-subject {
   max-width: 0;
   overflow: hidden;
@@ -310,32 +330,59 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <th>Betreff</th>
             <th class="col-sent">Gesendet</th>
             <th class="col-sent">Klicks</th>
+            <th class="col-delivery">Delivery</th>
             <th class="col-status">Status</th>
             <th class="col-actions">Aktionen</th>
           </tr></thead>
           <tbody>
           <?php foreach ($sequences_lead as $seq): ?>
+          <?php $sid = $seq['id']; $slabel = htmlspecialchars($seq['subject'], ENT_QUOTES); ?>
           <tr>
             <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-secondary">Tag <?= $seq['day_offset'] ?></span></td>
             <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
             <td class="text-center">
               <?php if ((int)$seq['sent_count'] > 0): ?>
-                <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>
+                <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>
               <?php else: ?>
                 <span class="badge badge-secondary">0</span>
               <?php endif; ?>
             </td>
             <td class="text-center">
               <?php if ((int)($seq['click_count'] ?? 0) > 0): ?>
-                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
+                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
               <?php else: ?>
                 <span class="badge badge-secondary" style="opacity:.4;">0</span>
               <?php endif; ?>
             </td>
             <td class="text-center">
+              <?php if ((int)$seq['sent_count'] > 0): ?>
+              <div class="fup-stat-row">
+                <?php
+                $dc = (int)$seq['delivered_count']; $oc = (int)$seq['opened_count'];
+                $bc = (int)$seq['bounce_count'];     $sc = (int)$seq['spam_count'];
+                $fc = (int)$seq['failed_count'];
+                $sent = max(1, (int)$seq['sent_count']);
+                ?>
+                <span class="fup-stat fup-drill" style="background:#28c76f22;color:#28c76f;" data-type="delivered" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Zugestellt (<?= round($dc/$sent*100) ?>%)">✅ <?= $dc ?></span>
+                <span class="fup-stat fup-drill" style="background:#00cfe822;color:#00cfe8;" data-type="opened"    data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Geöffnet (<?= round($oc/$sent*100) ?>%)">👁 <?= $oc ?></span>
+                <?php if ($bc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:#ff980022;color:#ff9800;" data-type="bounced"   data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Bounce (<?= round($bc/$sent*100) ?>%)">⛔ <?= $bc ?></span>
+                <?php endif; ?>
+                <?php if ($sc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:#ea545522;color:#ea5455;" data-type="spam"      data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Spam (<?= round($sc/$sent*100) ?>%)">🚫 <?= $sc ?></span>
+                <?php endif; ?>
+                <?php if ($fc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);" data-type="failed" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Fehlgeschlagen">✗ <?= $fc ?></span>
+                <?php endif; ?>
+              </div>
+              <?php else: ?>
+                <span style="opacity:.3;font-size:.75rem;">—</span>
+              <?php endif; ?>
+            </td>
+            <td class="text-center">
               <form method="POST" style="display:inline;">
                 <input type="hidden" name="action" value="toggle_active">
-                <input type="hidden" name="tog_id" value="<?= $seq['id'] ?>">
+                <input type="hidden" name="tog_id" value="<?= $sid ?>">
                 <input type="hidden" name="tog_val" value="<?= $seq['is_active'] ? 0 : 1 ?>">
                 <button type="submit" class="btn btn-xs <?= $seq['is_active'] ? 'btn-success' : 'btn-secondary' ?>">
                   <?= $seq['is_active'] ? 'Aktiv' : 'Inaktiv' ?>
@@ -343,11 +390,11 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
               </form>
             </td>
             <td class="actions-cell">
-              <button type="button" class="btn btn-xs btn-outline-secondary" title="Vorschau" onclick="showFollowupPreview(<?= $seq['id'] ?>)"><i class="ft-eye"></i></button>
-              <a href="admin-followup.php?edit=<?= $seq['id'] ?>" class="btn btn-xs btn-outline-primary" title="Bearbeiten"><i class="ft-edit-2"></i> Bearbeiten</a>
+              <button type="button" class="btn btn-xs btn-outline-secondary" title="Vorschau" onclick="showFollowupPreview(<?= $sid ?>)"><i class="ft-eye"></i></button>
+              <a href="admin-followup.php?edit=<?= $sid ?>" class="btn btn-xs btn-outline-primary" title="Bearbeiten"><i class="ft-edit-2"></i> Bearbeiten</a>
               <form method="POST" style="display:inline;margin-left:2px;" onsubmit="return confirm('E-Mail löschen?');">
                 <input type="hidden" name="action" value="delete_sequence">
-                <input type="hidden" name="del_id" value="<?= $seq['id'] ?>">
+                <input type="hidden" name="del_id" value="<?= $sid ?>">
                 <button type="submit" class="btn btn-xs btn-outline-danger" title="Löschen"><i class="ft-trash-2"></i></button>
               </form>
             </td>
@@ -384,26 +431,53 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <th>Betreff</th>
             <th class="col-sent">Gesendet</th>
             <th class="col-sent">Klicks</th>
+            <th class="col-delivery">Delivery</th>
             <th class="col-status">Status</th>
             <th class="col-actions">Aktionen</th>
           </tr></thead>
           <tbody>
           <?php foreach ($sequences_member as $seq): ?>
+          <?php $sid = $seq['id']; $slabel = htmlspecialchars($seq['subject'], ENT_QUOTES); ?>
           <tr>
             <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-primary">Tag <?= $seq['day_offset'] ?></span></td>
             <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
             <td class="text-center">
               <?php if ((int)$seq['sent_count'] > 0): ?>
-                <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>
+                <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>
               <?php else: ?>
                 <span class="badge badge-secondary">0</span>
               <?php endif; ?>
             </td>
             <td class="text-center">
               <?php if ((int)($seq['click_count'] ?? 0) > 0): ?>
-                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $seq['id'] ?>" data-label="<?= htmlspecialchars($seq['subject'], ENT_QUOTES) ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
+                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
               <?php else: ?>
                 <span class="badge badge-secondary" style="opacity:.4;">0</span>
+              <?php endif; ?>
+            </td>
+            <td class="text-center">
+              <?php if ((int)$seq['sent_count'] > 0): ?>
+              <div class="fup-stat-row">
+                <?php
+                $dc = (int)$seq['delivered_count']; $oc = (int)$seq['opened_count'];
+                $bc = (int)$seq['bounce_count'];     $sc = (int)$seq['spam_count'];
+                $fc = (int)$seq['failed_count'];
+                $sent = max(1, (int)$seq['sent_count']);
+                ?>
+                <span class="fup-stat fup-drill" style="background:#28c76f22;color:#28c76f;" data-type="delivered" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Zugestellt (<?= round($dc/$sent*100) ?>%)">✅ <?= $dc ?></span>
+                <span class="fup-stat fup-drill" style="background:#00cfe822;color:#00cfe8;" data-type="opened"    data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Geöffnet (<?= round($oc/$sent*100) ?>%)">👁 <?= $oc ?></span>
+                <?php if ($bc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:#ff980022;color:#ff9800;" data-type="bounced"   data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Bounce (<?= round($bc/$sent*100) ?>%)">⛔ <?= $bc ?></span>
+                <?php endif; ?>
+                <?php if ($sc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:#ea545522;color:#ea5455;" data-type="spam"      data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Spam (<?= round($sc/$sent*100) ?>%)">🚫 <?= $sc ?></span>
+                <?php endif; ?>
+                <?php if ($fc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);" data-type="failed" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Fehlgeschlagen">✗ <?= $fc ?></span>
+                <?php endif; ?>
+              </div>
+              <?php else: ?>
+                <span style="opacity:.3;font-size:.75rem;">—</span>
               <?php endif; ?>
             </td>
             <td class="text-center">
@@ -645,7 +719,7 @@ jQuery(function($) {
         info: false,
         order: [[0, 'asc']],
         columnDefs: [
-            { orderable: false, targets: [-1, 2, 3, 4] },
+            { orderable: false, targets: [-1, 2, 3, 4, 5] },
             { type: 'num', targets: [0] }
         ]
     };
@@ -659,14 +733,25 @@ jQuery(function($) {
         fupOpen(badge.dataset.type, badge.dataset.seq, badge.dataset.label);
     });
 
+    const fupTypeConfig = {
+        'recipients': { label: 'Empfänger',    color: '#00cfe8' },
+        'clicks':     { label: 'Klicker',       color: '#28c76f' },
+        'delivered':  { label: 'Zugestellt',    color: '#28c76f' },
+        'opened':     { label: 'Geöffnet',      color: '#00cfe8' },
+        'bounced':    { label: 'Bounce',         color: '#ff9800' },
+        'spam':       { label: 'Spam',           color: '#ea5455' },
+        'failed':     { label: 'Fehlgeschlagen', color: 'rgba(255,255,255,.4)' }
+    };
+
     function fupOpen(type, seqId, label) {
         const overlay = document.getElementById('fupOverlay');
         const panel   = document.getElementById('fupPanel');
         const title   = document.getElementById('fupTitle');
         const body    = document.getElementById('fupBody');
 
-        const typeLabel = type === 'clicks' ? 'Klicker' : 'Empfänger';
-        title.textContent = typeLabel + ' — ' + (label || ('Sequenz #' + seqId));
+        const cfg = fupTypeConfig[type] || { label: type, color: '#fff' };
+        title.innerHTML = '<span style="color:' + cfg.color + ';margin-right:.4rem;">' + cfg.label + '</span>'
+                        + '<span style="font-weight:400;opacity:.6;">— ' + (label || ('Sequenz #' + seqId)) + '</span>';
         body.innerHTML = '<p style="padding:1.5rem;color:rgba(255,255,255,.4);font-size:.85rem;">Lade …</p>';
         overlay.style.display = 'block';
         panel.style.display   = 'flex';
@@ -682,6 +767,9 @@ jQuery(function($) {
             container.innerHTML = '<p style="padding:1.5rem;color:rgba(255,255,255,.35);font-size:.85rem;">Keine Einträge.</p>';
             return;
         }
+        const cfg  = fupTypeConfig[type] || { label: type, color: '#fff' };
+        const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        const ts   = s => s ? String(s).replace('T',' ').substring(0,16) : '—';
         const flagOf = iso => {
             if (!iso || iso.length !== 2) return '';
             return String.fromCodePoint(
@@ -689,13 +777,12 @@ jQuery(function($) {
                 0x1F1E6 + iso.toUpperCase().charCodeAt(1) - 65
             );
         };
-        const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        const isDeliveryType = ['delivered','opened','bounced','spam','failed'].includes(type);
 
         let html = '<div style="padding:.5rem 1.25rem .25rem;font-size:.75rem;color:rgba(255,255,255,.35);">'
-                 + data.total + (type === 'clicks' ? ' Klicker' : ' Empfänger') + '</div>';
+                 + data.total + ' ' + cfg.label + '</div>';
 
         data.rows.forEach(r => {
-            const dt   = (r.signup_at || '').replace('T', ' ').substring(0, 16);
             const flag = flagOf(r.country_detected || '');
             const paid = r.paidstatus === 'Paid'
                        ? '<span style="background:#28c76f22;color:#28c76f;border-radius:3px;padding:1px 5px;font-size:.72rem;">Paid</span>' : '';
@@ -704,24 +791,42 @@ jQuery(function($) {
             const s2   = (r.username && r.username !== '')
                        ? '<span style="background:#9c8bd422;color:#9c8bd4;border-radius:3px;padding:1px 5px;font-size:.72rem;">Step2 ✓</span>' : '';
             const src  = r.source ? '<span style="background:rgba(255,255,255,.07);border-radius:3px;padding:1px 5px;font-size:.72rem;">' + esc(r.source) + '</span>' : '';
-            const dtLabel  = type === 'clicks' ? 'Geklickt' : 'Gesendet';
-            const adminUrl = r.leadid
-                ? 'admin-user-edit.php?id=' + r.leadid
-                : 'admin-users.php?search=' + encodeURIComponent(r.email || '');
+            const leadUrl = r.leadid ? '../backoffice/leads-view.php?id=' + r.leadid : '#';
+
+            // Primary timestamp
+            let eventTs = '', eventLabel = '';
+            if (type === 'clicks')    { eventTs = ts(r.signup_at); eventLabel = 'Geklickt'; }
+            else if (type === 'recipients') { eventTs = ts(r.signup_at); eventLabel = 'Gesendet'; }
+            else if (type === 'delivered')  { eventTs = ts(r.delivered_at || r.signup_at); eventLabel = 'Zugestellt'; }
+            else if (type === 'opened')     { eventTs = ts(r.opened_at   || r.signup_at); eventLabel = 'Geöffnet'; }
+            else if (type === 'bounced')    { eventTs = ts(r.bounced_at  || r.signup_at); eventLabel = 'Gebounced'; }
+            else if (type === 'spam')       { eventTs = ts(r.spam_at     || r.signup_at); eventLabel = 'Spam'; }
+            else if (type === 'failed')     { eventTs = ts(r.failed_at   || r.signup_at); eventLabel = 'Fehlgeschlagen'; }
+
+            let extraBadges = '';
+            if (type === 'bounced' && r.bounce_type) {
+                const btColor = r.bounce_type === 'hard' ? '#ea5455' : '#ff9800';
+                extraBadges += '<span style="background:' + btColor + '22;color:' + btColor + ';border-radius:3px;padding:1px 6px;font-size:.72rem;">'
+                             + (r.bounce_type === 'hard' ? 'Hard Bounce' : 'Soft Bounce') + '</span>';
+            }
+            const midBadge = (isDeliveryType && r.brevo_message_id)
+                ? '<span style="font-family:monospace;font-size:.65rem;color:rgba(255,255,255,.2);word-break:break-all;" title="Brevo Message ID">' + esc(r.brevo_message_id) + '</span>'
+                : '';
 
             html += '<div style="padding:.65rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:.2rem;">'
                   + '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">'
-                  + '  <a href="' + adminUrl + '" target="_blank" style="color:#fff;font-weight:700;font-size:.88rem;text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'
+                  + '  <a href="' + leadUrl + '" target="_blank" style="color:#fff;font-weight:700;font-size:.88rem;text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'
                   + (r.name ? esc(r.name) : '<span style="opacity:.4;">—</span>')
                   + '  </a>'
-                  + '  <span style="font-size:.72rem;color:rgba(255,255,255,.3);white-space:nowrap;" title="' + dtLabel + '">' + esc(dt) + '</span>'
+                  + '  <span style="font-size:.72rem;color:' + cfg.color + ';white-space:nowrap;" title="' + eventLabel + '">' + esc(eventTs) + '</span>'
                   + '</div>'
                   + '<div style="font-size:.78rem;color:rgba(255,255,255,.5);">' + esc(r.email || '') + '</div>'
                   + '<div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;margin-top:.1rem;">'
                   + (flag ? '<span style="font-size:.9rem;">' + flag + '</span>' : '')
                   + (r.lang ? '<span style="opacity:.4;font-size:.72rem;">' + esc(r.lang.toUpperCase()) + '</span>' : '')
-                  + src + paid + s1 + s2
+                  + src + paid + s1 + s2 + extraBadges
                   + '</div>'
+                  + (midBadge ? '<div style="margin-top:.15rem;">' + midBadge + '</div>' : '')
                   + '</div>';
         });
         container.innerHTML = html;

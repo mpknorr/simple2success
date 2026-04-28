@@ -14,6 +14,9 @@
 const EMAIL_FOOTER_REASONS = [
     'welcome_user'                     => 'This email was sent automatically as part of your registration at Simple2Success.',
     'password_reset'                   => 'This email was sent because a password reset was requested for your account.',
+    'password_changed'                 => 'This email was sent to confirm your password change at Simple2Success.',
+    'magic_link_expired'               => 'This email was sent automatically because your login link had expired.',
+    'newsletter'                       => 'You are receiving this email as a subscriber of Simple2Success.',
     'new_member'                       => 'This email was sent automatically because a new team partner completed Step 2 in your network.',
     'new_paid_customer'                => 'This email was sent automatically because a new paying customer registered in your network.',
     'support_ticket'                   => 'This email was sent automatically regarding your support request.',
@@ -69,8 +72,9 @@ if (!function_exists('emailFooter_isOptedOut')) {
 
 if (!function_exists('emailFooter_isMarketing')) {
     function emailFooter_isMarketing($link, string $templateKey): bool {
-        if (strpos($templateKey, 'followup_') === 0) return true;
-        if (strpos($templateKey, 'trigger_')  === 0) return true;
+        if (strpos($templateKey, 'followup_')  === 0) return true;
+        if (strpos($templateKey, 'trigger_')   === 0) return true;
+        if (strpos($templateKey, 'newsletter') === 0) return true;
         $k = mysqli_real_escape_string($link, $templateKey);
         $r = @mysqli_fetch_assoc(@mysqli_query($link,
             "SELECT category FROM email_templates WHERE template_key='$k' LIMIT 1"));

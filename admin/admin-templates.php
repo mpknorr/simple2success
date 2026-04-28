@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/BrevoMailer.php';
+require_once '../includes/emailFooter.php';
 
 session_start();
 if (empty($_SESSION["userid"]) || empty($_SESSION["is_admin"])) {
@@ -68,6 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['send_test'])) {
         $testBody = str_replace('{{cta_url}}', $baseurl . '/backoffice/start.php', $testBody);
         $testBody = str_replace('{{magic_link}}', $baseurl . '/backoffice/autologin.php?token=DEMO_TOKEN_PREVIEW', $testBody);
         $testBody = str_replace('{{reset_link}}', $baseurl . '/backoffice/reset-password.php?token=DEMO_RESET_PREVIEW', $testBody);
+        $testBody .= renderEmailFooter($link, $tplRow['template_key'] ?? '', $userid);
 
         try {
             $tpl_mailer = new BrevoMailer($link);

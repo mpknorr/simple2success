@@ -298,6 +298,100 @@ function sendStep2DoneNoStep4Emails($link, $base_url) {
 }
 
 /**
+ * BEHAVIORAL TRIGGER 3: "Logged in but never watched the video after 24h"
+ */
+function sendNoVideoWatchedEmails($link, $base_url) {
+    $sent = 0; $errors = [];
+
+    $tSubj = mysqli_real_escape_string($link, '{{name}}, you haven\'t watched the overview yet');
+    $banner = 'https://www.simple2success.com/assets/img/email-banner.jpg';
+    $tBody = mysqli_real_escape_string($link,
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
+        . '<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">'
+        . '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;"><tr><td align="center" style="padding:20px 0;">'
+        . '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;">'
+        . '<tr><td><img src="' . $banner . '" width="600" alt="Simple2Success" style="display:block;width:100%;"></td></tr>'
+        . '<tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.8;">'
+        . '<h2 style="color:#cb2ebc;margin-top:0;">Hi {{name}},</h2>'
+        . '<p>You created your free account — but you haven\'t watched the business presentation yet.</p>'
+        . '<p>This overview shows you exactly what you\'re joining, how the income system works, and why people in 40+ countries use it to build additional income online.</p>'
+        . '<p style="background:#f9f0ff;border-left:4px solid #cb2ebc;padding:12px 16px;border-radius:4px;">'
+        . '<strong>You do not need to watch all of it right now. But the more you understand, the faster you move.</strong></p>'
+        . '<div style="text-align:center;margin:28px 0;">'
+        . '<a href="{{cta_url}}" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Watch the Presentation Now &rarr;</a>'
+        . '</div>'
+        . '<p style="color:#888;font-size:13px;">Most people who watch it complete Step 1 the same day.</p>'
+        . '</td></tr></table></td></tr></table></body></html>'
+    );
+
+    mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
+        VALUES ('Trigger: No Video Watched', 'trigger_no_video_watched', '$tSubj', '$tBody')");
+
+    $tpl = mysqli_fetch_assoc(mysqli_query($link,
+        "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_no_video_watched' LIMIT 1"));
+    if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_no_video_watched template missing']];
+
+    $ctaUrl = rtrim($base_url, '/') . '/backoffice/start.php';
+
+    $sql = "SELECT u.leadid, u.name, u.email
+            FROM users u
+            WHERE u.last_login IS NOT NULL
+              AND u.step2_at IS NULL
+              AND u.last_login < NOW() - INTERVAL 24 HOUR
+              AND u.leadid NOT IN (
+                  SELECT DISTINCT lead_id FROM lead_events WHERE event_type = 'video_play'
+              )
+              AND u.leadid NOT IN (
+                  SELECT user_id FROM followup_trigger_log WHERE trigger_type = 'no_video_24h'
+              )
+            LIMIT 50";
+
+    $recipients = mysqli_query($link, $sql);
+    if (!$recipients) return ['sent' => 0, 'errors' => []];
+
+    try {
+        $mailer = new BrevoMailer($link);
+    } catch (\Exception $e) {
+        return ['sent' => 0, 'errors' => ['BrevoMailer init: ' . $e->getMessage()]];
+    }
+
+    while ($rec = mysqli_fetch_assoc($recipients)) {
+        $uid     = (int)$rec['leadid'];
+        $toEmail = $rec['email'];
+        $toName  = $rec['name'] ?: $toEmail;
+
+        if (emailFooter_shouldSkip($link, $uid, 'trigger_no_video_watched')) continue;
+
+        $body    = str_replace(['{{name}}', '{{cta_url}}'],
+                               [htmlspecialchars($toName), $ctaUrl],
+                               $tpl['body']);
+        $subject = str_replace('{{name}}', htmlspecialchars($toName), $tpl['subject']);
+        $body   .= renderEmailFooter($link, 'trigger_no_video_watched', $uid);
+        $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        try {
+            $messageId = $mailer->sendEmail(
+                $toEmail, $toName, $subject, $body,
+                ['followup', 'trigger', 'trigger_no_video_watched'],
+                ['user_id' => $uid, 'trigger_type' => 'no_video_24h', 'email_type' => 'trigger']
+            );
+            $mid = mysqli_real_escape_string($link, $messageId);
+            mysqli_query($link, "INSERT IGNORE INTO followup_trigger_log
+                (user_id, trigger_type, brevo_message_id, status)
+                VALUES ($uid, 'no_video_24h', '$mid', 'sent')");
+            $evMeta = mysqli_real_escape_string($link, 'Trigger: ' . strip_tags($subject));
+            mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, meta, brevo_message_id)
+                VALUES ($uid, 'email_sent', '$evMeta', '$mid')");
+            $sent++;
+        } catch (\Exception $e) {
+            error_log("sendNoVideoWatched [$toEmail]: " . $e->getMessage());
+            $errors[] = "$toEmail: trigger 3 failed";
+        }
+    }
+    return ['sent' => $sent, 'errors' => $errors];
+}
+
+/**
  * Main function: Send all due follow-up emails.
  */
 function sendFollowupEmails($link) {
@@ -398,7 +492,11 @@ function sendFollowupEmails($link) {
     $t2 = sendStep2DoneNoStep4Emails($link, $base_url);
     $sent += $t2['sent']; $errors = array_merge($errors, $t2['errors']);
 
-    // ── 4. Cleanup expired magic link tokens ──────────────────────────────────
+    // ── 4. Behavioral trigger: logged in but no video played after 24h ────────
+    $t3 = sendNoVideoWatchedEmails($link, $base_url);
+    $sent += $t3['sent']; $errors = array_merge($errors, $t3['errors']);
+
+    // ── 5. Cleanup expired magic link tokens ──────────────────────────────────
     mysqli_query($link, "DELETE FROM login_tokens WHERE expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)");
 
     return ['sent' => $sent, 'errors' => $errors];

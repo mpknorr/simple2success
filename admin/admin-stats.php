@@ -197,21 +197,52 @@ if ($_cronTableExists) {
     if ($cr) $cron_runs = mysqli_fetch_all($cr, MYSQLI_ASSOC);
 }
 
+// ── Follow-up performance (by sent_at in date range) ─────────────────────────
+$_fup_click_exists = mysqli_num_rows(mysqli_query($link, "SHOW TABLES LIKE 'followup_clicks'")) > 0;
+$_fup_click_join   = $_fup_click_exists
+    ? "LEFT JOIN (SELECT sequence_id, COUNT(*) AS clicked FROM followup_clicks WHERE clicked_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59' GROUP BY sequence_id) fc ON fc.sequence_id = fs.id"
+    : '';
+$_fup_click_sel    = $_fup_click_exists ? 'COALESCE(fc.clicked, 0)' : '0';
+
+$fup_perf_res = mysqli_query($link,
+    "SELECT fs.id, fs.subject, fs.target, fs.day_offset,
+            COUNT(fl.id)                                            AS sent,
+            SUM(fl.status IN ('delivered','opened','clicked'))      AS delivered,
+            SUM(fl.status IN ('opened','clicked'))                  AS opened,
+            SUM(fl.status = 'bounced')                              AS bounced,
+            SUM(fl.status = 'spam')                                 AS spam,
+            SUM(fl.status = 'failed')                               AS failed,
+            $_fup_click_sel                                         AS clicked
+     FROM followup_sequences fs
+     LEFT JOIN followup_log fl ON fl.sequence_id = fs.id
+       AND fl.sent_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'
+     $_fup_click_join
+     GROUP BY fs.id
+     ORDER BY fs.target ASC, fs.day_offset ASC");
+$fup_perf_rows = $fup_perf_res ? mysqli_fetch_all($fup_perf_res, MYSQLI_ASSOC) : [];
+
 // ── Activity log summary ──────────────────────────────────────────────────────
 $ev_where = "WHERE created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
 $ev_res   = mysqli_query($link, "SELECT event_type, COUNT(*) AS cnt FROM lead_events $ev_where GROUP BY event_type ORDER BY cnt DESC");
 $ev_rows  = $ev_res ? mysqli_fetch_all($ev_res, MYSQLI_ASSOC) : [];
 
 $evLabels = [
-    'login'            => '🔓 Logins',
-    'login_failed'     => '⚠️ Fehlgeschlagene Logins',
-    'signup_attempt'   => '🔁 Re-signup-Versuche',
-    'start_step_click' => '👆 "Nächste Schritte"-Klick (von Dashboard)',
-    'video_play'       => '▶️ Video angeschaut (start.php)',
-    'email_sent'          => '📧 E-Mail gesendet',
-    'step1_button_click'  => '🔗 Step 1 Registrierungslink geklickt',
-    'email_hard_bounce'   => '⛔ E-Mail Hard Bounce',
-    'email_spam'          => '🚫 E-Mail als Spam markiert',
+    'login'              => '🔓 Logins',
+    'login_failed'       => '⚠️ Fehlgeschlagene Logins',
+    'signup_attempt'     => '🔁 Re-signup-Versuche',
+    'start_step_click'   => '👆 "Nächste Schritte"-Klick (von Dashboard)',
+    'video_play'         => '🎬 Präsentation gestartet',
+    'video_25'           => '🎬 Präsentation 25% gesehen',
+    'video_50'           => '🎬 Präsentation 50% gesehen',
+    'video_75'           => '🎬 Präsentation 75% gesehen',
+    'video_complete'     => '🎬 Präsentation vollständig gesehen',
+    'video2_play'        => '🎬 Founder-Video gestartet',
+    'video3_play'        => '🎬 Incentive-Video gestartet',
+    'video4_play'        => '🎬 Direct-Cash-Video gestartet',
+    'step1_button_click' => '🔗 Step 1 Registrierungslink geklickt',
+    'email_sent'         => '📧 E-Mail gesendet',
+    'email_hard_bounce'  => '⛔ E-Mail Hard Bounce',
+    'email_spam'         => '🚫 E-Mail als Spam markiert',
 ];
 
 // ── Flag helper ───────────────────────────────────────────────────────────────
@@ -685,6 +716,68 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                     </table>
                     </div>
                     <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- ══ FOLLOW-UP PERFORMANCE ════════════════════════════════════════════════ -->
+<?php if (!empty($fup_perf_rows)): ?>
+<div class="row mb-2">
+    <div class="col-12">
+        <div class="card" style="margin-bottom:0;">
+            <div class="st-card-header"><i class="ft-mail" style="color:var(--s2s-brand);"></i><h5>Follow-up Performance <small style="font-weight:400;font-size:.75rem;opacity:.5;">(Versanddatum im gewählten Zeitraum)</small></h5></div>
+            <div class="card-content">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                    <table class="st-table" style="font-size:.8rem;">
+                        <thead><tr>
+                            <th>Tag</th>
+                            <th>Template</th>
+                            <th>Sequenz</th>
+                            <th class="text-center">Gesendet</th>
+                            <th class="text-center">Zugestellt</th>
+                            <th class="text-center">Geöffnet</th>
+                            <th class="text-center">Geklickt</th>
+                            <th class="text-center">Bounce</th>
+                            <th class="text-center">Spam</th>
+                            <th class="text-center">Delivery%</th>
+                            <th class="text-center">Open%</th>
+                            <th class="text-center">CTR%</th>
+                        </tr></thead>
+                        <tbody>
+                        <?php foreach ($fup_perf_rows as $fp):
+                            $fpSent  = max(1, (int)$fp['sent']);
+                            $fpDel   = (int)$fp['delivered'];
+                            $fpOpen  = (int)$fp['opened'];
+                            $fpClick = (int)$fp['clicked'];
+                            $fpBnc   = (int)$fp['bounced'];
+                            $fpSpam  = (int)$fp['spam'];
+                            $delivPct = $fpSent > 1 ? round($fpDel  / $fpSent * 100) : 0;
+                            $openPct  = $fpSent > 1 ? round($fpOpen / $fpSent * 100) : 0;
+                            $ctrPct   = $fpSent > 1 ? round($fpClick/ $fpSent * 100) : 0;
+                        ?>
+                        <tr>
+                            <td><span class="badge badge-secondary" style="font-size:.7rem;">Tag <?= (int)$fp['day_offset'] ?></span></td>
+                            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?= htmlspecialchars($fp['subject']) ?>"><?= htmlspecialchars($fp['subject']) ?></td>
+                            <td><?= $fp['target'] === 'member' ? '<span style="color:#1877F2;">Member</span>' : '<span style="color:#cb2ebc;">Lead</span>' ?></td>
+                            <td class="text-center"><?= (int)$fp['sent'] ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:#28c76f;"><?= $fpDel ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:#00cfe8;"><?= $fpOpen ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:#00cfe8;"><?= $fpClick ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:<?= $fpBnc > 0 ? '#ff9800' : 'inherit' ?>;"><?= $fpBnc ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:<?= $fpSpam > 0 ? '#ea5455' : 'inherit' ?>;"><?= $fpSpam ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center"><?php if ((int)$fp['sent'] > 0): ?><span style="color:<?= $delivPct >= 90 ? '#28c76f' : ($delivPct >= 70 ? '#ff9800' : '#ea5455') ?>;"><?= $delivPct ?>%</span><?php else: ?><span style="opacity:.3;">—</span><?php endif; ?></td>
+                            <td class="text-center"><?php if ((int)$fp['sent'] > 0): ?><span style="color:<?= $openPct >= 20 ? '#00cfe8' : 'rgba(255,255,255,.4)' ?>;"><?= $openPct ?>%</span><?php else: ?><span style="opacity:.3;">—</span><?php endif; ?></td>
+                            <td class="text-center"><?php if ((int)$fp['sent'] > 0): ?><span style="color:<?= $ctrPct >= 5 ? '#28c76f' : 'rgba(255,255,255,.4)' ?>;"><?= $ctrPct ?>%</span><?php else: ?><span style="opacity:.3;">—</span><?php endif; ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    </div>
+                    <p class="text-muted px-3 py-2 mb-0" style="font-size:.72rem;">⚠️ Öffnungsrate kann durch Apple Mail Privacy Protection überhöht sein. Klickrate ist zuverlässiger.</p>
                 </div>
             </div>
         </div>

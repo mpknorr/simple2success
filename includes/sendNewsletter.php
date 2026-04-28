@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/BrevoMailer.php';
+require_once __DIR__ . '/emailFooter.php';
 
 function getSmtpSettingNL($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -41,7 +42,8 @@ function sendNewsletter($link, $subject, $body, $target) {
         $toEmail = $rec['email'];
         $toName  = $rec['name'] ?: $toEmail;
 
-        $personalBody    = str_replace(['{{name}}', '{{email}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail)], $body);
+        $personalBody    = str_replace(['{{name}}', '{{email}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail)], $body)
+                         . renderEmailFooter($link, 'newsletter', $uid);
         $personalSubject = html_entity_decode(
             str_replace(['{{name}}', '{{email}}'], [htmlspecialchars($toName), htmlspecialchars($toEmail)], $subject),
             ENT_QUOTES | ENT_HTML5, 'UTF-8');
