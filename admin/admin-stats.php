@@ -758,17 +758,35 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                             $delivPct = $fpSent > 1 ? round($fpDel  / $fpSent * 100) : 0;
                             $openPct  = $fpSent > 1 ? round($fpOpen / $fpSent * 100) : 0;
                             $ctrPct   = $fpSent > 1 ? round($fpClick/ $fpSent * 100) : 0;
+                            $fpSeqId  = (int)$fp['id'];
+                            $fpSubj   = htmlspecialchars($fp['subject'], ENT_QUOTES);
+                            $fpFrom   = htmlspecialchars($f_from, ENT_QUOTES);
+                            $fpTo     = htmlspecialchars($f_to, ENT_QUOTES);
+                            $fupDrill = "data-drill=\"1\" data-dim-type=\"followup\" data-dim-value=\"$fpSeqId\" data-dim-label=\"$fpSubj\" data-from=\"$fpFrom\" data-to=\"$fpTo\"";
+                            $fupStyle = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
                         ?>
                         <tr>
                             <td><span class="badge badge-secondary" style="font-size:.7rem;">Tag <?= (int)$fp['day_offset'] ?></span></td>
                             <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?= htmlspecialchars($fp['subject']) ?>"><?= htmlspecialchars($fp['subject']) ?></td>
                             <td><?= $fp['target'] === 'member' ? '<span style="color:#1877F2;">Member</span>' : '<span style="color:#cb2ebc;">Lead</span>' ?></td>
-                            <td class="text-center"><?= (int)$fp['sent'] ?: '<span style="opacity:.3;">0</span>' ?></td>
-                            <td class="text-center" style="color:#28c76f;"><?= $fpDel ?: '<span style="opacity:.3;">0</span>' ?></td>
-                            <td class="text-center" style="color:#00cfe8;"><?= $fpOpen ?: '<span style="opacity:.3;">0</span>' ?></td>
-                            <td class="text-center" style="color:#00cfe8;"><?= $fpClick ?: '<span style="opacity:.3;">0</span>' ?></td>
-                            <td class="text-center" style="color:<?= $fpBnc > 0 ? '#ff9800' : 'inherit' ?>;"><?= $fpBnc ?: '<span style="opacity:.3;">0</span>' ?></td>
-                            <td class="text-center" style="color:<?= $fpSpam > 0 ? '#ea5455' : 'inherit' ?>;"><?= $fpSpam ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="<?= (int)$fp['sent'] > 0 ? $fupStyle : '' ?>"
+                                <?= (int)$fp['sent'] > 0 ? $fupDrill . ' data-metric="fup_sent"' : '' ?>>
+                                <?= (int)$fp['sent'] ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:#28c76f;<?= $fpDel > 0 ? $fupStyle : '' ?>"
+                                <?= $fpDel > 0 ? $fupDrill . ' data-metric="fup_delivered"' : '' ?>>
+                                <?= $fpDel ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:#00cfe8;<?= $fpOpen > 0 ? $fupStyle : '' ?>"
+                                <?= $fpOpen > 0 ? $fupDrill . ' data-metric="fup_opened"' : '' ?>>
+                                <?= $fpOpen ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:#00cfe8;<?= $fpClick > 0 ? $fupStyle : '' ?>"
+                                <?= $fpClick > 0 ? $fupDrill . ' data-metric="fup_clicked"' : '' ?>>
+                                <?= $fpClick ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:<?= $fpBnc > 0 ? '#ff9800' : 'inherit' ?>;<?= $fpBnc > 0 ? $fupStyle : '' ?>"
+                                <?= $fpBnc > 0 ? $fupDrill . ' data-metric="fup_bounced"' : '' ?>>
+                                <?= $fpBnc ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:<?= $fpSpam > 0 ? '#ea5455' : 'inherit' ?>;<?= $fpSpam > 0 ? $fupStyle : '' ?>"
+                                <?= $fpSpam > 0 ? $fupDrill . ' data-metric="fup_spam"' : '' ?>>
+                                <?= $fpSpam ?: '<span style="opacity:.3;">0</span>' ?></td>
                             <td class="text-center"><?php if ((int)$fp['sent'] > 0): ?><span style="color:<?= $delivPct >= 90 ? '#28c76f' : ($delivPct >= 70 ? '#ff9800' : '#ea5455') ?>;"><?= $delivPct ?>%</span><?php else: ?><span style="opacity:.3;">—</span><?php endif; ?></td>
                             <td class="text-center"><?php if ((int)$fp['sent'] > 0): ?><span style="color:<?= $openPct >= 20 ? '#00cfe8' : 'rgba(255,255,255,.4)' ?>;"><?= $openPct ?>%</span><?php else: ?><span style="opacity:.3;">—</span><?php endif; ?></td>
                             <td class="text-center"><?php if ((int)$fp['sent'] > 0): ?><span style="color:<?= $ctrPct >= 5 ? '#28c76f' : 'rgba(255,255,255,.4)' ?>;"><?= $ctrPct ?>%</span><?php else: ?><span style="opacity:.3;">—</span><?php endif; ?></td>
@@ -843,15 +861,22 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
 // ── Stats Drill-Down ──────────────────────────────────────────────────────────
 (function () {
     const metricLabels = {
-        signups:  'Leads',
-        step1:    'Step 1 geklickt',
-        step2:    'Step 2 abgeschlossen',
-        resignups:'Re-Signup-Versuche',
+        signups:       'Leads',
+        step1:         'Step 1 geklickt',
+        step2:         'Step 2 abgeschlossen',
+        resignups:     'Re-Signup-Versuche',
+        fup_sent:      'Gesendet an',
+        fup_delivered: 'Zugestellt an',
+        fup_opened:    'Geöffnet von',
+        fup_clicked:   'Geklickt von',
+        fup_bounced:   'Bounce bei',
+        fup_spam:      'Spam-Report von',
+        fup_failed:    'Fehlgeschlagen bei',
     };
 
     const dimTypeLabels = {
         page: 'Seite', source: 'Quelle', country_detected: 'Land',
-        lang: 'Sprache', funnel: 'Gesamt',
+        lang: 'Sprache', funnel: 'Gesamt', followup: 'Follow-up',
     };
 
     document.addEventListener('click', function (e) {
@@ -862,17 +887,18 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
             cell.dataset.dimValue || '',
             cell.dataset.metric   || 'signups',
             cell.dataset.from     || '',
-            cell.dataset.to       || ''
+            cell.dataset.to       || '',
+            cell.dataset.dimLabel || ''
         );
     });
 
-    window.ddOpen = function (dimType, dimValue, metric, from, to) {
+    window.ddOpen = function (dimType, dimValue, metric, from, to, labelOverride) {
         const overlay = document.getElementById('ddOverlay');
         const panel   = document.getElementById('ddPanel');
         const title   = document.getElementById('ddTitle');
         const body    = document.getElementById('ddBody');
 
-        const dimLabel = dimValue || (dimTypeLabels[dimType] || dimType);
+        const dimLabel = labelOverride || dimValue || (dimTypeLabels[dimType] || dimType);
         title.textContent = (metricLabels[metric] || metric) + (dimLabel ? ' — ' + dimLabel : '');
         body.innerHTML    = '<p style="padding:1.5rem;color:rgba(255,255,255,.4);font-size:.85rem;">Lade …</p>';
         overlay.style.display = 'block';

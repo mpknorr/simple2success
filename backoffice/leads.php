@@ -118,16 +118,31 @@ require_once "parts/sidebar.php";
                                         <label for="users-list-status">Paid</label>
                                         <fieldset class="form-group">
                                             <select id="users-list-status" class="form-control">
-                                                <option value="Any">Any</option>
+                                                <option value="">Any</option>
                                                 <option value="Free">Free</option>
                                                 <option value="Paid">Paid</option>
-                                                
                                             </select>
                                         </fieldset>
                                     </div>
 
-                                    <div class="col-12 col-sm-6 col-lg-3 d-flex align-items-center">
-                                        <button type="reset" class="btn btn-primary btn-block users-list-clear glow mb-0">Clear</button>
+                                    <div class="col-12 col-sm-6 col-lg-3">
+                                        <label for="users-list-email-status">E-Mail Status</label>
+                                        <fieldset class="form-group">
+                                            <select id="users-list-email-status" class="form-control">
+                                                <option value="">Any</option>
+                                                <option value="Spam">🚫 Spam</option>
+                                                <option value="Hard Bounce">⛔ Hard Bounce</option>
+                                                <option value="Soft Bounce">⚠️ Soft Bounce</option>
+                                                <option value="Geöffnet">👁 Geöffnet</option>
+                                                <option value="Zugestellt">✅ Zugestellt</option>
+                                                <option value="Gesendet">→ Gesendet</option>
+                                                <option value="—">— Kein Status</option>
+                                            </select>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-lg-3 d-flex align-items-center" style="padding-top:1.25rem;">
+                                        <button type="reset" id="users-list-clear" class="btn btn-primary btn-block glow mb-0">Clear</button>
                                     </div>
                                 </div>
                             </form>
@@ -308,6 +323,25 @@ require_once "parts/sidebar.php";
                 search: 'Search:',
                 paginate: { previous: '&laquo;', next: '&raquo;' }
             }
+        });
+
+        // col indices: 0=Name,1=Email,2=Country,3=Source,4=Page,5=PM-ID,6=Paid,7=Date,8=EmailStatus,9=Details
+        $('#users-list-verified').on('change', function() {
+            table.column(4).search(this.value, false, false).draw();
+        });
+        $('#users-list-role').on('change', function() {
+            table.column(5).search(this.value, false, false).draw();
+        });
+        $('#users-list-status').on('change', function() {
+            table.column(6).search(this.value, false, false).draw();
+        });
+        $('#users-list-email-status').on('change', function() {
+            table.column(8).search(this.value, false, false).draw();
+        });
+
+        $('#users-list-clear').on('click', function() {
+            $('#users-list-verified, #users-list-role, #users-list-status, #users-list-email-status').val('');
+            table.columns([4, 5, 6, 8]).search('').draw();
         });
     });
     </script>
