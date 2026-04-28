@@ -109,6 +109,7 @@ $_res_lead = mysqli_query($link, "SELECT f.*,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='bounced') AS bounce_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='sent') AS pending_count,
     $_clickSubq AS click_count
     FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
 $_res_member = mysqli_query($link, "SELECT f.*,
@@ -118,6 +119,7 @@ $_res_member = mysqli_query($link, "SELECT f.*,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='bounced') AS bounce_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='sent') AS pending_count,
     $_clickSubq AS click_count
     FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
 $sequences_lead   = [];
@@ -360,7 +362,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 <?php
                 $dc = (int)$seq['delivered_count']; $oc = (int)$seq['opened_count'];
                 $bc = (int)$seq['bounce_count'];     $sc = (int)$seq['spam_count'];
-                $fc = (int)$seq['failed_count'];
+                $fc = (int)$seq['failed_count'];     $pc = (int)($seq['pending_count'] ?? 0);
                 $sent = max(1, (int)$seq['sent_count']);
                 ?>
                 <span class="fup-stat fup-drill" style="background:#28c76f22;color:#28c76f;" data-type="delivered" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Zugestellt (<?= round($dc/$sent*100) ?>%)">✅ <?= $dc ?></span>
@@ -373,6 +375,9 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 <?php endif; ?>
                 <?php if ($fc > 0): ?>
                 <span class="fup-stat fup-drill" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);" data-type="failed" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Fehlgeschlagen">✗ <?= $fc ?></span>
+                <?php endif; ?>
+                <?php if ($pc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.1);" data-type="pending" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Gesendet, kein Brevo-Webhook erhalten (noch ausstehend)">⏳ <?= $pc ?></span>
                 <?php endif; ?>
               </div>
               <?php else: ?>
@@ -461,7 +466,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 <?php
                 $dc = (int)$seq['delivered_count']; $oc = (int)$seq['opened_count'];
                 $bc = (int)$seq['bounce_count'];     $sc = (int)$seq['spam_count'];
-                $fc = (int)$seq['failed_count'];
+                $fc = (int)$seq['failed_count'];     $pc = (int)($seq['pending_count'] ?? 0);
                 $sent = max(1, (int)$seq['sent_count']);
                 ?>
                 <span class="fup-stat fup-drill" style="background:#28c76f22;color:#28c76f;" data-type="delivered" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Zugestellt (<?= round($dc/$sent*100) ?>%)">✅ <?= $dc ?></span>
@@ -474,6 +479,9 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 <?php endif; ?>
                 <?php if ($fc > 0): ?>
                 <span class="fup-stat fup-drill" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);" data-type="failed" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Fehlgeschlagen">✗ <?= $fc ?></span>
+                <?php endif; ?>
+                <?php if ($pc > 0): ?>
+                <span class="fup-stat fup-drill" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.1);" data-type="pending" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Gesendet, kein Brevo-Webhook erhalten (noch ausstehend)">⏳ <?= $pc ?></span>
                 <?php endif; ?>
               </div>
               <?php else: ?>

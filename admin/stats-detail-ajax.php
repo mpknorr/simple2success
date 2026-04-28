@@ -73,6 +73,7 @@ if ($dim_type === 'followup') {
             'fup_bounced'   => "AND fl.status = 'bounced'",
             'fup_spam'      => "AND fl.status = 'spam'",
             'fup_failed'    => "AND fl.status = 'failed'",
+            'fup_pending'   => "AND fl.status = 'sent'",
         ][$metric] ?? '';
 
         $sql = "SELECT fl.sent_at AS signup_at,

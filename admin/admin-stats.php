@@ -738,6 +738,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                             <th>Template</th>
                             <th>Sequenz</th>
                             <th class="text-center">Gesendet</th>
+                            <th class="text-center" style="color:rgba(255,255,255,.45);">Ausst.</th>
                             <th class="text-center">Zugestellt</th>
                             <th class="text-center">Geöffnet</th>
                             <th class="text-center">Geklickt</th>
@@ -764,6 +765,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                             $fpTo     = htmlspecialchars($f_to, ENT_QUOTES);
                             $fupDrill = "data-drill=\"1\" data-dim-type=\"followup\" data-dim-value=\"$fpSeqId\" data-dim-label=\"$fpSubj\" data-from=\"$fpFrom\" data-to=\"$fpTo\"";
                             $fupStyle = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
+                            $fpPending = max(0, (int)$fp['sent'] - $fpDel - $fpBnc - $fpSpam - (int)($fp['failed'] ?? 0));
                         ?>
                         <tr>
                             <td><span class="badge badge-secondary" style="font-size:.7rem;">Tag <?= (int)$fp['day_offset'] ?></span></td>
@@ -772,6 +774,10 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                             <td class="text-center" style="<?= (int)$fp['sent'] > 0 ? $fupStyle : '' ?>"
                                 <?= (int)$fp['sent'] > 0 ? $fupDrill . ' data-metric="fup_sent"' : '' ?>>
                                 <?= (int)$fp['sent'] ?: '<span style="opacity:.3;">0</span>' ?></td>
+                            <td class="text-center" style="color:rgba(255,255,255,.38);<?= $fpPending > 0 ? $fupStyle : '' ?>"
+                                title="Gesendet, kein Brevo-Webhook erhalten"
+                                <?= $fpPending > 0 ? $fupDrill . ' data-metric="fup_pending"' : '' ?>>
+                                <?= $fpPending > 0 ? '⏳ ' . $fpPending : '<span style="opacity:.3;">0</span>' ?></td>
                             <td class="text-center" style="color:#28c76f;<?= $fpDel > 0 ? $fupStyle : '' ?>"
                                 <?= $fpDel > 0 ? $fupDrill . ' data-metric="fup_delivered"' : '' ?>>
                                 <?= $fpDel ?: '<span style="opacity:.3;">0</span>' ?></td>
@@ -866,6 +872,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
         step2:         'Step 2 abgeschlossen',
         resignups:     'Re-Signup-Versuche',
         fup_sent:      'Gesendet an',
+        fup_pending:   'Ausstehend bei',
         fup_delivered: 'Zugestellt an',
         fup_opened:    'Geöffnet von',
         fup_clicked:   'Geklickt von',
