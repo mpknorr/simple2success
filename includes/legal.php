@@ -57,8 +57,8 @@ function legalEnsureTable($link) {
         [
             'slug'             => 'impress',
             'document_type'    => 'page',
-            'title'            => 'Impress / Imprint',
-            'content_html'     => '<h2>Impress</h2><h4>Details according to &sect; 5 TMG</h4><p>Marc-Philipp Knorr<br>Auf der Nachthut 3<br>72534 Hayingen<br>Germany</p><h4>Contact</h4><p>Phone: +49 151 40438186<br>E-mail: info@simple2success.com</p><p>Source: <a href="https://www.e-recht24.de">eRecht24</a></p><p>1. Content Warning: The free and freely accessible content of this website has been created with the utmost care. However, the provider of this website assumes no responsibility for the accuracy and timeliness of the free and freely accessible journalistic guides and news provided.</p><p>2. External Links: This website contains links to third-party websites ("external links"). These websites are subject to the liability of the respective operators. When the external links were first created, the provider checked the third-party content for any legal violations. No legal violations were apparent at the time.</p><p>3. Copyright: The content published on this website is subject to German copyright and ancillary copyright law. Any use not permitted by German copyright and ancillary copyright law requires the prior written consent of the provider or respective rights holder.</p><p>4. Special Terms of Use: Insofar as special conditions for individual uses of this website deviate from the aforementioned paragraphs, this will be expressly pointed out at the appropriate place.</p>',
+            'title'            => 'Legal Notice',
+            'content_html'     => '<h2>Legal Notice</h2><h4>Details according to &sect; 5 TMG</h4><p>Marc-Philipp Knorr<br>Auf der Nachthut 3<br>72534 Hayingen<br>Germany</p><h4>Contact</h4><p>Phone: +49 151 40438186<br>E-mail: info@simple2success.com</p><p>Source: <a href="https://www.e-recht24.de">eRecht24</a></p><p>1. Content Warning: The free and freely accessible content of this website has been created with the utmost care. However, the provider of this website assumes no responsibility for the accuracy and timeliness of the free and freely accessible journalistic guides and news provided.</p><p>2. External Links: This website contains links to third-party websites ("external links"). These websites are subject to the liability of the respective operators. When the external links were first created, the provider checked the third-party content for any legal violations. No legal violations were apparent at the time.</p><p>3. Copyright: The content published on this website is subject to German copyright and ancillary copyright law. Any use not permitted by German copyright and ancillary copyright law requires the prior written consent of the provider or respective rights holder.</p><p>4. Special Terms of Use: Insofar as special conditions for individual uses of this website deviate from the aforementioned paragraphs, this will be expressly pointed out at the appropriate place.</p>',
             'footer_snippet'   => '',
             'show_in_footer'   => 1,
             'show_on_premium_pages' => 0,
@@ -98,7 +98,7 @@ function legalEnsureTable($link) {
     }
 
     // ── Migration v2: Impressum / Legal Notice ───────────────────────────────
-    $impHtml = '<h2>Impressum / Legal Notice</h2>'
+    $impHtml = '<h2>Legal Notice</h2>'
         . '<h3>Provider Identification according to &sect; 5 DDG (Digital Services Act)</h3>'
         . '<p>Marc-Philipp Knorr<br>'
         . 'Auf der Nachthut 3<br>'
@@ -132,9 +132,25 @@ function legalEnsureTable($link) {
     $impEsc = mysqli_real_escape_string($link, $impHtml);
     mysqli_query($link,
         "UPDATE legal_documents
-         SET content_html='$impEsc', title='Impressum / Legal Notice', version_number=2, updated_at=NOW()
+         SET content_html='$impEsc', title='Legal Notice', version_number=2, updated_at=NOW()
          WHERE slug='impress' AND language_code='en' AND market_code='global'
            AND version_number < 2"
+    );
+
+    // ── Migration v3: Rename title to "Legal Notice" for existing installations ─
+    mysqli_query($link,
+        "UPDATE legal_documents
+         SET title='Legal Notice', version_number=3, updated_at=NOW()
+         WHERE slug='impress' AND language_code='en' AND market_code='global'
+           AND version_number < 3"
+    );
+    // Also fix the H2 in content if it still says Impressum / Legal Notice
+    mysqli_query($link,
+        "UPDATE legal_documents
+         SET content_html = REPLACE(content_html, '<h2>Impressum / Legal Notice</h2>', '<h2>Legal Notice</h2>'),
+             updated_at = NOW()
+         WHERE slug='impress' AND language_code='en' AND market_code='global'
+           AND content_html LIKE '%<h2>Impressum / Legal Notice</h2>%'"
     );
 
     // ── Migration v2: Income Disclaimer (footer_snippet intentionally preserved) ─

@@ -24,6 +24,8 @@ if ($uid > 0 && $token !== '' && preg_match('/^[a-f0-9]{16,128}$/i', $token)) {
             $status = 'already';
         } else {
             @mysqli_query($link, "UPDATE users SET marketing_optout=1 WHERE leadid=$uid");
+            $ip = mysqli_real_escape_string($link, $_SERVER['REMOTE_ADDR'] ?? '');
+            @mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, ip) VALUES ($uid, 'unsubscribe', '$ip')");
             $status = 'ok';
         }
     }
@@ -69,7 +71,7 @@ if ($uid > 0 && $token !== '' && preg_match('/^[a-f0-9]{16,128}$/i', $token)) {
         <a href="mailto:info@simple2success.com">info@simple2success.com</a> if you continue to receive unwanted emails.</p>
 <?php endif; ?>
     <p style="margin-top:32px;font-size:12px;color:#666;">
-        <a href="<?= htmlspecialchars($baseurl) ?>/impress.php">Imprint</a> &middot;
+        <a href="<?= htmlspecialchars($baseurl) ?>/impress.php">Legal Notice</a> &middot;
         <a href="<?= htmlspecialchars($baseurl) ?>/legal.php?doc=privacy-policy">Privacy</a>
     </p>
 </div>

@@ -226,7 +226,7 @@ $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) 
             echo '<a href="' . htmlspecialchars(getLegalPageUrl($baseurl, $fl['slug'])) . '">' . htmlspecialchars($fl['title']) . '</a>';
         endforeach;
     else: ?>
-    <a href="<?= $baseurl ?>/impress.php">Impressum</a> |
+    <a href="<?= $baseurl ?>/impress.php">Legal Notice</a> |
     <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy">Privacy Policy</a> |
     <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use">Terms of Use</a>
     <?php endif; ?>

@@ -82,6 +82,11 @@ $_spCols = mysqli_query($link, "SHOW COLUMNS FROM link_rotator_items LIKE 'sourc
 if (mysqli_num_rows($_spCols) === 0) {
     mysqli_query($link, "ALTER TABLE link_rotator_items ADD COLUMN source_param VARCHAR(100) DEFAULT '' AFTER click_limit");
 }
+// Ensure sequential_position column exists on rotators (tracks last-served item for sequential mode)
+$_seqCols = mysqli_query($link, "SHOW COLUMNS FROM link_rotators LIKE 'sequential_position'");
+if (mysqli_num_rows($_seqCols) === 0) {
+    mysqli_query($link, "ALTER TABLE link_rotators ADD COLUMN sequential_position INT DEFAULT 0");
+}
 
 function rot_setting($link, $key) {
     $k = mysqli_real_escape_string($link, $key);

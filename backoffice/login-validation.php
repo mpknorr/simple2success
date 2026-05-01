@@ -18,10 +18,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["email"])) {
 
         if ($passwordOk) {
             session_start();
+            session_regenerate_id(true); // prevent session fixation
             $_SESSION["userid"]   = $user["leadid"];
             $_SESSION["is_admin"] = !empty($user["is_admin"]);
-            // ── Log successful login ─────────────────────────────────────
             $leadId = (int)$user["leadid"];
+            mysqli_query($link, "UPDATE users SET last_login = NOW() WHERE leadid = $leadId");
             mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, ip)
                 VALUES ($leadId, 'login', '$loginIp')");
             header("Location: index.php");

@@ -131,12 +131,16 @@ if (strtotime($row['expires_at']) < time()) {
 if (session_status() === PHP_SESSION_NONE) session_start();
 session_regenerate_id(true);
 
-$_SESSION['userid']   = (int)$row['user_id'];
+$userId = (int)$row['user_id'];
+$_SESSION['userid']   = $userId;
 $_SESSION['is_admin'] = !empty($row['is_admin']);
 
-// Invalidate token immediately
-mysqli_query($link, "UPDATE login_tokens SET used_at = NOW()
-    WHERE token = '$tokenEsc'");
+// Invalidate token immediately (one-time use)
+mysqli_query($link, "UPDATE login_tokens SET used_at = NOW() WHERE token = '$tokenEsc'");
+
+mysqli_query($link, "UPDATE users SET last_login = NOW() WHERE leadid = $userId");
+mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, ip)
+    VALUES ($userId, 'login', '" . mysqli_real_escape_string($link, getClientIp()) . "')");
 
 header('Location: index.php');
 exit();

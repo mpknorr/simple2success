@@ -58,7 +58,6 @@ $router->get('/r/([a-zA-Z0-9_-]+)', function($slug) use ($link, $baseurl) {
     $source  = isset($_GET['source'])
         ? substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', $_GET['source']), 0, 100)
         : '';
-    $sourceEsc = mysqli_real_escape_string($link, $source);
 
     $rotator = mysqli_fetch_assoc(mysqli_query($link,
         "SELECT * FROM link_rotators WHERE slug='$slugEsc' AND is_active=1 LIMIT 1"));
@@ -68,6 +67,7 @@ $router->get('/r/([a-zA-Z0-9_-]+)', function($slug) use ($link, $baseurl) {
     $mode     = $rotator['rotation_mode'];
     $fallback = $rotator['fallback_url'];
 
+    // Load active items that have not hit their click limit, ordered by position
     $itRes = mysqli_query($link,
         "SELECT * FROM link_rotator_items
          WHERE rotator_id=$rid AND is_active=1
@@ -81,18 +81,36 @@ $router->get('/r/([a-zA-Z0-9_-]+)', function($slug) use ($link, $baseurl) {
 
     if ($items) {
         if ($mode === 'random') {
+            // Weighted random: each item's weight determines relative probability
             $pool = [];
             foreach ($items as $i => $it) {
                 $w = max(1, (int)$it['weight']);
                 for ($k = 0; $k < $w; $k++) $pool[] = $i;
             }
             $sel = $items[$pool[array_rand($pool)]];
+
         } elseif ($mode === 'sequential') {
-            $sel = $items[0];
-        } else { // balanced
+            // Look up the last-served item from the stats log (no schema change needed)
+            $lastRow = mysqli_fetch_assoc(mysqli_query($link,
+                "SELECT item_id FROM link_rotator_stats
+                 WHERE rotator_id=$rid AND item_id IS NOT NULL
+                 ORDER BY id DESC LIMIT 1"));
+            $lastId = $lastRow ? (int)$lastRow['item_id'] : 0;
+
+            // Advance to the item after the last-served one; wrap around at end of list
+            $sel   = null;
+            $found = ($lastId === 0);
+            foreach ($items as $it) {
+                if ($found) { $sel = $it; break; }
+                if ((int)$it['id'] === $lastId) $found = true;
+            }
+            if (!$sel) $sel = $items[0]; // wrap around or first run
+
+        } else { // balanced: always serve the item with fewest clicks
             usort($items, function($a, $b) { return (int)$a['clicks'] <=> (int)$b['clicks']; });
             $sel = $items[0];
         }
+
         $target     = $sel['url'];
         $selectedId = (int)$sel['id'];
         // Item-level source_param overrides URL-level ?source

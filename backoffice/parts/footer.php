@@ -2,6 +2,13 @@
 if (!function_exists('getLegalFooterLinks')) {
     @include_once __DIR__ . '/../../includes/legal.php';
 }
+// Ensure "Legal Notice" title is up to date in DB (replaces legacy "Impress / Imprint" and "Impressum / Legal Notice")
+if (isset($link)) {
+    @mysqli_query($link,
+        "UPDATE legal_documents SET title='Legal Notice'
+         WHERE slug='impress' AND title != 'Legal Notice'"
+    );
+}
 $_footerLinks = (isset($link) && function_exists('getLegalFooterLinks'))
     ? getLegalFooterLinks($link) : [];
 $_footerBase = $baseurl ?? '';

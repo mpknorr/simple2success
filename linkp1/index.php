@@ -106,7 +106,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
                   echo '<a href="' . htmlspecialchars(getLegalPageUrl($baseurl, $fl['slug'])) . '" class="s2s-footer-link">' . htmlspecialchars($fl['title']) . '</a>';
               endforeach;
           else: ?>
-          <a href="<?= $baseurl ?>/impress.php" class="s2s-footer-link">Impressum</a> |
+          <a href="<?= $baseurl ?>/impress.php" class="s2s-footer-link">Legal Notice</a> |
           <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy" class="s2s-footer-link">Privacy Policy</a> |
           <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use" class="s2s-footer-link">Terms of Use</a>
           <?php endif; ?>

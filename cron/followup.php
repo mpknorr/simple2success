@@ -20,10 +20,21 @@ if (!$cli && !$token_ok) {
 
 define('CRON_RUN', true);
 
-// Prevent parallel runs
+// Prevent parallel runs (time-based fallback: ignore stale locks older than 10 min)
 $lockFile = sys_get_temp_dir() . '/followup_cron.lock';
 $lockFp   = fopen($lockFile, 'c');
-if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
+$isLocked = $lockFp && !flock($lockFp, LOCK_EX | LOCK_NB);
+if ($isLocked) {
+    $mtime = filemtime($lockFile);
+    if ($mtime !== false && (time() - $mtime) > 600) {
+        // Stale lock — force-release by re-creating the file
+        fclose($lockFp);
+        @unlink($lockFile);
+        $lockFp   = fopen($lockFile, 'c');
+        $isLocked = $lockFp && !flock($lockFp, LOCK_EX | LOCK_NB);
+    }
+}
+if ($isLocked) {
     echo date('Y-m-d H:i:s') . " | Skipped: another instance is running\n";
     exit(0);
 }
@@ -43,7 +54,11 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS cron_runs (
 )");
 
 $startedAt = date('Y-m-d H:i:s');
-$result = sendFollowupEmails($link);
+try {
+    $result = sendFollowupEmails($link);
+} catch (\Throwable $e) {
+    $result = ['sent' => 0, 'errors' => ['FATAL: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine()]];
+}
 $endedAt = date('Y-m-d H:i:s');
 
 $errCount  = count($result['errors']);

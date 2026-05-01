@@ -111,7 +111,7 @@ if (!function_exists('renderEmailFooter')) {
         $imp  = htmlspecialchars($urls['impressum'], ENT_QUOTES, 'UTF-8');
         $priv = htmlspecialchars($urls['privacy'],   ENT_QUOTES, 'UTF-8');
 
-        $links = '<a href="' . $imp  . '" style="color:#999;text-decoration:underline;">Imprint</a>'
+        $links = '<a href="' . $imp  . '" style="color:#999;text-decoration:underline;">Legal Notice</a>'
                . ' &middot; '
                . '<a href="' . $priv . '" style="color:#999;text-decoration:underline;">Privacy</a>';
 

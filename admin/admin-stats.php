@@ -32,6 +32,13 @@ $sf_lang    = mysqli_real_escape_string($link, $f_lang);
 $sf_page    = mysqli_real_escape_string($link, $f_page);
 $sf_source  = mysqli_real_escape_string($link, $f_source);
 
+// data- attrs for drill-down cells — propagates active filter to stats-detail-ajax.php
+$_drillFilterAttrs = '';
+if ($f_source  !== '') $_drillFilterAttrs .= ' data-filter-source="'  . htmlspecialchars($f_source,  ENT_QUOTES) . '"';
+if ($f_country !== '') $_drillFilterAttrs .= ' data-filter-country="' . htmlspecialchars($f_country, ENT_QUOTES) . '"';
+if ($f_lang    !== '') $_drillFilterAttrs .= ' data-filter-lang="'    . htmlspecialchars($f_lang,    ENT_QUOTES) . '"';
+if ($f_page    !== '') $_drillFilterAttrs .= ' data-filter-page="'    . htmlspecialchars($f_page,    ENT_QUOTES) . '"';
+
 // Build WHERE clause for all queries
 $where = "WHERE timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
 if ($sf_country !== '') $where .= " AND country_detected = '$sf_country'";
@@ -54,6 +61,23 @@ $kpi_step1    = $q("SELECT COUNT(*) as c FROM users $where AND step1_at IS NOT N
 $kpi_step2    = $q("SELECT COUNT(*) as c FROM users $where AND username IS NOT NULL AND username != ''");
 $kpi_today    = $q("SELECT COUNT(*) as c FROM users WHERE DATE(timestamp) = CURDATE()");
 $kpi_week     = $q("SELECT COUNT(*) as c FROM users WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+
+// ── Unsubscribe KPIs ─────────────────────────────────────────────────────────
+// Total opted-out (all-time, respects dimension filters but ignores date)
+$_unsubWhere  = "WHERE marketing_optout = 1";
+if ($sf_country !== '') $_unsubWhere .= " AND country_detected = '$sf_country'";
+if ($sf_lang    !== '') $_unsubWhere .= " AND lang = '$sf_lang'";
+if ($sf_page    !== '') $_unsubWhere .= " AND page = '$sf_page'";
+if ($sf_source  !== '') $_unsubWhere .= " AND source = '$sf_source'";
+$kpi_unsub_total  = $q("SELECT COUNT(*) as c FROM users $_unsubWhere");
+// Unsubscribes in selected date range (via lead_events)
+$_unsubEvFilter = !empty($_evUserWhere)
+    ? " AND le.lead_id IN (SELECT leadid FROM users WHERE " . implode(' AND ', $_evUserWhere) . ")"
+    : '';
+$kpi_unsub_period = $q("SELECT COUNT(*) as c FROM lead_events le
+    WHERE le.event_type = 'unsubscribe'
+      AND le.created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'
+      $_unsubEvFilter");
 
 // ── Funnel ────────────────────────────────────────────────────────────────────
 $funnel = [
@@ -117,7 +141,7 @@ function renderLandingPageBreakdown(array $rows, int $totalSignups, bool $hasVis
         $dim_esc   = htmlspecialchars($r['dim'] ?: '', ENT_QUOTES);
         $df_esc    = htmlspecialchars($dateFrom, ENT_QUOTES);
         $dt_esc    = htmlspecialchars($dateTo, ENT_QUOTES);
-        $drillBase = 'data-drill="1" data-dim-type="page" data-dim-value="' . $dim_esc . '" data-from="' . $df_esc . '" data-to="' . $dt_esc . '"';
+        $drillBase = 'data-drill="1" data-dim-type="page" data-dim-value="' . $dim_esc . '" data-from="' . $df_esc . '" data-to="' . $dt_esc . '"' . $_drillFilterAttrs;
         $drillStyle = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
 
         echo '<tr>';
@@ -151,29 +175,51 @@ if ($_pvTableExists) {
 
     $pvWhere = "visited_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
     if ($sf_source !== '') $pvWhere .= " AND source = '$sf_source'";
+    if ($sf_page   !== '') $pvWhere .= " AND page = '$sf_page'";
     $clickExpr = $_pvUniqueClicks
         ? "COUNT(DISTINCT CONCAT(ip, '|', page, '|', DATE(visited_at)))"
         : "COUNT(*)";
-    $pvSql = "SELECT u.page AS dim,
-                     COUNT(DISTINCT u.leadid) AS signups,
-                     SUM(u.step1_at IS NOT NULL) AS step1,
-                     SUM(u.username IS NOT NULL AND u.username != '') AS step2,
-                     COALESCE(MAX(v.visits), 0) AS visits,
+    // User-dimension filter for the resignups subquery
+    $_pvReConds = [];
+    if ($sf_country !== '') $_pvReConds[] = "country_detected = '$sf_country'";
+    if ($sf_lang    !== '') $_pvReConds[] = "lang = '$sf_lang'";
+    if ($sf_source  !== '') $_pvReConds[] = "source = '$sf_source'";
+    $_pvReUserFilter = !empty($_pvReConds)
+        ? " AND le.lead_id IN (SELECT leadid FROM users WHERE " . implode(' AND ', $_pvReConds) . ")"
+        : '';
+    $userWhere = "u.timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
+    if ($sf_country !== '') $userWhere .= " AND u.country_detected = '$sf_country'";
+    if ($sf_lang    !== '') $userWhere .= " AND u.lang = '$sf_lang'";
+    if ($sf_page    !== '') $userWhere .= " AND u.page = '$sf_page'";
+    if ($sf_source  !== '') $userWhere .= " AND u.source = '$sf_source'";
+
+    $pvSql = "SELECT CONVERT(v.page USING utf8mb4) COLLATE utf8mb4_unicode_ci AS dim,
+                     $clickExpr AS visits,
+                     COALESCE(MAX(s.signups), 0)   AS signups,
+                     COALESCE(MAX(s.step1), 0)     AS step1,
+                     COALESCE(MAX(s.step2), 0)     AS step2,
                      COALESCE(MAX(re.resignups), 0) AS resignups
-              FROM users u
+              FROM page_visits v
               LEFT JOIN (
-                  SELECT page, $clickExpr AS visits FROM page_visits WHERE $pvWhere GROUP BY page
-              ) v ON v.page = u.page
-              LEFT JOIN (
-                  SELECT page, COUNT(*) AS resignups
-                  FROM lead_events
-                  WHERE event_type = 'signup_attempt'
-                    AND created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'
+                  SELECT page,
+                         COUNT(DISTINCT leadid)                              AS signups,
+                         SUM(step1_at IS NOT NULL)                          AS step1,
+                         SUM(username IS NOT NULL AND username != '')        AS step2
+                  FROM users u
+                  WHERE $userWhere
                   GROUP BY page
-              ) re ON re.page = u.page
-              $where
-              GROUP BY u.page
-              ORDER BY signups DESC
+              ) s ON s.page = CONVERT(v.page USING utf8mb4) COLLATE utf8mb4_unicode_ci
+              LEFT JOIN (
+                  SELECT le.page, COUNT(*) AS resignups
+                  FROM lead_events le
+                  WHERE le.event_type = 'signup_attempt'
+                    AND le.created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'
+                    $_pvReUserFilter
+                  GROUP BY le.page
+              ) re ON re.page = CONVERT(v.page USING utf8mb4) COLLATE utf8mb4_unicode_ci
+              WHERE $pvWhere
+              GROUP BY CONVERT(v.page USING utf8mb4) COLLATE utf8mb4_unicode_ci
+              ORDER BY visits DESC
               LIMIT 20";
     $pvRes = mysqli_query($link, $pvSql);
     if ($pvRes) $bd_page_visits = mysqli_fetch_all($pvRes, MYSQLI_ASSOC);
@@ -198,14 +244,27 @@ if ($_cronTableExists) {
 }
 
 // ── Follow-up performance (by sent_at in date range) ─────────────────────────
-$_fup_click_exists = mysqli_num_rows(mysqli_query($link, "SHOW TABLES LIKE 'followup_clicks'")) > 0;
-$_fup_click_join   = $_fup_click_exists
-    ? "LEFT JOIN (SELECT sequence_id, COUNT(*) AS clicked FROM followup_clicks WHERE clicked_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59' GROUP BY sequence_id) fc ON fc.sequence_id = fs.id"
+// Build optional user-dimension subquery filter for followup_log JOIN
+$_fupUserWhere = [];
+if ($sf_country !== '') $_fupUserWhere[] = "country_detected = '$sf_country'";
+if ($sf_lang    !== '') $_fupUserWhere[] = "lang = '$sf_lang'";
+if ($sf_page    !== '') $_fupUserWhere[] = "page = '$sf_page'";
+if ($sf_source  !== '') $_fupUserWhere[] = "source = '$sf_source'";
+$_fupUserFilter = '';
+if (!empty($_fupUserWhere)) {
+    $_fupUserFilter = " AND fl.user_id IN (SELECT leadid FROM users WHERE " . implode(' AND ', $_fupUserWhere) . ")";}
+
+$_fup_click_exists      = mysqli_num_rows(mysqli_query($link, "SHOW TABLES LIKE 'followup_clicks'")) > 0;
+$_fupClickUserFilter    = !empty($_fupUserWhere)
+    ? " AND fck.user_id IN (SELECT leadid FROM users WHERE " . implode(' AND ', $_fupUserWhere) . ")"
     : '';
-$_fup_click_sel    = $_fup_click_exists ? 'COALESCE(fc.clicked, 0)' : '0';
+$_fup_click_join        = $_fup_click_exists
+    ? "LEFT JOIN (SELECT fck.sequence_id, COUNT(*) AS clicked FROM followup_clicks fck WHERE fck.clicked_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59' $_fupClickUserFilter GROUP BY fck.sequence_id) fc ON fc.sequence_id = fs.id"
+    : '';
+$_fup_click_sel    = $_fup_click_exists ? 'COALESCE(MAX(fc.clicked), 0)' : '0';
 
 $fup_perf_res = mysqli_query($link,
-    "SELECT fs.id, fs.subject, fs.target, fs.day_offset,
+    "SELECT fs.id, MIN(fs.subject) AS subject, MIN(fs.target) AS target, MIN(fs.day_offset) AS day_offset,
             COUNT(fl.id)                                            AS sent,
             SUM(fl.status IN ('delivered','opened','clicked'))      AS delivered,
             SUM(fl.status IN ('opened','clicked'))                  AS opened,
@@ -216,14 +275,24 @@ $fup_perf_res = mysqli_query($link,
      FROM followup_sequences fs
      LEFT JOIN followup_log fl ON fl.sequence_id = fs.id
        AND fl.sent_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'
+       $_fupUserFilter
      $_fup_click_join
      GROUP BY fs.id
      ORDER BY fs.target ASC, fs.day_offset ASC");
 $fup_perf_rows = $fup_perf_res ? mysqli_fetch_all($fup_perf_res, MYSQLI_ASSOC) : [];
 
 // ── Activity log summary ──────────────────────────────────────────────────────
-$ev_where = "WHERE created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
-$ev_res   = mysqli_query($link, "SELECT event_type, COUNT(*) AS cnt FROM lead_events $ev_where GROUP BY event_type ORDER BY cnt DESC");
+$_evUserWhere = [];
+if ($sf_country !== '') $_evUserWhere[] = "country_detected = '$sf_country'";
+if ($sf_lang    !== '') $_evUserWhere[] = "lang = '$sf_lang'";
+if ($sf_page    !== '') $_evUserWhere[] = "page = '$sf_page'";
+if ($sf_source  !== '') $_evUserWhere[] = "source = '$sf_source'";
+$_evLeadFilter = '';
+if (!empty($_evUserWhere)) {
+    $_evLeadFilter = " AND le.lead_id IN (SELECT leadid FROM users WHERE " . implode(' AND ', $_evUserWhere) . ")";
+}
+$ev_where = "WHERE le.created_at BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59' $_evLeadFilter";
+$ev_res   = mysqli_query($link, "SELECT le.event_type, COUNT(*) AS cnt FROM lead_events le $ev_where GROUP BY le.event_type ORDER BY cnt DESC");
 $ev_rows  = $ev_res ? mysqli_fetch_all($ev_res, MYSQLI_ASSOC) : [];
 
 $evLabels = [
@@ -243,6 +312,7 @@ $evLabels = [
     'email_sent'         => '📧 E-Mail gesendet',
     'email_hard_bounce'  => '⛔ E-Mail Hard Bounce',
     'email_spam'         => '🚫 E-Mail als Spam markiert',
+    'unsubscribe'        => '🚫 E-Mail Austragungen (Unsubscribe)',
 ];
 
 // ── Flag helper ───────────────────────────────────────────────────────────────
@@ -484,6 +554,28 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
     </div>
 </div>
 
+<!-- ══ UNSUBSCRIBE KPIs ═══════════════════════════════════════════════════════ -->
+<div class="row mb-1" style="row-gap:.5rem;">
+    <div class="col-6 col-lg-4 col-xl-3 mb-1">
+        <div class="st-kpi" style="border-color:rgba(234,84,85,.3);">
+            <div class="st-kpi-icon" style="color:#ea5455;"><i class="ft-user-x"></i></div>
+            <div>
+                <div class="st-kpi-num" style="color:#ea5455;"><?= $kpi_unsub_total ?></div>
+                <div class="st-kpi-label">Abgemeldet gesamt<?= ($sf_source || $sf_country || $sf_lang || $sf_page) ? ' (gefiltert)' : '' ?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-3 mb-1">
+        <div class="st-kpi" style="border-color:rgba(234,84,85,.2);">
+            <div class="st-kpi-icon" style="color:#ff9f43;"><i class="ft-mail"></i></div>
+            <div>
+                <div class="st-kpi-num" style="color:#ff9f43;"><?= $kpi_unsub_period ?></div>
+                <div class="st-kpi-label">Abmeldungen im Zeitraum</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- ══ DAILY CHART + FUNNEL ════════════════════════════════════════════════ -->
 <div class="row mb-1">
@@ -539,7 +631,7 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
                             <td><?= htmlspecialchars($stage['label']) ?></td>
                             <td style="text-align:right;">
                                 <?php if ($stage['count'] > 0): ?>
-                                <strong data-drill="1" data-dim-type="funnel" data-dim-value="" data-metric="<?= $fm ?>" data-from="<?= htmlspecialchars($f_from, ENT_QUOTES) ?>" data-to="<?= htmlspecialchars($f_to, ENT_QUOTES) ?>" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;"><?= $stage['count'] ?></strong>
+                                <strong data-drill="1" data-dim-type="funnel" data-dim-value="" data-metric="<?= $fm ?>" data-from="<?= htmlspecialchars($f_from, ENT_QUOTES) ?>" data-to="<?= htmlspecialchars($f_to, ENT_QUOTES) ?>" <?= $_drillFilterAttrs ?> style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;"><?= $stage['count'] ?></strong>
                                 <?php else: ?>
                                 <strong><?= $stage['count'] ?></strong>
                                 <?php endif; ?>
@@ -585,7 +677,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
             $dv  = htmlspecialchars($dim, ENT_QUOTES);
             $df  = htmlspecialchars($dateFrom, ENT_QUOTES);
             $dt  = htmlspecialchars($dateTo, ENT_QUOTES);
-            $da  = "data-drill=\"1\" data-dim-type=\"$dimField\" data-dim-value=\"$dv\" data-from=\"$df\" data-to=\"$dt\"";
+            $da  = "data-drill=\"1\" data-dim-type=\"$dimField\" data-dim-value=\"$dv\" data-from=\"$df\" data-to=\"$dt\"" . $_drillFilterAttrs;
         }
 
         echo '<tr>';
@@ -763,7 +855,7 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
                             $fpSubj   = htmlspecialchars($fp['subject'], ENT_QUOTES);
                             $fpFrom   = htmlspecialchars($f_from, ENT_QUOTES);
                             $fpTo     = htmlspecialchars($f_to, ENT_QUOTES);
-                            $fupDrill = "data-drill=\"1\" data-dim-type=\"followup\" data-dim-value=\"$fpSeqId\" data-dim-label=\"$fpSubj\" data-from=\"$fpFrom\" data-to=\"$fpTo\"";
+                            $fupDrill = "data-drill=\"1\" data-dim-type=\"followup\" data-dim-value=\"$fpSeqId\" data-dim-label=\"$fpSubj\" data-from=\"$fpFrom\" data-to=\"$fpTo\"" . $_drillFilterAttrs;
                             $fupStyle = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
                             $fpPending = max(0, (int)$fp['sent'] - $fpDel - $fpBnc - $fpSpam - (int)($fp['failed'] ?? 0));
                         ?>
@@ -890,16 +982,22 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
         const cell = e.target.closest('[data-drill="1"]');
         if (!cell) return;
         ddOpen(
-            cell.dataset.dimType  || '',
-            cell.dataset.dimValue || '',
-            cell.dataset.metric   || 'signups',
-            cell.dataset.from     || '',
-            cell.dataset.to       || '',
-            cell.dataset.dimLabel || ''
+            cell.dataset.dimType    || '',
+            cell.dataset.dimValue   || '',
+            cell.dataset.metric     || 'signups',
+            cell.dataset.from       || '',
+            cell.dataset.to         || '',
+            cell.dataset.dimLabel   || '',
+            {
+                source:  cell.dataset.filterSource  || '',
+                country: cell.dataset.filterCountry || '',
+                lang:    cell.dataset.filterLang    || '',
+                page:    cell.dataset.filterPage    || '',
+            }
         );
     });
 
-    window.ddOpen = function (dimType, dimValue, metric, from, to, labelOverride) {
+    window.ddOpen = function (dimType, dimValue, metric, from, to, labelOverride, filters) {
         const overlay = document.getElementById('ddOverlay');
         const panel   = document.getElementById('ddPanel');
         const title   = document.getElementById('ddTitle');
@@ -911,11 +1009,17 @@ function renderBreakdown(string $title, string $icon, array $rows, int $totalSig
         overlay.style.display = 'block';
         panel.style.display   = 'flex';
 
-        const url = 'stats-detail-ajax.php?dim_type=' + encodeURIComponent(dimType)
-                  + '&dim_value=' + encodeURIComponent(dimValue)
-                  + '&metric='    + encodeURIComponent(metric)
-                  + '&from='      + encodeURIComponent(from)
-                  + '&to='        + encodeURIComponent(to);
+        let url = 'stats-detail-ajax.php?dim_type=' + encodeURIComponent(dimType)
+                + '&dim_value=' + encodeURIComponent(dimValue)
+                + '&metric='    + encodeURIComponent(metric)
+                + '&from='      + encodeURIComponent(from)
+                + '&to='        + encodeURIComponent(to);
+        if (filters) {
+            if (filters.source)  url += '&filter_source='  + encodeURIComponent(filters.source);
+            if (filters.country) url += '&filter_country=' + encodeURIComponent(filters.country);
+            if (filters.lang)    url += '&filter_lang='    + encodeURIComponent(filters.lang);
+            if (filters.page)    url += '&filter_page='    + encodeURIComponent(filters.page);
+        }
 
         fetch(url)
             .then(r => r.json())

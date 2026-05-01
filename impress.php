@@ -11,8 +11,8 @@ require_once __DIR__ . '/includes/legal.php';
 legalEnsureTable($link);
 
 $doc = getLegalDocument($link, 'impress');
-$pageTitle   = $doc ? htmlspecialchars($doc['title'], ENT_QUOTES, 'UTF-8') : 'Impressum';
-$contentHtml = $doc ? $doc['content_html'] : '<h2>Impressum</h2><p>Content not found.</p>';
+$pageTitle   = $doc ? htmlspecialchars($doc['title'], ENT_QUOTES, 'UTF-8') : 'Legal Notice';
+$contentHtml = $doc ? $doc['content_html'] : '<h2>Legal Notice</h2><p>Content not found.</p>';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,7 +42,7 @@ $contentHtml = $doc ? $doc['content_html'] : '<h2>Impressum</h2><p>Content not f
         <?= $contentHtml ?>
         <div class="legal-footer">
             &copy; <?= date('Y') ?> Simple2Success. All Rights Reserved.<br style="margin-bottom:6px;">
-            <a href="<?= $baseurl ?>/impress.php">Impressum</a> |
+            <a href="<?= $baseurl ?>/impress.php">Legal Notice</a> |
             <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy">Privacy Policy</a> |
             <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use">Terms of Use</a>
         </div>

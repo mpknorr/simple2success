@@ -25,10 +25,14 @@ function ensureFollowupTables($link) {
         updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )");
 
-    $col = mysqli_fetch_assoc(mysqli_query($link, "SHOW COLUMNS FROM followup_sequences LIKE 'subject_b'"));
-    if (!$col) {
-        mysqli_query($link, "ALTER TABLE followup_sequences ADD COLUMN subject_b VARCHAR(255) NOT NULL DEFAULT '' AFTER subject");
-    }
+    try {
+        mysqli_query($link, "ALTER TABLE followup_sequences ADD COLUMN IF NOT EXISTS subject_b VARCHAR(255) NOT NULL DEFAULT '' AFTER subject");
+    } catch (\Throwable $e) { /* ignore */ }
+
+    // Ensure last_login column exists (only runs during cron, not on every page load)
+    try {
+        mysqli_query($link, "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login DATETIME DEFAULT NULL");
+    } catch (\Throwable $e) { /* ignore */ }
 
     mysqli_query($link, "CREATE TABLE IF NOT EXISTS followup_log (
         id               INT AUTO_INCREMENT PRIMARY KEY,

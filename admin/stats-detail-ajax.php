@@ -19,6 +19,31 @@ $esc_dim   = mysqli_real_escape_string($link, $dim_value);
 $esc_from  = mysqli_real_escape_string($link, $from);
 $esc_to    = mysqli_real_escape_string($link, $to);
 
+// ── Active filter propagated from admin-stats.php ─────────────────────────────
+$filter_source  = $_GET['filter_source']  ?? '';
+$filter_country = $_GET['filter_country'] ?? '';
+$filter_lang    = $_GET['filter_lang']    ?? '';
+$filter_page    = $_GET['filter_page']    ?? '';
+
+$esc_fs = mysqli_real_escape_string($link, $filter_source);
+$esc_fc = mysqli_real_escape_string($link, $filter_country);
+$esc_fl = mysqli_real_escape_string($link, $filter_lang);
+$esc_fp = mysqli_real_escape_string($link, $filter_page);
+
+// For queries that JOIN users (u alias)
+$_ddUF = '';
+if ($filter_source  !== '') $_ddUF .= " AND u.source = '$esc_fs'";
+if ($filter_country !== '') $_ddUF .= " AND u.country_detected = '$esc_fc'";
+if ($filter_lang    !== '') $_ddUF .= " AND u.lang = '$esc_fl'";
+if ($filter_page    !== '') $_ddUF .= " AND u.page = '$esc_fp'";
+
+// For direct users table queries (no alias)
+$_ddWF = '';
+if ($filter_source  !== '') $_ddWF .= " AND source = '$esc_fs'";
+if ($filter_country !== '') $_ddWF .= " AND country_detected = '$esc_fc'";
+if ($filter_lang    !== '') $_ddWF .= " AND lang = '$esc_fl'";
+if ($filter_page    !== '') $_ddWF .= " AND page = '$esc_fp'";
+
 // ── Re-Signups: different table ───────────────────────────────────────────────
 if ($metric === 'resignups') {
     $dimFilter = ($dim_type === 'page' && $dim_value !== '')
@@ -32,6 +57,7 @@ if ($metric === 'resignups') {
             WHERE le.event_type = 'signup_attempt'
               $dimFilter
               AND le.created_at BETWEEN '$esc_from 00:00:00' AND '$esc_to 23:59:59'
+              $_ddUF
             ORDER BY le.created_at DESC
             LIMIT 200";
     $res  = mysqli_query($link, $sql);
@@ -54,6 +80,7 @@ if ($dim_type === 'followup') {
                     LEFT JOIN users u ON u.leadid = fck.user_id
                     WHERE fck.sequence_id = $seq_id
                       AND fck.clicked_at BETWEEN '$esc_from 00:00:00' AND '$esc_to 23:59:59'
+                      $_ddUF
                     ORDER BY fck.clicked_at DESC LIMIT 200";
         } else {
             $sql = "SELECT fl.sent_at AS signup_at,
@@ -64,6 +91,7 @@ if ($dim_type === 'followup') {
                     WHERE fl.sequence_id = $seq_id
                       AND fl.status = 'clicked'
                       AND fl.sent_at BETWEEN '$esc_from 00:00:00' AND '$esc_to 23:59:59'
+                      $_ddUF
                     ORDER BY fl.sent_at DESC LIMIT 200";
         }
     } else {
@@ -84,6 +112,7 @@ if ($dim_type === 'followup') {
                 WHERE fl.sequence_id = $seq_id
                   AND fl.sent_at BETWEEN '$esc_from 00:00:00' AND '$esc_to 23:59:59'
                   $statusFilter
+                  $_ddUF
                 ORDER BY fl.sent_at DESC LIMIT 200";
     }
 
@@ -106,6 +135,9 @@ if (in_array($dim_type, $allowedDims, true) && $dim_value !== '') {
 if ($metric === 'step1')  $whereBase .= ' AND step1_at IS NOT NULL';
 if ($metric === 'step2')  $whereBase .= " AND username IS NOT NULL AND username != ''";
 if ($metric === 'paid')   $whereBase .= " AND paidstatus = 'Paid'";
+
+// Active filter from admin-stats
+$whereBase .= $_ddWF;
 
 $sql  = "SELECT timestamp AS signup_at, leadid, name, email,
                 country_detected, lang, source, page, paidstatus, step1_at, username
