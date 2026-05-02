@@ -8,7 +8,7 @@
  * @param int    $expiryHours token validity in hours
  * @return string             full URL to backoffice/autologin.php?token=...
  */
-function generateMagicLink($link, $userId, $emailType = 'followup', $expiryHours = 72) {
+function generateMagicLink($link, $userId, $emailType = 'followup', $expiryHours = 72, $redirect = 'start.php') {
     // Auto-create table on first use
     mysqli_query($link, "CREATE TABLE IF NOT EXISTS login_tokens (
         id         INT AUTO_INCREMENT PRIMARY KEY,
@@ -33,5 +33,5 @@ function generateMagicLink($link, $userId, $emailType = 'followup', $expiryHours
         VALUES ($uid, '$tokEsc', '$typEsc', '$expires')");
 
     $base = rtrim($GLOBALS['baseurl'] ?? 'https://simple2success.com', '/');
-    return $base . '/backoffice/autologin.php?token=' . $token;
+    return $base . '/backoffice/autologin.php?token=' . $token . '&redirect=' . urlencode($redirect);
 }

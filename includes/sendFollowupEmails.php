@@ -170,8 +170,6 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
         "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_clicked_not_converted' LIMIT 1"));
     if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_clicked_not_converted template missing']];
 
-    $ctaUrl = rtrim($base_url, '/') . '/backoffice/start.php';
-
     $sql = "SELECT DISTINCT u.leadid, u.name, u.email
             FROM users u
             INNER JOIN followup_clicks fc ON fc.user_id = u.leadid
@@ -198,9 +196,9 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
 
         if (emailFooter_shouldSkip($link, $uid, 'trigger_clicked_not_converted')) continue;
 
-        $magicLink = generateMagicLink($link, $uid, 'trigger_clicked', 48);
+        $magicLink = generateMagicLink($link, $uid, 'trigger_clicked', 48, 'start.php');
         $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}', '{{magic_link}}'],
-                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl, $magicLink],
+                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $magicLink, $magicLink],
                                $tpl['body']);
         $subject = str_replace(['{{name}}', '{{email}}'],
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
@@ -241,8 +239,6 @@ function sendStep2DoneNoStep4Emails($link, $base_url) {
         "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_step2_done_no_step4' LIMIT 1"));
     if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_step2_done_no_step4 template missing']];
 
-    $ctaUrl = rtrim($base_url, '/') . '/backoffice/start.php';
-
     $sql = "SELECT u.leadid, u.name, u.email
             FROM users u
             WHERE u.username IS NOT NULL AND u.username != ''
@@ -268,9 +264,9 @@ function sendStep2DoneNoStep4Emails($link, $base_url) {
 
         if (emailFooter_shouldSkip($link, $uid, 'trigger_step2_done_no_step4')) continue;
 
-        $magicLink = generateMagicLink($link, $uid, 'trigger_step2_no_step4', 48);
+        $magicLink = generateMagicLink($link, $uid, 'trigger_step2_no_step4', 48, 'start.php');
         $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}', '{{magic_link}}'],
-                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $ctaUrl, $magicLink],
+                               [htmlspecialchars($toName), htmlspecialchars($toEmail), $magicLink, $magicLink],
                                $tpl['body']);
         $subject = str_replace(['{{name}}', '{{email}}'],
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
@@ -335,8 +331,6 @@ function sendNoVideoWatchedEmails($link, $base_url) {
         "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_no_video_watched' LIMIT 1"));
     if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_no_video_watched template missing']];
 
-    $ctaUrl = rtrim($base_url, '/') . '/backoffice/start.php';
-
     $sql = "SELECT u.leadid, u.name, u.email
             FROM users u
             WHERE u.last_login IS NOT NULL
@@ -366,10 +360,12 @@ function sendNoVideoWatchedEmails($link, $base_url) {
 
         if (emailFooter_shouldSkip($link, $uid, 'trigger_no_video_watched')) continue;
 
-        $body    = str_replace(['{{name}}', '{{cta_url}}'],
-                               [htmlspecialchars($toName), $ctaUrl],
+        $magicLink = generateMagicLink($link, $uid, 'trigger_no_video', 48, 'start.php');
+        $body    = str_replace(['{{name}}', '{{cta_url}}', '{{magic_link}}'],
+                               [htmlspecialchars($toName), $magicLink, $magicLink],
                                $tpl['body']);
         $subject = str_replace('{{name}}', htmlspecialchars($toName), $tpl['subject']);
+        $body    = injectClickTracking($body, $base_url, $uid, 0);
         $body   .= renderEmailFooter($link, 'trigger_no_video_watched', $uid);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
@@ -455,8 +451,8 @@ function sendFollowupEmails($link) {
                     $finalSubject
                 );
                 $personalBody = str_replace(
-                    ['{{name}}', '{{email}}', '{{magic_link}}'],
-                    [htmlspecialchars($toName), htmlspecialchars($toEmail), $magicLink],
+                    ['{{name}}', '{{email}}', '{{magic_link}}', '{{cta_url}}'],
+                    [htmlspecialchars($toName), htmlspecialchars($toEmail), $magicLink, $magicLink],
                     $body
                 );
                 $personalBody  = injectClickTracking($personalBody, $base_url, $uid, $seq_id);

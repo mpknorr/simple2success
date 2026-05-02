@@ -142,5 +142,10 @@ mysqli_query($link, "UPDATE users SET last_login = NOW() WHERE leadid = $userId"
 mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, ip)
     VALUES ($userId, 'login', '" . mysqli_real_escape_string($link, getClientIp()) . "')");
 
-header('Location: index.php');
+// Validate redirect against whitelist — no open redirect
+$allowed = ['index.php', 'start.php', 'step4.php'];
+$rawRedirect = $_GET['redirect'] ?? 'index.php';
+$redirect = in_array($rawRedirect, $allowed, true) ? $rawRedirect : 'index.php';
+
+header('Location: ' . $redirect);
 exit();
