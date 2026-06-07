@@ -368,7 +368,7 @@ require_once "parts/head.php";
                                                     <th style="padding:.4rem .75rem;">Sent</th>
                                                     <th style="padding:.4rem .75rem;">Template</th>
                                                     <th style="padding:.4rem .75rem;">Sequence</th>
-                                                    <th style="padding:.4rem .75rem;">Tag</th>
+                                                    <th style="padding:.4rem .75rem;">Day</th>
                                                     <th style="padding:.4rem .75rem;">Status</th>
                                                     <th style="padding:.4rem .75rem;">Delivered</th>
                                                     <th style="padding:.4rem .75rem;">Opened</th>
@@ -380,9 +380,9 @@ require_once "parts/head.php";
                                                 $fhStatus = $fh['status'] ?? 'sent';
                                                 $statusBadge = [
                                                     'sent'      => ['Sent',           'rgba(255,255,255,.5)', 'rgba(255,255,255,.06)'],
-                                                    'delivered' => ['Zugestellt',      '#28c76f', '#28c76f22'],
-                                                    'opened'    => ['Geöffnet',        '#00cfe8', '#00cfe822'],
-                                                    'clicked'   => ['Geklickt',        '#00cfe8', '#00cfe822'],
+                                                    'delivered' => ['Delivered',      '#28c76f', '#28c76f22'],
+                                                    'opened'    => ['Opened',         '#00cfe8', '#00cfe822'],
+                                                    'clicked'   => ['Clicked',        '#00cfe8', '#00cfe822'],
                                                     'bounced'   => ['Bounce',          '#ff9800', '#ff980022'],
                                                     'spam'      => ['Spam',            '#ea5455', '#ea545522'],
                                                     'failed'    => ['Failed',          'rgba(255,255,255,.3)', 'rgba(255,255,255,.04)'],
