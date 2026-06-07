@@ -237,16 +237,16 @@ require_once "parts/head.php";
                                                                         $evLabel = '⚠️ Failed login attempt';
                                                                         $evColor = 'rgba(234,84,85,.7)';
                                                                     } elseif ($evType === 'email_sent') {
-                                                                        $evLabel = '📧 E-Mail gesendet';
+                                                                        $evLabel = '📧 Email sent';
                                                                         $evColor = 'rgba(255,255,255,.5)';
                                                                     } elseif ($evType === 'email_hard_bounce') {
-                                                                        $evLabel = '⛔ Hard Bounce — E-Mail-Adresse ungültig';
+                                                                        $evLabel = '⛔ Hard Bounce — invalid email address';
                                                                         $evColor = 'rgba(234,84,85,.9)';
                                                                     } elseif ($evType === 'email_spam') {
-                                                                        $evLabel = '🚫 Spam-Beschwerde';
+                                                                        $evLabel = '🚫 Spam complaint';
                                                                         $evColor = 'rgba(234,84,85,.9)';
                                                                     } elseif ($evType === 'step1_button_click') {
-                                                                        $evLabel = '👆 Step-1-Button geklickt';
+                                                                        $evLabel = '👆 Step 1 button clicked';
                                                                         $evColor = 'rgba(0,207,232,.8)';
                                                                     } else {
                                                                         $evLabel = htmlspecialchars($evType);
@@ -335,13 +335,13 @@ require_once "parts/head.php";
                                         <h5 class="card-title m-0" style="font-size:.95rem;"><i class="ft-mail mr-1" style="color:#cb2ebc;"></i> E-Mail Delivery &amp; Follow-up-Historie</h5>
                                         <?php
                                         $healthCfg = [
-                                            'spam'        => ['🚫 Spam-Beschwerde',    '#ea5455', '#ea545533'],
+                                            'spam'        => ['🚫 Spam complaint',    '#ea5455', '#ea545533'],
                                             'hard_bounce' => ['⛔ Hard Bounce',         '#ea5455', '#ea545533'],
                                             'soft_bounce' => ['⚠️ Soft Bounce',         '#ff9800', '#ff980033'],
-                                            'engaged'     => ['👁 Geöffnet/Geklickt',  '#00cfe8', '#00cfe833'],
-                                            'delivered'   => ['✅ Zugestellt',          '#28c76f', '#28c76f33'],
-                                            'sent'        => ['→ Gesendet',            'rgba(255,255,255,.5)', 'rgba(255,255,255,.06)'],
-                                            'unknown'     => ['ℹ️ Noch kein Status',    'rgba(255,255,255,.3)', 'rgba(255,255,255,.04)'],
+                                            'engaged'     => ['👁 Opened/Clicked',      '#00cfe8', '#00cfe833'],
+                                            'delivered'   => ['✅ Delivered',           '#28c76f', '#28c76f33'],
+                                            'sent'        => ['→ Sent',                'rgba(255,255,255,.5)', 'rgba(255,255,255,.06)'],
+                                            'unknown'     => ['ℹ️ No status yet',       'rgba(255,255,255,.3)', 'rgba(255,255,255,.04)'],
                                         ];
                                         [$hlabel, $hcolor, $hbg] = $healthCfg[$emailHealth] ?? $healthCfg['unknown'];
                                         echo '<span style="background:' . $hbg . ';color:' . $hcolor . ';border-radius:4px;padding:3px 10px;font-size:.8rem;font-weight:600;">' . $hlabel . '</span>';
@@ -350,28 +350,28 @@ require_once "parts/head.php";
                                     <?php
                                     if ($emailHealth === 'hard_bounce'): ?>
                                     <div style="background:#ea545518;border-left:3px solid #ea5455;padding:8px 16px;font-size:.85rem;color:#ea5455;">
-                                        ⛔ Diese E-Mail-Adresse hat einen Hard Bounce erzeugt. Weitere Follow-ups werden wahrscheinlich nicht zugestellt.
+                                        ⛔ This email address has generated a hard bounce. Further follow-ups will likely not be delivered.
                                     </div>
                                     <?php elseif ($emailHealth === 'spam'): ?>
                                     <div style="background:#ea545518;border-left:3px solid #ea5455;padding:8px 16px;font-size:.85rem;color:#ea5455;">
-                                        🚫 Diese E-Mail-Adresse hat eine Spam-Beschwerde ausgelöst. Bitte nicht erneut kontaktieren.
+                                        🚫 This email address has triggered a spam complaint. Please do not contact again.
                                     </div>
                                     <?php endif; ?>
                                     <div class="card-body p-0">
                                     <?php if (empty($fup_history)): ?>
-                                        <p class="text-muted px-3 py-2 mb-0" style="font-size:.85rem;">ℹ️ Noch keine Follow-up-E-Mails an diesen Lead gesendet.</p>
+                                        <p class="text-muted px-3 py-2 mb-0" style="font-size:.85rem;">ℹ️ No follow-up emails sent to this lead yet.</p>
                                     <?php else: ?>
                                         <div class="table-responsive">
                                         <table class="table table-sm mb-0" style="font-size:.82rem;">
                                             <thead>
                                                 <tr style="font-size:.72rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.04em;">
-                                                    <th style="padding:.4rem .75rem;">Gesendet</th>
+                                                    <th style="padding:.4rem .75rem;">Sent</th>
                                                     <th style="padding:.4rem .75rem;">Template</th>
-                                                    <th style="padding:.4rem .75rem;">Sequenz</th>
+                                                    <th style="padding:.4rem .75rem;">Sequence</th>
                                                     <th style="padding:.4rem .75rem;">Tag</th>
                                                     <th style="padding:.4rem .75rem;">Status</th>
-                                                    <th style="padding:.4rem .75rem;">Zugestellt</th>
-                                                    <th style="padding:.4rem .75rem;">Geöffnet</th>
+                                                    <th style="padding:.4rem .75rem;">Delivered</th>
+                                                    <th style="padding:.4rem .75rem;">Opened</th>
                                                     <th style="padding:.4rem .75rem;">Bounce/Spam</th>
                                                 </tr>
                                             </thead>
@@ -379,13 +379,13 @@ require_once "parts/head.php";
                                             <?php foreach ($fup_history as $fh):
                                                 $fhStatus = $fh['status'] ?? 'sent';
                                                 $statusBadge = [
-                                                    'sent'      => ['Gesendet',       'rgba(255,255,255,.5)', 'rgba(255,255,255,.06)'],
+                                                    'sent'      => ['Sent',           'rgba(255,255,255,.5)', 'rgba(255,255,255,.06)'],
                                                     'delivered' => ['Zugestellt',      '#28c76f', '#28c76f22'],
                                                     'opened'    => ['Geöffnet',        '#00cfe8', '#00cfe822'],
                                                     'clicked'   => ['Geklickt',        '#00cfe8', '#00cfe822'],
                                                     'bounced'   => ['Bounce',          '#ff9800', '#ff980022'],
                                                     'spam'      => ['Spam',            '#ea5455', '#ea545522'],
-                                                    'failed'    => ['Fehlgeschlagen',  'rgba(255,255,255,.3)', 'rgba(255,255,255,.04)'],
+                                                    'failed'    => ['Failed',          'rgba(255,255,255,.3)', 'rgba(255,255,255,.04)'],
                                                 ];
                                                 [$stLabel, $stColor, $stBg] = $statusBadge[$fhStatus] ?? ['—', 'rgba(255,255,255,.3)', 'transparent'];
                                                 $fhSeq = $fh['sequence_type'] === 'member' ? 'Member' : 'Lead';
@@ -394,7 +394,7 @@ require_once "parts/head.php";
                                                 <td style="padding:.4rem .75rem;white-space:nowrap;color:rgba(255,255,255,.45);"><?= htmlspecialchars(substr($fh['sent_at'], 0, 16)) ?></td>
                                                 <td style="padding:.4rem .75rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?= htmlspecialchars($fh['subject']) ?>"><?= htmlspecialchars($fh['subject']) ?></td>
                                                 <td style="padding:.4rem .75rem;"><?= $fhSeq ?></td>
-                                                <td style="padding:.4rem .75rem;text-align:center;"><span class="badge badge-secondary" style="font-size:.7rem;">Tag <?= (int)$fh['day_offset'] ?></span></td>
+                                                <td style="padding:.4rem .75rem;text-align:center;"><span class="badge badge-secondary" style="font-size:.7rem;">Day <?= (int)$fh['day_offset'] ?></span></td>
                                                 <td style="padding:.4rem .75rem;"><span style="background:<?= $stBg ?>;color:<?= $stColor ?>;border-radius:3px;padding:1px 7px;font-size:.72rem;white-space:nowrap;"><?= $stLabel ?><?php
                                                     if ($fhStatus === 'bounced' && !empty($fh['bounce_type'])) {
                                                         echo ' <span style="font-size:.65rem;opacity:.7;">(' . ($fh['bounce_type'] === 'hard' ? 'Hard' : 'Soft') . ')</span>';
@@ -584,7 +584,7 @@ require_once "parts/head.php";
         rows.forEach(function (r, i) {
             r.style.display = (i >= start && i < end) ? '' : 'none';
         });
-        info.textContent = 'Zeige ' + (start + 1) + '–' + end + ' von ' + total + ' Einträgen';
+        info.textContent = 'Showing ' + (start + 1) + '–' + end + ' of ' + total + ' entries';
         prevBtn.classList.toggle('disabled', currentPage === 1);
         nextBtn.classList.toggle('disabled', currentPage === totalPages);
     }
