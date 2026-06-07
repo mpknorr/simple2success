@@ -198,7 +198,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                     <span style="color:var(--s2s-brand);">Understand Our Product Partner First</span>
                   </h3>
                   <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
-                            max-width:640px;margin:0;line-height:var(--s2s-lh-body);">
+                            margin:0;line-height:var(--s2s-lh-body);">
                     Simple2Success is your step-by-step system. But to build a real business, you also need real products, a proven company and a strong international partner. That is why we work with PM-International as our product partner — a company active in 40+ countries with more than 1 billion products sold. Watch this short presentation first, so you understand the foundation before you complete Step 1.
                   </p>
                 </div>
