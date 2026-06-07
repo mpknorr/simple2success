@@ -55,7 +55,7 @@ if (isset($_GET['err'])) {
     if ($_GET['err'] === 'invalidpm') $step2_error = 'Please enter a valid PM Partner ID (numbers only, e.g. 6304013).';
 }
 if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
-    $step2_success = 'Your PM Partner ID has been saved successfully. Step 2 is complete — continue with the steps below.';
+    $step2_success = 'Your Partner ID has been saved — your Simple2Success system is now activated. Welcome to the Eagle Team. Continue with the steps below.';
 }
 ?>
 <!DOCTYPE html>
@@ -195,12 +195,11 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <h3 style="color:var(--s2s-text-100);font-size:var(--s2s-size-h3);
                              font-weight:800;margin-bottom:.75rem;line-height:var(--s2s-lh-tight);">
                     Before You Register —<br>
-                    <span style="color:var(--s2s-brand);">Watch This First</span>
+                    <span style="color:var(--s2s-brand);">Understand Our Product Partner First</span>
                   </h3>
                   <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
                             max-width:640px;margin:0;line-height:var(--s2s-lh-body);">
-                    This presentation shows you exactly what you're joining,
-                    how the income system works, and why it's already running in 40+ countries.
+                    Simple2Success is your step-by-step system. But to build a real business, you also need real products, a proven company and a strong international partner. That is why we work with PM-International as our product partner — a company active in 40+ countries with more than 1 billion products sold. Watch this short presentation first, so you understand the foundation before you complete Step 1.
                   </p>
                 </div>
                 <div class="card-body" style="padding-bottom:.75rem;">
@@ -245,10 +244,10 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                             referrerpolicy="strict-origin-when-cross-origin"
                             style="position:absolute;top:0;left:0;width:100%;height:100%;"
-                            title="From Our Founder"></iframe>
+                            title="A Message from PM-International's Founder"></iframe>
                   </div>
                   <div class="card-body" style="padding:.75rem 1rem .85rem;">
-                    <h6 style="margin:0 0 .25rem;font-weight:700;font-size:.95rem;">From Our Founder</h6>
+                    <h6 style="margin:0 0 .25rem;font-weight:700;font-size:.95rem;">A Message from PM-International's Founder</h6>
                     <p style="font-size:.82rem;opacity:.65;margin:0;line-height:1.5;">
                       "If I can do it, so can you." — Rolf Sorg
                     </p>
@@ -299,6 +298,9 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                     <div class="col-lg-3 col-12 text-center"
                          style="padding:1.5rem 1rem;display:flex;flex-direction:column;
                                 align-items:center;justify-content:center;">
+                      <div class="alert" role="alert" style="background:rgba(255,193,7,.12);border:1px solid rgba(255,193,7,.5);border-left:4px solid #ffc107;color:rgba(255,255,255,.9);padding:.85rem 1.1rem;margin-bottom:1rem;border-radius:6px;font-size:.88rem;text-align:left;">
+                        <strong>⚠️ Important for your registration:</strong> When the PM-International registration page opens, please confirm the pre-selected sponsoring partner and <strong>do not change the sponsor</strong>. This ensures your registration is correctly connected to our Simple2Success Eagle Team.
+                      </div>
                       <a id="sforpm"
                          href="https://www.pmebusiness.com/registrationv2/?TP=<?= htmlspecialchars($referer_username) ?>"
                          target="_blank"
@@ -309,7 +311,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                                 font-weight:700;white-space:normal;
                                 border-radius:8px;line-height:1.4;">
                         <i class="ft-external-link mr-2"></i>
-                        Join PM-International Now
+                        Start PM-International Registration
                       </a>
                       <?php if (empty($referer_username)): ?>
                       <small style="color:rgba(255,200,0,.7);display:block;margin-top:.6rem;font-size:.78rem;">
@@ -390,8 +392,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                         </div>
                         <?php endif; ?>
                         <p style="font-size:1rem;margin-bottom:.75rem;">
-                          After completing Step 1, PM-International will provide your personal Partner ID.
-                          Enter it below and save it to activate your marketing system.
+                          After registering with PM-International (Step 1), you will receive your personal Partner ID. Copy it from your confirmation email or your PM account, paste it into the field below and click Save to activate your Simple2Success system.
                         </p>
                         <p style="opacity:.75;font-size:.9rem;margin-bottom:1.25rem;">
                           Once saved, your Partner ID is permanently locked and cannot be changed by you.

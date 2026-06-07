@@ -47,6 +47,11 @@ if (isset($_POST["root"])) {
         exit();
     }
 
+    // ── Log step2 completion event ───────────────────────────────────────────
+    $ev_ip = mysqli_real_escape_string($link, $_SERVER['REMOTE_ADDR'] ?? '');
+    mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, page, ip, created_at)
+        VALUES ($userid, 'step2_completed', 'backoffice/start.php', '$ev_ip', NOW())");
+
     // ── Send notification email to referer (sponsor) ─────────────────────────
     $mailResult = sendNewMemberMail($link, $root);
     if ($mailResult !== true) {
