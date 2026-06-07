@@ -330,7 +330,12 @@ require_once "parts/sidebar.php";
             table.column(4).search(this.value, false, false).draw();
         });
         $('#users-list-role').on('change', function() {
-            table.column(5).search(this.value, false, false).draw();
+            var val = this.value;
+            if (val === 'Aktive') {
+                table.column(5).search('.+', true, false).draw(); // regex: any non-empty value
+            } else {
+                table.column(5).search(val, false, false).draw();
+            }
         });
         $('#users-list-status').on('change', function() {
             table.column(6).search(this.value, false, false).draw();
