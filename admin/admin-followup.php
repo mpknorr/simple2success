@@ -90,6 +90,20 @@ if ($action === 'reset_log') {
     }
 }
 
+if ($action === 'promote_b') {
+    $promo_id = (int)($_POST['promo_id'] ?? 0);
+    if ($promo_id > 0) {
+        $row = mysqli_fetch_assoc(mysqli_query($link, "SELECT subject_b FROM followup_sequences WHERE id=$promo_id"));
+        if ($row && !empty($row['subject_b'])) {
+            $new_subject = mysqli_real_escape_string($link, $row['subject_b']);
+            mysqli_query($link, "UPDATE followup_sequences SET subject='$new_subject', subject_b='' WHERE id=$promo_id");
+            $success = 'Variante B ist jetzt der neue Standard-Betreff. A/B-Test beendet.';
+        }
+    }
+    header("Location: admin-followup.php");
+    exit();
+}
+
 // Load sequence for editing
 $edit_seq = null;
 if (isset($_GET['edit'])) {
@@ -110,6 +124,10 @@ $_res_lead = mysqli_query($link, "SELECT f.*,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='sent') AS pending_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A') AS ab_a_sent,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A' AND status IN ('opened','clicked')) AS ab_a_opens,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B') AS ab_b_sent,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B' AND status IN ('opened','clicked')) AS ab_b_opens,
     $_clickSubq AS click_count
     FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
 $_res_member = mysqli_query($link, "SELECT f.*,
@@ -120,6 +138,10 @@ $_res_member = mysqli_query($link, "SELECT f.*,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='sent') AS pending_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A') AS ab_a_sent,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A' AND status IN ('opened','clicked')) AS ab_a_opens,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B') AS ab_b_sent,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B' AND status IN ('opened','clicked')) AS ab_b_opens,
     $_clickSubq AS click_count
     FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
 $sequences_lead   = [];
@@ -341,7 +363,33 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           <?php $sid = $seq['id']; $slabel = htmlspecialchars($seq['subject'], ENT_QUOTES); ?>
           <tr>
             <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-secondary">Tag <?= $seq['day_offset'] ?></span></td>
-            <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
+            <td class="col-subject">
+              <?= htmlspecialchars($seq['subject']) ?>
+              <?php if (!empty($seq['subject_b'])): ?>
+                <br><span style="font-size:11px;color:#aaa;">
+                  <span style="color:#cb2ebc;font-weight:600;">A</span> vs
+                  <span style="color:#1877F2;font-weight:600;">B</span>:
+                  <?= htmlspecialchars($seq['subject_b']) ?>
+                </span>
+                <?php
+                  $abAS = (int)($seq['ab_a_sent'] ?? 0);
+                  $abAO = (int)($seq['ab_a_opens'] ?? 0);
+                  $abBS = (int)($seq['ab_b_sent'] ?? 0);
+                  $abBO = (int)($seq['ab_b_opens'] ?? 0);
+                  if ($abAS > 0 || $abBS > 0):
+                    $rateA = $abAS > 0 ? round($abAO / $abAS * 100) : 0;
+                    $rateB = $abBS > 0 ? round($abBO / $abBS * 100) : 0;
+                    $winA  = $rateA > $rateB;
+                    $winB  = $rateB > $rateA;
+                ?>
+                <br><span style="font-size:11px;">
+                  <span style="color:#cb2ebc;" title="Variante A: <?= $abAO ?>/<?= $abAS ?> geöffnet">A <?= $rateA ?>%<?= $winA ? ' 🏆' : '' ?></span>
+                  &nbsp;|&nbsp;
+                  <span style="color:#1877F2;" title="Variante B: <?= $abBO ?>/<?= $abBS ?> geöffnet">B <?= $rateB ?>%<?= $winB ? ' 🏆' : '' ?></span>
+                </span>
+                <?php endif; ?>
+              <?php endif; ?>
+            </td>
             <td class="text-center">
               <?php if ((int)$seq['sent_count'] > 0): ?>
                 <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>
@@ -397,6 +445,13 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <td class="actions-cell">
               <button type="button" class="btn btn-xs btn-outline-secondary" title="Vorschau" onclick="showFollowupPreview(<?= $sid ?>)"><i class="ft-eye"></i></button>
               <a href="admin-followup.php?edit=<?= $sid ?>" class="btn btn-xs btn-outline-primary" title="Bearbeiten"><i class="ft-edit-2"></i> Bearbeiten</a>
+              <?php if (!empty($seq['subject_b'])): ?>
+              <form method="POST" style="display:inline;margin-left:2px;" onsubmit="return confirm('Variante B als neuen Standard übernehmen? Der bisherige Betreff (A) wird ersetzt und der A/B-Test beendet.');">
+                <input type="hidden" name="action" value="promote_b">
+                <input type="hidden" name="promo_id" value="<?= $sid ?>">
+                <button type="submit" class="btn btn-xs btn-outline-info" title="B zum Standard machen"><i class="ft-award"></i> B = Standard</button>
+              </form>
+              <?php endif; ?>
               <form method="POST" style="display:inline;margin-left:2px;" onsubmit="return confirm('E-Mail löschen?');">
                 <input type="hidden" name="action" value="delete_sequence">
                 <input type="hidden" name="del_id" value="<?= $sid ?>">
@@ -445,7 +500,33 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
           <?php $sid = $seq['id']; $slabel = htmlspecialchars($seq['subject'], ENT_QUOTES); ?>
           <tr>
             <td data-order="<?= (int)$seq['day_offset'] ?>"><span class="badge badge-primary">Tag <?= $seq['day_offset'] ?></span></td>
-            <td class="col-subject" title="<?= htmlspecialchars($seq['subject']) ?>"><?= htmlspecialchars($seq['subject']) ?></td>
+            <td class="col-subject">
+              <?= htmlspecialchars($seq['subject']) ?>
+              <?php if (!empty($seq['subject_b'])): ?>
+                <br><span style="font-size:11px;color:#aaa;">
+                  <span style="color:#cb2ebc;font-weight:600;">A</span> vs
+                  <span style="color:#1877F2;font-weight:600;">B</span>:
+                  <?= htmlspecialchars($seq['subject_b']) ?>
+                </span>
+                <?php
+                  $abAS = (int)($seq['ab_a_sent'] ?? 0);
+                  $abAO = (int)($seq['ab_a_opens'] ?? 0);
+                  $abBS = (int)($seq['ab_b_sent'] ?? 0);
+                  $abBO = (int)($seq['ab_b_opens'] ?? 0);
+                  if ($abAS > 0 || $abBS > 0):
+                    $rateA = $abAS > 0 ? round($abAO / $abAS * 100) : 0;
+                    $rateB = $abBS > 0 ? round($abBO / $abBS * 100) : 0;
+                    $winA  = $rateA > $rateB;
+                    $winB  = $rateB > $rateA;
+                ?>
+                <br><span style="font-size:11px;">
+                  <span style="color:#cb2ebc;" title="Variante A: <?= $abAO ?>/<?= $abAS ?> geöffnet">A <?= $rateA ?>%<?= $winA ? ' 🏆' : '' ?></span>
+                  &nbsp;|&nbsp;
+                  <span style="color:#1877F2;" title="Variante B: <?= $abBO ?>/<?= $abBS ?> geöffnet">B <?= $rateB ?>%<?= $winB ? ' 🏆' : '' ?></span>
+                </span>
+                <?php endif; ?>
+              <?php endif; ?>
+            </td>
             <td class="text-center">
               <?php if ((int)$seq['sent_count'] > 0): ?>
                 <span class="badge badge-info fup-drill" data-type="recipients" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Empfänger anzeigen"><?= $seq['sent_count'] ?></span>

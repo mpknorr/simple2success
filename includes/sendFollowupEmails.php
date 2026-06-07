@@ -38,6 +38,7 @@ function ensureFollowupTables($link) {
         id               INT AUTO_INCREMENT PRIMARY KEY,
         user_id          INT NOT NULL,
         sequence_id      INT NOT NULL,
+        variant          CHAR(1) NOT NULL DEFAULT 'A',
         sent_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         brevo_message_id VARCHAR(255) NULL,
         status           VARCHAR(20) NOT NULL DEFAULT 'sent',
@@ -46,8 +47,14 @@ function ensureFollowupTables($link) {
         bounced_at       TIMESTAMP NULL,
         failed_at        TIMESTAMP NULL,
         UNIQUE KEY uniq_user_seq (user_id, sequence_id),
-        INDEX idx_brevo_msg_id (brevo_message_id)
+        INDEX idx_brevo_msg_id (brevo_message_id),
+        INDEX idx_variant (variant)
     )");
+
+    try {
+        mysqli_query($link, "ALTER TABLE followup_log ADD COLUMN IF NOT EXISTS variant CHAR(1) NOT NULL DEFAULT 'A' AFTER sequence_id");
+        mysqli_query($link, "ALTER TABLE followup_log ADD INDEX IF NOT EXISTS idx_variant (variant)");
+    } catch (\Throwable $e) { /* ignore — column may already exist */ }
 
     mysqli_query($link, "CREATE TABLE IF NOT EXISTS followup_clicks (
         id           INT AUTO_INCREMENT PRIMARY KEY,
@@ -470,8 +477,8 @@ function sendFollowupEmails($link) {
                     );
                     $mid = mysqli_real_escape_string($link, $messageId);
                     mysqli_query($link, "INSERT IGNORE INTO followup_log
-                        (user_id, sequence_id, brevo_message_id, status)
-                        VALUES ($uid, $seq_id, '$mid', 'sent')");
+                        (user_id, sequence_id, variant, brevo_message_id, status)
+                        VALUES ($uid, $seq_id, '$variant', '$mid', 'sent')");
                     $evMeta = mysqli_real_escape_string($link, "seq $seq_id ($target day $day_offset): " . strip_tags($personalSubject));
                     mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, meta, brevo_message_id)
                         VALUES ($uid, 'email_sent', '$evMeta', '$mid')");

@@ -40,7 +40,7 @@ foreach($userDatas as $user){
     $lead_country_detected = $user['country_detected'] ?? '';
 }
 // ── Lead activity events ─────────────────────────────────────────────────────
-$lead_events_data = mysqli_query($link, "SELECT * FROM lead_events WHERE lead_id = $lead_id ORDER BY created_at ASC");
+$lead_events_data = mysqli_query($link, "SELECT * FROM lead_events WHERE lead_id = $lead_id ORDER BY created_at DESC");
 $lead_events = [];
 if ($lead_events_data) {
     while ($ev = mysqli_fetch_assoc($lead_events_data)) {
@@ -224,44 +224,7 @@ require_once "parts/head.php";
                                                                     
                                                                 </tr>
                                                             </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td><?= htmlspecialchars($lead_timestamp) ?></td>
-                                                                    <td>
-                                                                        Signed up (Step 0)
-                                                                        <?php if (!empty($lead_page)): ?>
-                                                                            <br><small style="opacity:.65;">
-                                                                                Page: <strong><?= htmlspecialchars($lead_page) ?></strong>
-                                                                                <?= !empty($lead_source)       ? ' &mdash; Source: <strong>'       . htmlspecialchars($lead_source)       . '</strong>' : '' ?>
-                                                                                <?= !empty($lead_tr)           ? ' &mdash; Ref: <strong>'           . htmlspecialchars($lead_tr)           . '</strong>' : '' ?>
-                                                                                <?= !empty($lead_utm_source)   ? ' &mdash; utm_source: <strong>'    . htmlspecialchars($lead_utm_source)   . '</strong>' : '' ?>
-                                                                                <?= !empty($lead_utm_medium)   ? ' / utm_medium: <strong>'          . htmlspecialchars($lead_utm_medium)   . '</strong>' : '' ?>
-                                                                                <?= !empty($lead_utm_campaign) ? ' / utm_campaign: <strong>'        . htmlspecialchars($lead_utm_campaign) . '</strong>' : '' ?>
-                                                                            </small>
-                                                                        <?php endif; ?>
-                                                                    </td>
-                                                                    <td><?= htmlspecialchars($lead_ip) ?></td>
-                                                                </tr>
-                                                                <?php if (!empty($lead_step1_at)): ?>
-                                                                <tr>
-                                                                    <td><?= htmlspecialchars($lead_step1_at) ?></td>
-                                                                    <td>Clicked Step 1 Link</td>
-                                                                    <td><?= htmlspecialchars($lead_step1_ip ?: $lead_ip) ?></td>
-                                                                </tr>
-                                                                <?php elseif (!empty($lead_signuproot)): ?>
-                                                                <tr>
-                                                                    <td><?= htmlspecialchars($lead_signuproot) ?></td>
-                                                                    <td>Clicked Step 1 Link <small style="color:#888;">(client time)</small></td>
-                                                                    <td><?= htmlspecialchars($lead_ip) ?></td>
-                                                                </tr>
-                                                                <?php endif; ?>
-                                                                <?php if (!empty($lead_username)): ?>
-                                                                <tr>
-                                                                    <td><?= !empty($lead_step2_at) ? htmlspecialchars($lead_step2_at) : '—' ?></td>
-                                                                    <td>Step 2 Complete — PM Partner ID saved</td>
-                                                                    <td><?= !empty($lead_step2_ip) ? htmlspecialchars($lead_step2_ip) : '—' ?></td>
-                                                                </tr>
-                                                                <?php endif; ?>
+                                                            <tbody id="events-tbody">
                                                                 <?php foreach ($lead_events as $ev):
                                                                     $evType = $ev['event_type'];
                                                                     if ($evType === 'signup_attempt') {
@@ -310,8 +273,52 @@ require_once "parts/head.php";
                                                                     <td><?= htmlspecialchars($ev['ip'] ?? '—') ?></td>
                                                                 </tr>
                                                                 <?php endforeach; ?>
+                                                                <?php if (!empty($lead_username)): ?>
+                                                                <tr>
+                                                                    <td><?= !empty($lead_step2_at) ? htmlspecialchars($lead_step2_at) : '—' ?></td>
+                                                                    <td>Step 2 Complete — PM Partner ID saved</td>
+                                                                    <td><?= !empty($lead_step2_ip) ? htmlspecialchars($lead_step2_ip) : '—' ?></td>
+                                                                </tr>
+                                                                <?php endif; ?>
+                                                                <?php if (!empty($lead_step1_at)): ?>
+                                                                <tr>
+                                                                    <td><?= htmlspecialchars($lead_step1_at) ?></td>
+                                                                    <td>Clicked Step 1 Link</td>
+                                                                    <td><?= htmlspecialchars($lead_step1_ip ?: $lead_ip) ?></td>
+                                                                </tr>
+                                                                <?php elseif (!empty($lead_signuproot)): ?>
+                                                                <tr>
+                                                                    <td><?= htmlspecialchars($lead_signuproot) ?></td>
+                                                                    <td>Clicked Step 1 Link <small style="color:#888;">(client time)</small></td>
+                                                                    <td><?= htmlspecialchars($lead_ip) ?></td>
+                                                                </tr>
+                                                                <?php endif; ?>
+                                                                <tr>
+                                                                    <td><?= htmlspecialchars($lead_timestamp) ?></td>
+                                                                    <td>
+                                                                        Signed up (Step 0)
+                                                                        <?php if (!empty($lead_page)): ?>
+                                                                            <br><small style="opacity:.65;">
+                                                                                Page: <strong><?= htmlspecialchars($lead_page) ?></strong>
+                                                                                <?= !empty($lead_source)       ? ' &mdash; Source: <strong>'       . htmlspecialchars($lead_source)       . '</strong>' : '' ?>
+                                                                                <?= !empty($lead_tr)           ? ' &mdash; Ref: <strong>'           . htmlspecialchars($lead_tr)           . '</strong>' : '' ?>
+                                                                                <?= !empty($lead_utm_source)   ? ' &mdash; utm_source: <strong>'    . htmlspecialchars($lead_utm_source)   . '</strong>' : '' ?>
+                                                                                <?= !empty($lead_utm_medium)   ? ' / utm_medium: <strong>'          . htmlspecialchars($lead_utm_medium)   . '</strong>' : '' ?>
+                                                                                <?= !empty($lead_utm_campaign) ? ' / utm_campaign: <strong>'        . htmlspecialchars($lead_utm_campaign) . '</strong>' : '' ?>
+                                                                            </small>
+                                                                        <?php endif; ?>
+                                                                    </td>
+                                                                    <td><?= htmlspecialchars($lead_ip) ?></td>
+                                                                </tr>
                                                             </tbody>
                                                         </table>
+                                                        <div id="events-pagination" style="display:none; justify-content:space-between; align-items:center; padding:6px 12px; font-size:13px; color:rgba(255,255,255,.45); border-top:1px solid rgba(255,255,255,.07);">
+                                                            <span id="events-info"></span>
+                                                            <ul class="pagination pagination-sm mb-0">
+                                                                <li class="page-item" id="events-prev"><a class="page-link" href="#">&laquo;</a></li>
+                                                                <li class="page-item" id="events-next"><a class="page-link" href="#">&raquo;</a></li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -552,6 +559,49 @@ require_once "parts/head.php";
     <!-- BEGIN: Custom CSS-->
     <script src="assets/js/scripts.js"></script>
     <!-- END: Custom CSS-->
+
+<script>
+(function () {
+    var pageSize = 15;
+    var currentPage = 1;
+    var tbody = document.getElementById('events-tbody');
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var total = rows.length;
+    if (total <= pageSize) return;
+
+    var info    = document.getElementById('events-info');
+    var prevBtn = document.getElementById('events-prev');
+    var nextBtn = document.getElementById('events-next');
+    var pagDiv  = document.getElementById('events-pagination');
+
+    pagDiv.style.display = 'flex';
+
+    function render() {
+        var totalPages = Math.ceil(total / pageSize);
+        var start = (currentPage - 1) * pageSize;
+        var end   = Math.min(start + pageSize, total);
+        rows.forEach(function (r, i) {
+            r.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+        info.textContent = 'Zeige ' + (start + 1) + '–' + end + ' von ' + total + ' Einträgen';
+        prevBtn.classList.toggle('disabled', currentPage === 1);
+        nextBtn.classList.toggle('disabled', currentPage === totalPages);
+    }
+
+    prevBtn.querySelector('a').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (currentPage > 1) { currentPage--; render(); }
+    });
+    nextBtn.querySelector('a').addEventListener('click', function (e) {
+        e.preventDefault();
+        var totalPages = Math.ceil(total / pageSize);
+        if (currentPage < totalPages) { currentPage++; render(); }
+    });
+
+    render();
+})();
+</script>
 </body>
 <!-- END : Body-->
 
