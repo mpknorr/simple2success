@@ -133,10 +133,10 @@ require_once "parts/sidebar.php";
                                                 <option value="Spam">🚫 Spam</option>
                                                 <option value="Hard Bounce">⛔ Hard Bounce</option>
                                                 <option value="Soft Bounce">⚠️ Soft Bounce</option>
-                                                <option value="Geöffnet">👁 Geöffnet</option>
-                                                <option value="Zugestellt">✅ Zugestellt</option>
-                                                <option value="Gesendet">→ Gesendet</option>
-                                                <option value="—">— Kein Status</option>
+                                                <option value="Opened">👁 Opened</option>
+                                                <option value="Delivered">✅ Delivered</option>
+                                                <option value="Sent">→ Sent</option>
+                                                <option value="—">— No Status</option>
                                             </select>
                                         </fieldset>
                                     </div>
@@ -202,9 +202,9 @@ require_once "parts/sidebar.php";
                                                                         'spam'         => ['🚫 Spam',        '#ea545533', '#ea5455'],
                                                                         'hard_bounce'  => ['⛔ Hard Bounce',  '#ea545533', '#ea5455'],
                                                                         'soft_bounce'  => ['⚠️ Soft Bounce',  '#ff980033', '#ff9800'],
-                                                                        'engaged'      => ['👁 Geöffnet',     '#00cfe833', '#00cfe8'],
-                                                                        'delivered'    => ['✅ Zugestellt',   '#28c76f33', '#28c76f'],
-                                                                        'sent'         => ['→ Gesendet',     'rgba(255,255,255,.06)', 'rgba(255,255,255,.4)'],
+                                                                        'engaged'      => ['👁 Opened',     '#00cfe833', '#00cfe8'],
+                                                                        'delivered'    => ['✅ Delivered',   '#28c76f33', '#28c76f'],
+                                                                        'sent'         => ['→ Sent',     'rgba(255,255,255,.06)', 'rgba(255,255,255,.4)'],
                                                                         'unknown'      => ['—',              'transparent', 'rgba(255,255,255,.2)'],
                                                                     ];
                                                                     [$label, $bg, $color] = $badges[$es] ?? $badges['unknown'];

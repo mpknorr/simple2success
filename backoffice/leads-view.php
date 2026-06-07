@@ -562,7 +562,7 @@ require_once "parts/head.php";
 
 <script>
 (function () {
-    var pageSize = 15;
+    var pageSize = 10;
     var currentPage = 1;
     var tbody = document.getElementById('events-tbody');
     if (!tbody) return;
