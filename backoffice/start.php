@@ -256,8 +256,30 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
               </div>
             </div>
 
-            <!-- TODO: Video 3 (Incentive Trips) — nur nach Angabe echter Vimeo-ID aktivieren -->
-            <!-- TODO: Video 4 (Direct Cash)     — nur nach Angabe echter Vimeo-ID aktivieren -->
+            <!-- Video 3: World Tour 2027 Promo -->
+            <div class="col-lg-4 col-md-6 col-12" style="margin-top:.5rem;">
+              <div class="card" style="height:100%;">
+                <div class="card-content">
+                  <div style="padding:56.25% 0 0 0;position:relative;">
+                    <iframe id="vimeo-start-3"
+                            src="https://player.vimeo.com/video/1199487088?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                            frameborder="0"
+                            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            style="position:absolute;top:0;left:0;width:100%;height:100%;"
+                            title="World Tour 2027 Promo"></iframe>
+                  </div>
+                  <div class="card-body" style="padding:.75rem 1rem .85rem;">
+                    <h6 style="margin:0 0 .25rem;font-weight:700;font-size:.95rem;">World Tour 2027 Promo</h6>
+                    <p style="font-size:.82rem;opacity:.65;margin:0;line-height:1.5;">
+                      Experience the journey — PM-International World Tour 2027.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TODO: Video 4 (Direct Cash) — nur nach Angabe echter Vimeo-ID aktivieren -->
 
           </div>
         </section>
