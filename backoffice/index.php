@@ -562,6 +562,72 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
 
 
 <!-- ═══════════════════════════════════════════════════════════
+     SECTION 2a — WELCOME VIDEO
+     TODO: Vimeo-ID eintragen und Kommentar entfernen, sobald das
+     Welcome Video (HeyGen V2) fertig ist. VIMEO_ID ersetzen!
+════════════════════════════════════════════════════════════ -->
+<!--
+<section>
+  <div class="card" style="margin-bottom:0;">
+    <div class="card-body" style="padding:2rem 2.5rem 1rem;">
+      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:.6rem;">Start Here</span>
+      <h3 style="font-weight:800;margin-bottom:.5rem;">Watch This First — Your Welcome Message</h3>
+      <p style="opacity:.75;margin:0;">2 minutes that show you exactly why you are here and what happens next.</p>
+    </div>
+    <div class="card-body" style="padding:0 2.5rem 2rem;">
+      <div style="padding:56.25% 0 0 0;position:relative;">
+        <iframe id="vimeo-welcome"
+                src="https://player.vimeo.com/video/VIMEO_ID?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0"
+                frameborder="0"
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;"
+                title="Welcome to Simple2Success"></iframe>
+      </div>
+      <script src="https://player.vimeo.com/api/player.js"></script>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  if (typeof Vimeo === 'undefined') return;
+  var trackUrl = '../includes/track-video.php';
+  var page = window.location.pathname;
+
+  function send(evt, title) {
+    fetch(trackUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'event='  + encodeURIComponent(evt)
+          + '&video=' + encodeURIComponent(title)
+          + '&page='  + encodeURIComponent(page),
+      credentials: 'same-origin'
+    }).catch(function(){});
+  }
+
+  var el = document.getElementById('vimeo-welcome');
+  if (el) {
+    var p = new Vimeo.Player(el), t = {};
+    p.on('play', function() {
+      if (!t.p) { t.p = 1; send('welcome_video_play', 'Welcome Video'); }
+    });
+    p.on('timeupdate', function(d) {
+      if (!d) return;
+      if (!t.p25 && d.percent >= .25) { t.p25 = 1; send('welcome_video_25', 'Welcome Video'); }
+      if (!t.p50 && d.percent >= .50) { t.p50 = 1; send('welcome_video_50', 'Welcome Video'); }
+      if (!t.p75 && d.percent >= .75) { t.p75 = 1; send('welcome_video_75', 'Welcome Video'); }
+    });
+    p.on('ended', function() {
+      if (!t.c) { t.c = 1; send('welcome_video_complete', 'Welcome Video'); }
+    });
+  }
+})();
+</script>
+-->
+
+
+<!-- ═══════════════════════════════════════════════════════════
      SECTION 2b — MISSION 1000 FAMILIES
 ════════════════════════════════════════════════════════════ -->
 <section>
