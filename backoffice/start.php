@@ -55,7 +55,7 @@ if (isset($_GET['err'])) {
     if ($_GET['err'] === 'invalidpm') $step2_error = 'Please enter a valid PM Partner ID (numbers only, e.g. 6304013).';
 }
 if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
-    $step2_success = 'Your Partner ID has been saved — your Simple2Success system is now activated. Welcome to the Eagle Team. Continue with the steps below.';
+    $step2_success = 'Your Partner ID has been saved — your Simple2Success system is now activated. Welcome to the Eagle Team — your family is now part of Mission 1000. Continue with the steps below.';
 }
 ?>
 <!DOCTYPE html>
@@ -144,6 +144,20 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
       <div class="content-wrapper">
 
 
+
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION MISSION STRIP
+        ════════════════════════════════════════════════════════════ -->
+        <section style="margin-top:.5rem;">
+          <div class="row">
+            <div class="col-12">
+              <div style="background:linear-gradient(90deg,rgba(183,0,224,.12) 0%,rgba(183,0,224,.04) 100%);border-left:3px solid #b700e0;border-radius:6px;padding:.7rem 1.2rem;font-size:.9rem;color:rgba(255,255,255,.85);">
+                <strong style="color:#d36ce8;">Mission 1000 Families</strong> — your family's story starts with Step 1 and Step 2.
+              </div>
+            </div>
+          </div>
+        </section>
 
 
         <!-- ═══════════════════════════════════════════════════════════
@@ -314,6 +328,11 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                         Sign up with PM-International — it's free and takes less than 3 minutes.
                         Then return here, enter your Partner ID, and your system is active.
                       </p>
+                      <ul style="list-style:none;padding:0;margin:1rem 0 0;font-size:.88rem;color:rgba(255,255,255,.75);line-height:2;">
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> 100% free registration — no purchase required</li>
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Takes less than 3 minutes</li>
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Your sponsor connection is already prepared</li>
+                      </ul>
                     </div>
 
                     <!-- SPALTE 2: Button (Mitte) -->

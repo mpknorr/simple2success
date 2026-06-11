@@ -148,6 +148,23 @@ function applyAbVariant($subject_a, $subject_b, $variant) {
 }
 
 /**
+ * Inject a hidden preheader (inbox preview text) right after <body>.
+ * Derived from the first ~90 chars of the email's plain text.
+ * After the sender name, the preheader is the second biggest open-rate factor.
+ */
+function injectPreheader($body) {
+    $text = trim(preg_replace('/\s+/', ' ', strip_tags($body)));
+    // Skip the greeting ("Hi {{name}}," / "Hi Name,") so the preview shows real content
+    $text = preg_replace('/^Hi [^,]{1,40},\s*/i', '', $text);
+    if ($text === '') return $body;
+    $preheader = mb_substr($text, 0, 90);
+    $div = '<div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">'
+         . htmlspecialchars($preheader) . '&#847;&zwnj;&nbsp;</div>';
+    $injected = preg_replace('/(<body[^>]*>)/i', '$1' . $div, $body, 1, $count);
+    return $count ? $injected : $div . $body;
+}
+
+/**
  * Inject click tracking into all href links in an email body.
  */
 function injectClickTracking($body, $base_url, $user_id, $sequence_id) {
@@ -212,6 +229,7 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
                                $tpl['subject']);
         $body    = injectClickTracking($body, $base_url, $uid, 0);
         $body   .= renderEmailFooter($link, 'trigger_clicked_not_converted', $uid);
+        $body    = injectPreheader($body);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         try {
@@ -280,6 +298,7 @@ function sendStep2DoneNoStep4Emails($link, $base_url) {
                                $tpl['subject']);
         $body    = injectClickTracking($body, $base_url, $uid, 0);
         $body   .= renderEmailFooter($link, 'trigger_step2_done_no_step4', $uid);
+        $body    = injectPreheader($body);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         try {
@@ -374,6 +393,7 @@ function sendNoVideoWatchedEmails($link, $base_url) {
         $subject = str_replace('{{name}}', htmlspecialchars($toName), $tpl['subject']);
         $body    = injectClickTracking($body, $base_url, $uid, 0);
         $body   .= renderEmailFooter($link, 'trigger_no_video_watched', $uid);
+        $body    = injectPreheader($body);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         try {
@@ -415,7 +435,14 @@ function sendFollowupEmails($link) {
     }
 
     // ── 1. Regular day-offset sequences (A/B via subject_b column) ───────────
-    $seqs = mysqli_query($link, "SELECT * FROM followup_sequences WHERE is_active = 1 ORDER BY target, day_offset ASC");
+    // Send window 08:00–20:00 — overnight sends get buried in the morning inbox.
+    // Behavioral triggers below run regardless (behavioral proximity beats timing).
+    $hour = (int)date('G');
+    $inSendWindow = ($hour >= 8 && $hour < 20);
+
+    $seqs = $inSendWindow
+        ? mysqli_query($link, "SELECT * FROM followup_sequences WHERE is_active = 1 ORDER BY target, day_offset ASC")
+        : false;
     if ($seqs && mysqli_num_rows($seqs) > 0) {
         while ($seq = mysqli_fetch_assoc($seqs)) {
             $seq_id     = (int)$seq['id'];
@@ -464,6 +491,7 @@ function sendFollowupEmails($link) {
                 );
                 $personalBody  = injectClickTracking($personalBody, $base_url, $uid, $seq_id);
                 $personalBody .= renderEmailFooter($link, $fuKey, $uid);
+                $personalBody  = injectPreheader($personalBody);
                 $personalSubject = html_entity_decode($personalSubject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
                 $seqType = ($target === 'lead') ? 'lead_sequence' : 'member_sequence';

@@ -70,6 +70,7 @@ $countdownSeconds = 48 * 3600;
         <input type="text" class="s2s-input-field name" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name">
         <input type="email" class="s2s-input-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
         <input type="submit" value="Claim My Free Position!" class="s2s-btn">
+            <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
       </form>
       <?php endif; ?>
       <div class="w-form-done">
@@ -93,6 +94,7 @@ $countdownSeconds = 48 * 3600;
     <div class="s2s-perks-banner">
       <div class="s2s-description-wrap">
         <p class="s2s-tagline">Join a proven step-by-step system used by 10,000+ members in 40+ countries to build real income online — 100% free to start.</p>
+        <p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
       </div>
     </div>
     <div class="s2s-benefits-grid">

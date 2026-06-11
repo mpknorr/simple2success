@@ -177,6 +177,7 @@ $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) 
     <div class="card-body">
       <h2>Join 10,000+ People Already Building Income With the Simple2Success Eagle Team</h2>
       <p class="subheadline">Your free spot is waiting — enter your details to get access</p>
+      <p style="margin:6px 0 14px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
 
       <?php if ($_eae): ?>
         <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">

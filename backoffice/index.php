@@ -540,10 +540,10 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
       <div class="et-hero-eyebrow">Eagle Team &bull; Simple2Success</div>
       <h1 class="et-hero-title">
         Welcome<?= $userName ? ', ' . $userName : '' ?> —<br>
-        To The Simple2Success Eagle Team.
+        You Just Joined <span style="color:#b700e0;">Mission 1000 Families.</span>
       </h1>
       <p class="et-hero-sub">
-        You now have access to a proven step-by-step system designed to help ordinary people build additional income online.
+        You now have access to a proven step-by-step system designed to help ordinary people build additional income online — and a mission bigger than any single opportunity.
       </p>
       <p class="et-hero-note">
         You do not need to know everything today.
@@ -555,7 +555,53 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
         <li>Clear Daily Actions</li>
         <li>A Real Path You Can Follow</li>
       </ul>
-      <a href="start.php" class="et-btn">Continue To Your Next Step &rarr;</a>
+      <a href="start.php" class="et-btn">Continue to Step 1 &amp; Step 2 &rarr;</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2b — MISSION 1000 FAMILIES
+════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="card" style="margin-bottom:0;border:2px solid rgba(183,0,224,.45);background:linear-gradient(135deg,rgba(183,0,224,.07) 0%,rgba(183,0,224,.02) 100%);box-shadow:0 0 32px rgba(183,0,224,.14);">
+    <div class="card-body" style="padding:2.25rem 2.5rem;">
+      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:.6rem;">Our Mission</span>
+      <h2 style="font-weight:800;margin-bottom:1rem;line-height:1.25;">Mission <span style="color:#b700e0;">1000 Families</span></h2>
+      <p style="font-size:1.05rem;line-height:1.7;margin-bottom:.75rem;">
+        Our mission is to help <strong>1,000 families</strong> build real freedom with the Simple2Success Eagle Team system —
+        earning <strong>$1,000+ per month</strong>, traveling the world, driving a car funded through our partner program,
+        and living life on their own terms.
+      </p>
+      <p style="font-size:1.05rem;line-height:1.7;margin-bottom:1rem;">
+        Not by jumping from system to system. By following <strong style="color:#b700e0;">ONE proven system</strong>, step by step.
+      </p>
+      <p style="font-size:.78rem;opacity:.55;margin:0;line-height:1.5;">
+        Results are not guaranteed. Success depends on consistent execution, repetition and staying with the system.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2c — YOUR ROADMAP (endowed progress)
+════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="card" style="margin-bottom:0;">
+    <div class="card-body" style="padding:1.75rem 2.5rem;">
+      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:1rem;">Your Roadmap — You Are Already On The Way</span>
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;">
+        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Account created</span>
+        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Logged in</span>
+        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">3 · Watch the videos</span>
+        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">4 · Step 1: Register</span>
+        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">5 · Step 2: Enter Partner ID</span>
+        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">6 · Step 3–5: Execute</span>
+        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">7 · Repeat</span>
+      </div>
+      <p style="font-size:.85rem;opacity:.6;margin:.9rem 0 0;">2 of 7 steps already done. Your next move: watch the videos and complete Step 1 &amp; Step 2.</p>
     </div>
   </div>
 </section>
@@ -590,7 +636,7 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
       </div>
       <div class="et-aspiration-card">
         <i class="ft-trending-up"></i>
-        <div><h5>More Income</h5><p>Build additional income step by step.</p></div>
+        <div><h5>More Income</h5><p>Your first goal: $1,000+ per month — built step by step.</p></div>
       </div>
       <div class="et-aspiration-card">
         <i class="ft-globe"></i>
@@ -602,7 +648,7 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
       </div>
       <div class="et-aspiration-card">
         <i class="ft-sun"></i>
-        <div><h5>More Freedom</h5><p>Create more choice for your future.</p></div>
+        <div><h5>More Freedom</h5><p>Travel. Car. Choice. The life your family deserves.</p></div>
       </div>
     </div>
   </div>
@@ -630,6 +676,9 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
       </p>
       <p>
         The problem is never effort. The problem is <strong style="color:#fff;">no system. No structure. No clear next step.</strong>
+      </p>
+      <p>
+        The ones who win are not smarter. <strong style="color:#fff;">They simply stopped switching systems.</strong>
       </p>
     </div>
 
@@ -685,7 +734,7 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
         You now have a clear direction, a step-by-step system and the right next move.<br><br>
         On the next page, you will see exactly what to do next.
       </p>
-      <a href="start.php" class="et-btn">See The Next Step &rarr;</a>
+      <a href="start.php" class="et-btn">Start Step 1 Now — It's Free &rarr;</a>
     </div>
 
     <!-- Right: eagle #3 — dynamic / momentum -->

@@ -57,6 +57,8 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       ✦ 10,000+ Members in 40+ Countries &nbsp;·&nbsp; 100% FREE to Start
     </p>
 
+    <p style="margin:10px auto 0;max-width:640px;font-size:15px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+
     <?php if ($_eae): ?>
       <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
         <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>

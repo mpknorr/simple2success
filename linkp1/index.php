@@ -39,6 +39,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
         <h1 class="s2s-heading">Ignite Your Eagle Journey</h1>
         <div class="s2s-tagline">Soar Above the Rest with the Simple2Success Team!<br></div>
         <div class="s2s-subline">Start Building Your Income Online — Step by Step, 100% Free</div>
+        <div style="margin:8px auto 4px;max-width:520px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</div>
         <div class="s2s-form-outer w-form">
           <?php if ($_eae): ?>
             <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -59,6 +60,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
               <div class="s2s-input-wrap"><input type="email" class="s2s-input-base s2s-input" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email"></div>
             </div>
             <input type="submit" value="Claim My Free Position →" class="s2s-btn">
+            <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
           </form>
           <?php endif; ?>
         </div>

@@ -48,6 +48,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
           <div class="s2s-container">
             <h1 class="s2s-heading"><span class="s2s-span-reserve">RESERVE</span><br><span style="white-space:nowrap;">YOUR SPOT</span></h1>
             <p class="s2s-subtitle action">Free spots are limited by sponsor capacity — yours has been reserved</p>
+            <p style="margin:4px 0 12px;font-size:13px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
             <div class="s2s-form-inner">
               <div class="s2s-form-block w-form">
                 <?php if ($_eae): ?>
@@ -69,6 +70,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
                   <input type="email" class="s2s-email-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
                   <div class="s2s-divider"></div>
                   <input type="submit" value="Reserve My Free Spot →" class="s2s-btn">
+            <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
                 </form>
                 <?php endif; ?>
               </div>

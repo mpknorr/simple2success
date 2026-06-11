@@ -52,6 +52,8 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         starting for free, today.
       </p>
 
+      <p style="margin:0 0 18px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+
       <ul class="feature-list">
         <li>
           <div class="feature-icon">🎯</div>
