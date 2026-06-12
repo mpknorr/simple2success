@@ -60,7 +60,6 @@ $userid = (int)$_SESSION['userid'];
                                     <?php
                                     $mode     = (isset($_GET['mode']) && $_GET['mode'] === 'alltime') ? 'alltime' : 'monthly';
                                     $topLimit = (isset($_GET['top']) && in_array((int)$_GET['top'], [25, 50, 100])) ? (int)$_GET['top'] : 25;
-                                    $page     = (isset($_GET['p']) && (int)$_GET['p'] > 0) ? (int)$_GET['p'] : 1;
                                     $selMonth = (isset($_GET['month']) && preg_match('/^\d{4}-\d{2}$/', $_GET['month'])) ? $_GET['month'] : date('Y-m');
 
                                     // Build available months from DB (first signup to now)
@@ -89,7 +88,7 @@ $userid = (int)$_SESSION['userid'];
                                     <div>
                                         <label class="mb-0 mr-1" style="color:#ccc; font-size:13px;">Show:</label>
                                         <?php foreach ([25, 50, 100] as $t): ?>
-                                        <a href="?mode=<?= $mode ?>&month=<?= $selMonth ?>&top=<?= $t ?>&p=1"
+                                        <a href="?mode=<?= $mode ?>&month=<?= $selMonth ?>&top=<?= $t ?>"
                                            class="btn btn-sm <?= $topLimit === $t ? 'btn-primary' : 'btn-outline-secondary' ?> mr-1">
                                            TOP <?= $t ?>
                                         </a>
@@ -180,13 +179,28 @@ $userid = (int)$_SESSION['userid'];
                     if ((int)$u['leadid'] === $userid) { $myRank = $idx + 1; break; }
                 }
 
-                // ── Paginate in PHP ──────────────────────────────────────────────
-                $totalRows  = count($allUsers);
-                $totalPages = max(1, (int)ceil($totalRows / $topLimit));
-                $page       = min($page, $totalPages);
-                $offset     = ($page - 1) * $topLimit;
-                $pageUsers  = array_slice($allUsers, $offset, $topLimit);
+                // ── Hard TOP limit — the leaderboard motivates, it doesn't list ──
+                $totalRows = count($allUsers);
+                $pageUsers = array_slice($allUsers, 0, $topLimit);
                 ?>
+
+                <!-- Your rank (above the table, only if outside the TOP range) -->
+                <?php if ($myRank && $myRank > $topLimit): ?>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card" style="background:rgba(183,0,224,0.08); border-left:3px solid #b700e0;">
+                            <div class="card-body py-2 px-3">
+                                <p class="mb-0" style="color:#ccc; font-size:14px;">
+                                    <i class="ft-user mr-1" style="color:#b700e0;"></i>
+                                    Your current position: <strong style="color:#b700e0;">#<?= $myRank ?></strong>
+                                    of <?= $totalRows ?> members —
+                                    <strong><?= $myRank - $topLimit ?></strong> spot<?= ($myRank - $topLimit) === 1 ? '' : 's' ?> to TOP <?= $topLimit ?>. Keep going!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <!-- Table -->
                 <div class="row">
@@ -198,7 +212,7 @@ $userid = (int)$_SESSION['userid'];
                                     <?= htmlspecialchars($heading) ?>
                                 </h4>
                                 <span style="color:#aaa; font-size:13px;">
-                                    Showing <?= $offset + 1 ?>–<?= min($offset + $topLimit, $totalRows) ?> of <?= $totalRows ?> Members
+                                    TOP <?= min($topLimit, $totalRows) ?> of <?= $totalRows ?> members
                                 </span>
                             </div>
                             <div class="card-content">
@@ -219,7 +233,7 @@ $userid = (int)$_SESSION['userid'];
                                             </thead>
                                             <tbody>
                                             <?php
-                                            $rank = $offset + 1;
+                                            $rank = 1;
                                             $hasRows = false;
                                             foreach ($pageUsers as $row):
                                                 $hasRows = true;
@@ -278,66 +292,9 @@ $userid = (int)$_SESSION['userid'];
                                 </div>
                             </div>
 
-                            <!-- Pagination -->
-                            <?php if ($totalPages > 1): ?>
-                            <div class="card-footer d-flex justify-content-center">
-                                <ul class="pagination mb-0">
-                                    <?php if ($page > 1): ?>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?mode=<?= $mode ?>&month=<?= $selMonth ?>&top=<?= $topLimit ?>&p=<?= $page - 1 ?>">
-                                            &laquo;
-                                        </a>
-                                    </li>
-                                    <?php endif; ?>
-
-                                    <?php
-                                    $from = max(1, $page - 2);
-                                    $to   = min($totalPages, $page + 2);
-                                    if ($from > 1): ?>
-                                    <li class="page-item disabled"><span class="page-link">…</span></li>
-                                    <?php endif;
-                                    for ($i = $from; $i <= $to; $i++): ?>
-                                    <li class="page-item <?= $i === $page ? 'active' : '' ?>">
-                                        <a class="page-link" href="?mode=<?= $mode ?>&month=<?= $selMonth ?>&top=<?= $topLimit ?>&p=<?= $i ?>">
-                                            <?= $i ?>
-                                        </a>
-                                    </li>
-                                    <?php endfor;
-                                    if ($to < $totalPages): ?>
-                                    <li class="page-item disabled"><span class="page-link">…</span></li>
-                                    <?php endif; ?>
-
-                                    <?php if ($page < $totalPages): ?>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?mode=<?= $mode ?>&month=<?= $selMonth ?>&top=<?= $topLimit ?>&p=<?= $page + 1 ?>">
-                                            &raquo;
-                                        </a>
-                                    </li>
-                                    <?php endif; ?>
-                                </ul>
-                            </div>
-                            <?php endif; ?>
-
                         </div>
                     </div>
                 </div>
-
-                <!-- Your rank (only if outside current page) -->
-                <?php if ($myRank && ($myRank <= $offset || $myRank > $offset + $topLimit)): ?>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card" style="background:rgba(183,0,224,0.08); border-left:3px solid #b700e0;">
-                            <div class="card-body py-2 px-3">
-                                <p class="mb-0" style="color:#ccc; font-size:14px;">
-                                    <i class="ft-user mr-1" style="color:#b700e0;"></i>
-                                    Your current position: <strong style="color:#b700e0;">#<?= $myRank ?></strong>
-                                    of <?= $totalRows ?> members.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
 
                 <!-- Info box -->
                 <div class="row">
@@ -379,7 +336,7 @@ function applyFilter() {
     var month = document.getElementById('monthSelect') ? document.getElementById('monthSelect').value : '<?= $selMonth ?>';
     var top   = <?= $topLimit ?>;
     var mode  = '<?= $mode ?>';
-    window.location.href = 'leaderboard.php?mode=' + mode + '&month=' + month + '&top=' + top + '&p=1';
+    window.location.href = 'leaderboard.php?mode=' + mode + '&month=' + month + '&top=' + top;
 }
 </script>
 
