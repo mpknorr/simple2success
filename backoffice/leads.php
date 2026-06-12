@@ -81,6 +81,11 @@ require_once "parts/sidebar.php";
             }else{
             ?>
                     <!--  -->
+                    <div class="s2s-page-header">
+                        <span class="s2s-eyebrow">Your Business</span>
+                        <h2>Your Leads</h2>
+                        <p>Every lead here came through your links. Follow up and help them take Step 1 &amp; Step 2.</p>
+                    </div>
                     <section class="users-list-wrapper">
 
 

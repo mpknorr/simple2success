@@ -102,6 +102,11 @@ require_once "parts/head.php";
             <div class="main-content">
                 <div class="content-overlay"></div>
                 <div class="content-wrapper">
+                    <div class="s2s-page-header">
+                        <span class="s2s-eyebrow">Your Account</span>
+                        <h2>My Profile</h2>
+                        <p>Keep your details and social links up to date.</p>
+                    </div>
                     <section class="users-edit">
                         <div class="row">
                             <div class="col-12">
@@ -149,7 +154,7 @@ require_once "parts/head.php";
                                                                 <div class="form-group">
                                                                     <div class="controls">
                                                                         <label for="users-edit-username">USER ID</label>
-                                                                        <input type="text" id="users-edit-username" class="form-control" placeholder="userid" value="<?= $userid?>" aria-invalid="false" disabled style="background: #464646">
+                                                                        <input type="text" id="users-edit-username" class="form-control" placeholder="userid" value="<?= $userid?>" aria-invalid="false" disabled style="background: rgba(255,255,255,.08)">
                                                                     </div>
                                                                 </div>
                                                                 <div class="form-group">

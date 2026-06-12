@@ -26,9 +26,38 @@ $userid = $_SESSION['userid'];
         <div class="content-wrapper">
 
           <section id="sizing">
-            <div class="row match-height">
-              <div class="content-header">Swipe Copy</div>
+            <div class="s2s-page-header">
+              <span class="s2s-eyebrow">Your Tools</span>
+              <h2>Swipe Copy</h2>
+              <p>12 ready-to-send emails — personalized with your name and your tracking link. Pick one, copy it, send it.</p>
             </div>
+
+            <div class="card" style="margin-bottom:1rem;">
+              <div class="card-body" style="padding:1rem 1.5rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:.6rem;">
+                  <label for="lp-select" style="margin:0;font-size:.82rem;font-weight:600;color:rgba(255,255,255,.6);white-space:nowrap;">Landing page in your link:</label>
+                  <select id="lp-select" class="form-control" style="width:auto;min-width:120px;">
+                    <option value="link1" selected>Link1</option>
+                    <option value="link2">Link2</option>
+                    <option value="link3">Link3</option>
+                    <option value="link4">Link4</option>
+                    <option value="linkp1">LinkP1</option>
+                    <option value="linkp2">LinkP2</option>
+                    <option value="linkp3">LinkP3</option>
+                    <option value="linkp4">LinkP4</option>
+                  </select>
+                </div>
+                <div id="tag-filter" style="display:flex;flex-wrap:wrap;gap:.45rem;">
+                  <span class="s2s-filter-chip active" data-tag="all">All</span>
+                  <span class="s2s-filter-chip" data-tag="story">Story</span>
+                  <span class="s2s-filter-chip" data-tag="direct">Direct</span>
+                  <span class="s2s-filter-chip" data-tag="problem-solution">Problem &amp; Solution</span>
+                  <span class="s2s-filter-chip" data-tag="system">System Explainer</span>
+                  <span class="s2s-filter-chip" data-tag="solo-ads">Solo Ads</span>
+                </div>
+              </div>
+            </div>
+
             <div class="row">
 
 <?php
@@ -36,7 +65,7 @@ if (empty($username)) {
     echo "<p>You should complete STEP 1 &amp; STEP 2 from <a href='" . $baseurl . "/backoffice/start.php'>here</a>.</p>";
 } else {
 
-$link = (isset($_SERVER['HTTPS']) === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/go/' . $userid . '/link1/';
+$reflink = rtrim($baseurl, '/') . '/go/' . $userid . '/link1/';
 
 $ads = [
 
@@ -60,7 +89,7 @@ Thousands of people in over 40 countries are already using this exact system. An
 
 Click the link below to see the full overview and claim your free account:
 
-$link
+$reflink
 
 Talk soon,
 [Your Name]
@@ -88,7 +117,7 @@ I've seen people get their first results within their first week simply by shari
 
 See it for yourself here:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -117,7 +146,7 @@ The people succeeding with this aren't special. They just followed the steps.
 
 Ready to see what it looks like?
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -146,7 +175,7 @@ If you're serious about building a second income stream this year, this is the m
 
 Take a look here — it takes less than 2 minutes to get your free account:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -179,7 +208,7 @@ The people on our team who are seeing the best results are the ones who simply s
 
 If that sounds like something you can do, here's where to start:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -210,7 +239,7 @@ Over 10,000 people across 40+ countries have already joined. The ones who are wi
 
 Here's your link to get started for free:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -241,7 +270,7 @@ If you've been looking for a way to build income online without building everyth
 
 Claim your free account here:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -272,7 +301,7 @@ This is how residual income actually works in practice — and this system makes
 
 Get your free account and see the full picture here:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -304,7 +333,7 @@ If you're running solo ads or any form of email traffic, this system is built to
 
 See how it works and get your free account here:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -334,7 +363,7 @@ Thousands of members across 40+ countries are using this exact formula right now
 
 If you want to see how it works and get your own free account, click the link below:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -366,7 +395,7 @@ All you need to do is keep driving traffic to your link.
 
 Want to see it from the inside? Get your free account here:
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -397,7 +426,7 @@ No monthly fees. No product to buy. No complicated setup. Just a clear system, y
 
 Ready to see it for yourself?
 
-$link
+$reflink
 
 [Your Name]
 EOT,
@@ -405,36 +434,53 @@ EOT,
 
 ];
 
+// Category tag per ad (used by the filter chips above)
+$adTags = [
+    1 => 'story',  2 => 'story',            3 => 'system',
+    4 => 'problem-solution', 5 => 'direct', 6 => 'problem-solution',
+    7 => 'system', 8 => 'direct',           9 => 'system',
+   10 => 'solo-ads', 11 => 'system',       12 => 'story',
+];
+$adTagLabels = [
+    'story' => 'Story', 'direct' => 'Direct', 'problem-solution' => 'Problem & Solution',
+    'system' => 'System Explainer', 'solo-ads' => 'Solo Ads',
+];
+
 foreach ($ads as $n => $ad) {
+    // Personalize: sign-off with the member's real name (recipient placeholder stays)
+    $adText = !empty($name) ? str_replace('[Your Name]', $name, $ad['text']) : $ad['text'];
     $subj = htmlspecialchars($ad['subject'], ENT_QUOTES);
-    $text = htmlspecialchars($ad['text'], ENT_QUOTES);
+    $text = htmlspecialchars($adText, ENT_QUOTES);
+    $tag      = $adTags[$n] ?? 'story';
+    $tagLabel = htmlspecialchars($adTagLabels[$tag] ?? $tag);
     echo <<<HTML
 
 <!-- ////////////////////////////// AD {$n} ////////////////////////////////////////-->
-<div class="col-md-6">
+<div class="col-md-6 swipe-card" data-tag="{$tag}">
   <div class="card">
-    <div class="card-header">
-      <h4 class="card-title">Ad {$n}</h4>
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+      <h4 class="card-title" style="margin:0;">Email {$n}</h4>
+      <span class="s2s-tag-badge">{$tagLabel}</span>
     </div>
     <div class="card-content">
       <div class="card-body">
         <form class="form">
           <div class="form-body">
             <div class="form-group">
-              <p>Subject:<br>
+              <label for="subjectInput{$n}" style="font-size:.78rem;font-weight:700;letter-spacing:.04em;color:rgba(183,0,224,.85);text-transform:uppercase;">Subject</label>
               <input id="subjectInput{$n}" type="text" class="form-control"
                 value="{$subj}" style="width:100%; text-align:left;">
-              <p>Text:<br>
-              <textarea id="textInput{$n}" rows="23" class="form-control"
-                name="comment" cols="60" style="width:100%;">{$text}</textarea>
+              <label for="textInput{$n}" style="font-size:.78rem;font-weight:700;letter-spacing:.04em;color:rgba(183,0,224,.85);text-transform:uppercase;margin-top:.85rem;">Email Text</label>
+              <textarea id="textInput{$n}" rows="18" class="form-control swipe-text"
+                name="comment" cols="60" style="width:100%;font-size:.88rem;">{$text}</textarea>
             </div>
           </div>
           <div>
-            <button id="copySubjectButton{$n}" type="button" class="btn btn-primary mr-1">
-              <i class="ft-check mr-2"></i>Copy Subject
+            <button id="copySubjectButton{$n}" type="button" class="btn s2s-btn-brand mr-1">
+              <i class="ft-copy mr-1"></i>Copy Subject
             </button>
-            <button id="copyTextButton{$n}" type="button" class="btn btn-primary mr-1">
-              <i class="ft-check mr-2"></i>Copy Text
+            <button id="copyTextButton{$n}" type="button" class="btn s2s-btn-brand mr-1">
+              <i class="ft-copy mr-1"></i>Copy Text
             </button>
           </div>
         </form>
@@ -456,38 +502,64 @@ HTML;
     </div><!-- .main-panel -->
   </div><!-- .wrapper -->
 
-<!-- ////////////// Copy Buttons Script ////////////////////////////-->
+<!-- ////////////// Swipe Copy Script ////////////////////////////-->
 <script>
 (function() {
+  // ── Copy with modern Clipboard API + fallback, inline button feedback ──
+  function copyValue(el, btn) {
+    var val = el.value;
+    function done() {
+      var orig = btn.innerHTML;
+      btn.innerHTML = '<i class="ft-check mr-1"></i>Copied!';
+      btn.disabled = true;
+      setTimeout(function() { btn.innerHTML = orig; btn.disabled = false; }, 2000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(val).then(done).catch(function() { legacy(); });
+    } else { legacy(); }
+    function legacy() {
+      el.select();
+      try { document.execCommand('copy'); done(); }
+      catch(e) { alert('Please copy manually.'); }
+    }
+  }
+
   function setupCopy(n) {
     var subBtn = document.getElementById('copySubjectButton' + n);
     var txtBtn = document.getElementById('copyTextButton' + n);
     if (!subBtn || !txtBtn) return;
-
     subBtn.addEventListener('click', function() {
-      var el = document.getElementById('subjectInput' + n);
-      el.select();
-      try {
-        document.execCommand('copy');
-        alert('Subject was copied!');
-      } catch(e) {
-        alert('Please copy manually.');
-      }
+      copyValue(document.getElementById('subjectInput' + n), subBtn);
     });
-
     txtBtn.addEventListener('click', function() {
-      var el = document.getElementById('textInput' + n);
-      el.select();
-      try {
-        document.execCommand('copy');
-        alert('Text was copied!');
-      } catch(e) {
-        alert('Please copy manually.');
-      }
+      copyValue(document.getElementById('textInput' + n), txtBtn);
+    });
+  }
+  for (var i = 1; i <= 12; i++) { setupCopy(i); }
+
+  // ── Landing page selector: swap /go/{uid}/<page>/ in all textareas ──
+  var lpSelect = document.getElementById('lp-select');
+  if (lpSelect) {
+    lpSelect.addEventListener('change', function() {
+      var page = lpSelect.value;
+      document.querySelectorAll('.swipe-text').forEach(function(ta) {
+        ta.value = ta.value.replace(/(\/go\/\d+\/)[a-z0-9]+(\/)/gi, '$1' + page + '$2');
+      });
     });
   }
 
-  for (var i = 1; i <= 12; i++) { setupCopy(i); }
+  // ── Tag filter chips ──
+  var chips = document.querySelectorAll('#tag-filter .s2s-filter-chip');
+  chips.forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      chips.forEach(function(x) { x.classList.remove('active'); });
+      chip.classList.add('active');
+      var tag = chip.getAttribute('data-tag');
+      document.querySelectorAll('.swipe-card').forEach(function(card) {
+        card.style.display = (tag === 'all' || card.getAttribute('data-tag') === tag) ? '' : 'none';
+      });
+    });
+  });
 })();
 </script>
 

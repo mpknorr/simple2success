@@ -29,12 +29,11 @@ $userid = (int)$_SESSION['userid'];
 
                 <div class="row">
                     <div class="col-12">
-                        <h3 class="content-header-title" style="padding: 20px 0 5px;">
-                            <i class="ft-award" style="color:#b700e0;"></i> Leaderboard
-                        </h3>
-                        <p style="color:#aaa; margin-bottom: 20px;">
-                            Top performers ranked by new Members (Step 2 completed) and Leads generated.
-                        </p>
+                        <div class="s2s-page-header">
+                            <span class="s2s-eyebrow">Eagle Team</span>
+                            <h2><i class="ft-award" style="color:#b700e0;"></i> Leaderboard</h2>
+                            <p>See where you stand — and who to learn from. Ranked by new Members (Step 2 completed) and Leads generated.</p>
+                        </div>
                     </div>
                 </div>
 

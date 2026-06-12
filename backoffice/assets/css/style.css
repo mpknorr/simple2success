@@ -350,3 +350,58 @@ small,
   height: 1px;
   background: rgba(255,255,255,.08);
 }
+
+/* ── Page header (member utility pages: links, leads, swipe, …) ──
+   Consistent eyebrow + title + subline at the top of every page. */
+.s2s-page-header {
+  padding: 1.5rem 0 1.25rem;
+}
+.s2s-page-header h2 {
+  font-size: var(--s2s-size-h2);
+  font-weight: 800;
+  color: var(--s2s-text-100);
+  line-height: var(--s2s-lh-tight);
+  margin: 0 0 .4rem;
+}
+.s2s-page-header p {
+  color: var(--s2s-text-80);
+  opacity: .85;
+  margin: 0;
+  max-width: 720px;
+  line-height: var(--s2s-lh-body);
+}
+
+/* ── Tag badge + filter chips (swipe.php) ───────────────────────── */
+.s2s-tag-badge {
+  display: inline-block;
+  background: rgba(183,0,224,.12);
+  border: 1px solid rgba(183,0,224,.4);
+  color: #d36ce8;
+  border-radius: 20px;
+  padding: .15rem .7rem;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+.s2s-filter-chip {
+  display: inline-block;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.65);
+  border-radius: 20px;
+  padding: .35rem .95rem;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all .15s ease;
+}
+.s2s-filter-chip:hover {
+  border-color: rgba(183,0,224,.5);
+  color: #fff;
+}
+.s2s-filter-chip.active {
+  background: rgba(183,0,224,.15);
+  border-color: #b700e0;
+  color: #d36ce8;
+}

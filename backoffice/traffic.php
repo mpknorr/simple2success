@@ -62,10 +62,12 @@ require_once "parts/navbar.php";
             }else{
             ?>
             <!--  -->
+            <div class="s2s-page-header">
+               <span class="s2s-eyebrow">Your Tools</span>
+               <h2>Traffic Sources</h2>
+               <p>Proven vendors to get visitors to your links. Start small, test, then scale.</p>
+            </div>
             <div class="card">
-               <div class="card-header">
-                  <h4 class="card-title m-0 p-0">Traffic Resources</h4>
-               </div>
                <div class="card-content">
                   <div class="card-body">
                      As part of your membership we are offering traffic on tap provided by various traffic agencies and list owners that we have relationships with. We will expand the list of available sources as time goes on and as we test different ways of generating leads. While we have personally used all traffic vendors listed here, in no way are we to be held responsible for the success or failure of your campaign nor can you expect to get a 'do over' or a refund if things did not work to your expectations. Start small and scale up is usually the way to go. <br><br>

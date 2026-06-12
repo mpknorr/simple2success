@@ -69,10 +69,12 @@ require_once "parts/head.php";
     
            
  <div class="col-lg-12"> 
+    <div class="s2s-page-header">
+      <span class="s2s-eyebrow">We're Here</span>
+      <h2>Support</h2>
+      <p>Questions? We answer fast. Your Lead ID is attached automatically.</p>
+    </div>
     <div class="card">
-      <div class="card-header">
-        <h4 class="card-title m-0 p-0">Support</h4>
-      </div>
       <div class="card-content">
         <div class="card-body">
                                             <p>If you need help with anything in this marketing system, please contact us. Your Lead ID will be included automatically.</p>
