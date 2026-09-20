@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/conn.php';
 require_once __DIR__ . '/../includes/lang.php';
+$page      = 'link1';
+$referer   = isset($referer) && is_numeric($referer) ? (int)$referer : 0;
 $_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
 $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
@@ -175,9 +177,9 @@ $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) 
   <div class="container">
     <img src="<?= $baseurl ?>/<?= $page ?>/eagle1b.jpg" class="responsive-image" alt="Eagle Guide">
     <div class="card-body">
-      <h2>Discover the Step-by-Step System That Helps Ordinary People Build a Real Income Online</h2>
+      <h2>See a Step-by-Step System Built Around One Clear Next Action</h2>
       <p class="subheadline">100% Free to Start — Your Access Code Is One Click Away</p>
-      <p style="margin:6px 0 14px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+      <p style="margin:6px 0 14px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Mission 1000 Families: one clear system, real support and a path toward a personal additional-income goal.</p>
 
       <?php if ($_eae): ?>
         <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -194,24 +196,30 @@ $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) 
         <input type="hidden" name="lang" value="en">
         <input type="hidden" name="referer" value="<?= isset($referer) ? htmlspecialchars($referer) : '' ?>">
         <input type="hidden" name="source" value="<?= isset($_GET['source']) ? htmlspecialchars($_GET['source']) : '' ?>">
+        <input type="hidden" name="utm_source" value="<?= htmlspecialchars($_GET['utm_source'] ?? '') ?>">
+        <input type="hidden" name="utm_medium" value="<?= htmlspecialchars($_GET['utm_medium'] ?? '') ?>">
+        <input type="hidden" name="utm_campaign" value="<?= htmlspecialchars($_GET['utm_campaign'] ?? '') ?>">
+        <input type="hidden" name="email_notice_version" value="mission-v2">
+        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
 
         <div class="form-group">
-          <input type="text" name="name" placeholder="Your First Name" autocomplete="given-name">
+          <input type="text" name="name" placeholder="Your First Name" required autocomplete="given-name">
         </div>
         <div class="form-group">
           <input type="email" name="email" placeholder="Your Best Email" required autocomplete="email">
         </div>
         <input type="submit" class="btn-cta" value="Claim My Free Account →">
+        <p style="margin:9px 0 0;font-size:11px;line-height:1.45;opacity:.58;">Account access and action-focused follow-up emails are included. Unsubscribe at any time. Results are not guaranteed.</p>
       </form>
       <?php endif; ?>
 
       <p class="micro-copy">🔒 100% Free — No Credit Card Required. We respect your privacy.</p>
 
       <div class="social-proof">
-        <span class="sp-item">10,000+ Members</span>
+        <span class="sp-item">Mission: 1,000 Families</span>
         <span class="sp-item">40+ Countries</span>
-        <span class="sp-item">Free to Join</span>
-        <span class="sp-item">Proven System Since 2023</span>
+        <span class="sp-item">Free S2S Access</span>
+        <span class="sp-item">Practical System · Built to Be Repeated</span>
       </div>
     </div>
   </div>

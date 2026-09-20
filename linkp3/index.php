@@ -11,20 +11,20 @@ if (!empty($_premSnips)) {
     $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 }
 require_once __DIR__ . '/../includes/lang.php';
+$referer   = isset($referer) && is_numeric($referer) ? (int)$referer : 0;
 $_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
 $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
 $errorMsg  = ''; // kept for backwards compat
 $source    = htmlspecialchars($_GET['source'] ?? '');
-$countdownSeconds = 48 * 3600;
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <?php require_once __DIR__ . '/../includes/head-tracking.php'; ?>
   <meta charset="utf-8">
-  <title>Join Simple2Success — Don't Miss This</title>
-  <meta content="Take the first step towards achieving your dreams. Join an exclusive Simple2Success team of experts who will help propel you towards unparalleled success." name="description">
+  <title>Explore Simple2Success — One Clear First Step</title>
+  <meta content="Explore a clear Simple2Success activation path, practical tools and a first action you can review at your own pace." name="description">
   <meta content="width=device-width, initial-scale=1" name="viewport">
   <link rel="shortcut icon" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon.ico">
   <link href="<?= $baseurl ?>/linkp3/css/normalize.css" rel="stylesheet" type="text/css">
@@ -39,7 +39,7 @@ $countdownSeconds = 48 * 3600;
       <div class="s2s-form-header">
         <div class="s2s-header-inner">
           <div class="s2s-eyebrow-wrap">
-            <div class="s2s-form-eyebrow">Your sponsor has reserved your free access:</div>
+            <div class="s2s-form-eyebrow">Your free Simple2Success access is ready:</div>
           </div>
           <div class="s2s-heading-wrap">
             <h1 class="s2s-modal-heading">You&#x27;re One Step Away From Your Free Account</h1>
@@ -66,11 +66,17 @@ $countdownSeconds = 48 * 3600;
         <input type="hidden" name="lang" value="en">
         <input type="hidden" name="referer" value="<?= $referer ?>">
         <input type="hidden" name="source" value="<?= $source ?>">
+        <input type="hidden" name="utm_source" value="<?= htmlspecialchars($_GET['utm_source'] ?? '') ?>">
+        <input type="hidden" name="utm_medium" value="<?= htmlspecialchars($_GET['utm_medium'] ?? '') ?>">
+        <input type="hidden" name="utm_campaign" value="<?= htmlspecialchars($_GET['utm_campaign'] ?? '') ?>">
+        <input type="hidden" name="email_notice_version" value="mission-v2">
+        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
         <div class="s2s-form-prompt">Where Should We Send The Info?</div>
-        <input type="text" class="s2s-input-field name" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name">
+        <input type="text" class="s2s-input-field name" maxlength="100" name="name" placeholder="Your First Name" required autocomplete="given-name">
         <input type="email" class="s2s-input-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
-        <input type="submit" value="Claim My Free Position!" class="s2s-btn">
+        <input type="submit" value="Show Me My First Step!" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
+            <p style="margin:7px 0 0;font-size:11px;line-height:1.45;opacity:.58;text-align:center;">Includes account access and action-focused follow-up emails. Unsubscribe anytime. No earnings guarantee.</p>
       </form>
       <?php endif; ?>
       <div class="w-form-done">
@@ -80,7 +86,7 @@ $countdownSeconds = 48 * 3600;
         <div>Oops! Something went wrong. Please try again.</div>
       </div>
       <div class="s2s-privacy-note">
-        <div class="s2s-privacy-text"><strong class="s2s-bold">Privacy Policy: We hate spam and promise to keep your email address safe.</strong></div>
+        <div class="s2s-privacy-text"><strong class="s2s-bold">Privacy: You receive account access and action-focused follow-up. Unsubscribe at any time.</strong></div>
       </div>
       <div class="s2s-secure-badge"></div>
     </div>
@@ -89,12 +95,12 @@ $countdownSeconds = 48 * 3600;
   <div class="s2s-main-content">
     <div class="s2s-logo-banner"></div>
     <div class="s2s-title-bar">
-      <div class="s2s-section-title">Join Simple2Success &amp; Soar to New Heights!</div>
+      <div class="s2s-section-title">Explore Simple2Success One Step at a Time</div>
     </div>
     <div class="s2s-perks-banner">
       <div class="s2s-description-wrap">
-        <p class="s2s-tagline">Join a proven step-by-step system used by 10,000+ members in 40+ countries to build real income online — 100% free to start.</p>
-        <p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+        <p class="s2s-tagline">See a clear, step-by-step system designed to replace guesswork with one practical next action — 100% free to explore.</p>
+        <p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Mission 1000 Families: one clear system, real support and a path toward a personal additional-income goal.</p>
       </div>
     </div>
     <div class="s2s-benefits-grid">
@@ -108,7 +114,7 @@ $countdownSeconds = 48 * 3600;
         <div class="s2s-benefit-item">
           <div class="s2s-check-icon"></div>
           <div>
-            <div class="s2s-benefit-text">Decades of Experience</div>
+            <div class="s2s-benefit-text">Practical Onboarding Support</div>
           </div>
         </div>
         <div class="s2s-benefit-item">
@@ -122,57 +128,31 @@ $countdownSeconds = 48 * 3600;
         <div class="s2s-benefit-item">
           <div class="s2s-check-icon"></div>
           <div>
-            <div class="s2s-benefit-text">Get Your First Leads Within 7 Days</div>
+            <div class="s2s-benefit-text">See Your Next Action Immediately</div>
           </div>
         </div>
         <div class="s2s-benefit-item">
           <div class="s2s-check-icon"></div>
           <div>
-            <div class="s2s-benefit-text">Earn Commissions on Every New Team Member</div>
+            <div class="s2s-benefit-text">Understand Partner Compensation Before You Decide</div>
           </div>
         </div>
         <div class="s2s-benefit-item">
           <div class="s2s-check-icon"></div>
           <div>
-            <div class="s2s-benefit-text">Build a Residual Income That Grows Without You</div>
+            <div class="s2s-benefit-text">Build Skills and a Routine You Can Repeat</div>
           </div>
         </div>
       </div>
     </div>
     <div class="s2s-timer-wrap">
       <div class="s2s-timer-section">
-        <div class="s2s-team-label">Your sponsor has reserved a spot for you — this reservation expires in:</div>
-        <div class="s2s-countdown-row">
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-hours">00</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Hrs</div>
-          </div>
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-minutes">10</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Min</div>
-          </div>
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-seconds">00</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Sec</div>
-          </div>
-        </div>
+        <div class="s2s-team-label">No countdown. No fake scarcity. Review the system and decide when you are ready.</div>
       </div>
     </div>
     <div class="s2s-cta-row">
       <div class="s2s-arrow-left"></div>
-      <a href="#" class="s2s-main-btn" id="s2s-open-modal">Claim My Free Position!</a>
+      <a href="#" class="s2s-main-btn" id="s2s-open-modal">Show Me the System</a>
       <div class="s2s-arrow-right"></div>
     </div>
   </div>
@@ -223,31 +203,6 @@ $countdownSeconds = 48 * 3600;
         modal.style.display = 'none';
       });
     }
-    // Countdown timer (48h, stored in sessionStorage)
-    var KEY = 's2s_cd_end_p3';
-    var DURATION = <?= $countdownSeconds ?>;
-    var endTime = sessionStorage.getItem(KEY);
-    if (!endTime) {
-      endTime = Date.now() + DURATION * 1000;
-      sessionStorage.setItem(KEY, endTime);
-    } else {
-      endTime = parseInt(endTime, 10);
-    }
-    function pad(n) { return n < 10 ? '0' + n : n; }
-    function tick() {
-      var remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-      var h = Math.floor(remaining / 3600);
-      var m = Math.floor((remaining % 3600) / 60);
-      var s = remaining % 60;
-      var elH = document.getElementById('s2s-hours');
-      var elM = document.getElementById('s2s-minutes');
-      var elS = document.getElementById('s2s-seconds');
-      if (elH) elH.textContent = pad(h);
-      if (elM) elM.textContent = pad(m);
-      if (elS) elS.textContent = pad(s);
-      if (remaining > 0) setTimeout(tick, 1000);
-    }
-    tick();
   })();
   </script>
 </body>

@@ -3,6 +3,7 @@ require_once __DIR__ . '/../includes/conn.php';
 require_once __DIR__ . '/../includes/legal.php';
 $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 require_once __DIR__ . '/../includes/lang.php';
+$referer   = isset($referer) && is_numeric($referer) ? (int)$referer : 0;
 $_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
 $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
@@ -15,8 +16,8 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
 <?php require_once __DIR__ . '/../includes/head-tracking.php'; ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simple2Success – Capture Page 4 | Your Income Starts Here</title>
-<meta name="description" content="Join the Simple2Success Eagle Team — a proven, step-by-step system that turns daily actions into lasting income. 100% free to start.">
+<title>Simple2Success – One Clear Plan | Free Access</title>
+<meta name="description" content="See the Simple2Success Eagle Team system: a clear activation path, practical tools and one next action. Free to explore; results are not guaranteed.">
 <link rel="apple-touch-icon" sizes="180x180" href="https://www.simple2success.com/backoffice/app-assets/img/ico/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon-16x16.png">
@@ -42,17 +43,17 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
       <span class="left-label">Simple2Success · Eagle Team</span>
 
       <h1 class="left-h1">
-        Your Income<br>
-        Starts <span class="hl">Here.</span>
+        One Plan.<br>
+        One <span class="hl">Next Step.</span>
       </h1>
 
       <p class="left-desc">
-        A proven, step-by-step system that gives ordinary people
-        the tools, team, and traffic to build real online income —
-        starting for free, today.
+        A step-by-step system designed to replace guesswork with
+        practical tools, team support and a routine you can repeat —
+        starting with free access today.
       </p>
 
-      <p style="margin:0 0 18px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+      <p style="margin:0 0 18px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Mission 1000 Families: helping families build skills, consistency and a path toward a personal additional-income goal.</p>
 
       <ul class="feature-list">
         <li>
@@ -72,31 +73,31 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         <li>
           <div class="feature-icon">💰</div>
           <div class="feature-text">
-            <strong>Multiple Income Streams</strong>
-            <span>Training bonuses, first-line bonuses, and deep team rewards.</span>
+            <strong>Trackable Progress</strong>
+            <span>Follow account → registration → activation without guessing what comes next.</span>
           </div>
         </li>
         <li>
           <div class="feature-icon">🌍</div>
           <div class="feature-text">
-            <strong>Global Team in 40+ Countries</strong>
-            <span>A community that supports, motivates, and duplicates your success.</span>
+            <strong>Team Support</strong>
+            <span>A community focused on skills, accountability and repeatable actions.</span>
           </div>
         </li>
       </ul>
 
       <div class="stats-row">
         <div class="stat-item">
-          <span class="num">10K+</span>
-          <span class="lbl">Members</span>
+          <span class="num">1,000</span>
+          <span class="lbl">Family Mission</span>
         </div>
         <div class="stat-item">
-          <span class="num">40+</span>
-          <span class="lbl">Countries</span>
+          <span class="num">3</span>
+          <span class="lbl">Setup Steps</span>
         </div>
         <div class="stat-item">
           <span class="num">100%</span>
-          <span class="lbl">Free Start</span>
+          <span class="lbl">Free Access</span>
         </div>
       </div>
 
@@ -113,22 +114,22 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
       <div class="progress-bar">
         <div class="progress-step active">
           <div class="p-dot">1</div>
-          <span>Register</span>
+          <span>Account</span>
         </div>
         <div class="p-line"></div>
         <div class="progress-step">
           <div class="p-dot">2</div>
-          <span>Activate</span>
+          <span>Review</span>
         </div>
         <div class="p-line"></div>
         <div class="progress-step">
           <div class="p-dot">3</div>
-          <span>Traffic</span>
+          <span>Activate</span>
         </div>
         <div class="p-line"></div>
         <div class="progress-step">
           <div class="p-dot">4</div>
-          <span>Earn</span>
+          <span>Build</span>
         </div>
       </div>
 
@@ -141,15 +142,15 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
           <div class="mini-avatar">+</div>
         </div>
         <div class="mini-proof-text">
-          <strong>47 people</strong> registered in the last 24 hours.<br>
-          Spots are limited this month.
+          <strong>No countdown. No pressure.</strong><br>
+          See the process and decide with clear expectations.
         </div>
       </div>
 
       <!-- Form header -->
       <div class="form-header">
         <h2>Get Your <span style="background:linear-gradient(135deg,#a855f7,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Free Account</span></h2>
-        <p>Enter your details below to claim your free position in the Eagle Team and access the full system.</p>
+        <p>Enter your details to open your Mission Control and see the exact first step.</p>
       </div>
 
       <?php if ($_eae): ?>
@@ -168,10 +169,15 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         <input type="hidden" name="lang" value="en">
         <input type="hidden" name="referer" value="<?= isset($referer) ? htmlspecialchars($referer) : '' ?>">
         <input type="hidden" name="source" value="<?= $source ?>">
+        <input type="hidden" name="utm_source" value="<?= htmlspecialchars($_GET['utm_source'] ?? '') ?>">
+        <input type="hidden" name="utm_medium" value="<?= htmlspecialchars($_GET['utm_medium'] ?? '') ?>">
+        <input type="hidden" name="utm_campaign" value="<?= htmlspecialchars($_GET['utm_campaign'] ?? '') ?>">
+        <input type="hidden" name="email_notice_version" value="mission-v2">
+        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
 
         <div class="form-group">
           <label class="form-label" for="fname">First Name</label>
-          <input class="form-input" id="fname" name="name" type="text" placeholder="Your first name" autocomplete="given-name">
+          <input class="form-input" id="fname" name="name" type="text" placeholder="Your first name" maxlength="100" required autocomplete="given-name">
         </div>
 
         <div class="form-group">
@@ -180,7 +186,7 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         </div>
 
         <button type="submit" class="submit-btn">
-          Claim My Free Position
+          Show My Next Step
           <span style="font-size:1.2rem;">→</span>
         </button>
       </form>
@@ -189,9 +195,11 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
       <!-- Trust badges -->
       <div class="trust-badges">
         <div class="trust-badge"><span class="icon">✓</span> 100% Free</div>
-        <div class="trust-badge"><span class="icon">✓</span> No Spam</div>
+        <div class="trust-badge"><span class="icon">✓</span> Unsubscribe Anytime</div>
         <div class="trust-badge"><span class="icon">✓</span> Instant Access</div>
       </div>
+
+      <p style="margin:12px 0 0;font-size:11px;line-height:1.5;color:rgba(148,163,184,.55);text-align:center;">Includes account access and action-focused follow-up emails. Results, including income, are not guaranteed.</p>
 
       <div class="form-divider">
         <span>Powered by</span>

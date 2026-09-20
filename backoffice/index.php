@@ -1,824 +1,224 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
+if (empty($_SESSION['userid'])) {
     header('Location: login.php');
     exit();
 }
-include '../includes/conn.php';
-$userid  = (int)$_SESSION['userid'];
-$userRow = mysqli_fetch_assoc(mysqli_query($link, "SELECT name FROM users WHERE leadid=$userid"));
-$userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
+
+require_once '../includes/conn.php';
+require_once '../includes/onboarding.php';
+
+$userid = (int)$_SESSION['userid'];
+$userRow = mysqli_fetch_assoc(mysqli_query($link,
+    "SELECT name, email, username, paidstatus, profile_pic, step1_at, step2_at
+     FROM users WHERE leadid=$userid LIMIT 1")) ?: [];
+$name = (string)($userRow['name'] ?? '');
+$username = (string)($userRow['username'] ?? '');
+$useremail = (string)($userRow['email'] ?? '');
+$paidstatus = (string)($userRow['paidstatus'] ?? 'Free');
+$profile_pic = (string)($userRow['profile_pic'] ?? 'user_default.png');
+$userName = trim((string)($userRow['name'] ?? ''));
+$firstName = $userName !== '' ? preg_split('/\s+/', $userName)[0] : '';
+$profile = s2sGetOnboardingProfile($link, $userid);
+$activation = s2sActivationState($userRow);
+$goalOptions = s2sGoalOptions();
+$commitmentOptions = s2sCommitmentOptions();
+$selectedGoal = $profile['goal_code'] ?? '';
+$selectedCommitment = $profile['commitment_code'] ?? '';
+$csrfToken = s2sCsrfToken();
+
+$step1Done = $activation['key'] !== 'step1';
+$step2Done = $activation['key'] === 'activated';
+$goalLabel = isset($goalOptions[$selectedGoal]) ? $goalOptions[$selectedGoal]['label'] : '';
+$commitmentLabel = $commitmentOptions[$selectedCommitment] ?? '';
+$pageStylesheets = ['assets/css/activation.css'];
 ?>
-<?php require_once "parts/head.php"; ?>
+<?php require_once 'parts/head.php'; ?>
 <body class="vertical-layout vertical-menu 2-columns navbar-static layout-dark"
       data-menu="vertical-menu" data-col="2-columns">
 
-<style>
-/* ═══════════════════════════════════════════════════════════════════
-   EAGLE TEAM ONBOARDING — custom premium template
-   index.php
-═══════════════════════════════════════════════════════════════════ */
-
-/* ── Base resets for this page ─────────────────────────────────── */
-.et-page .card { border-radius: 8px; }
-.et-page section { margin-bottom: .5rem; }
-
-/* ── Shared: CTA button ────────────────────────────────────────── */
-.et-btn {
-  display: inline-block;
-  background: var(--s2s-brand);
-  color: var(--s2s-text-100) !important;
-  font-size: var(--s2s-size-body-lg);
-  font-weight: 700;
-  padding: .82rem 2.2rem;
-  border-radius: var(--s2s-radius-sm);
-  text-decoration: none !important;
-  box-shadow: 0 4px 22px var(--s2s-brand-glow);
-  transition: background .18s, box-shadow .18s, transform .12s;
-  letter-spacing: .02em;
-  border: none;
-  cursor: pointer;
-}
-.et-btn:hover {
-  background: var(--s2s-brand-hover);
-  box-shadow: 0 6px 30px rgba(183,0,224,.65);
-  transform: translateY(-1px);
-  color: var(--s2s-text-100) !important;
-}
-
-/* ── Shared: split section ─────────────────────────────────────── */
-.et-split {
-  display: flex;
-  border-radius: 8px;
-  overflow: hidden;
-  min-height: 380px;
-}
-.et-split-text {
-  flex: 0 0 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 3.5rem 3rem;
-}
-.et-split-img {
-  flex: 0 0 50%;
-  position: relative;
-  overflow: hidden;
-}
-.et-split-img img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  display: block;
-}
-/* gradient seam — left-to-right (text left, image right) */
-.et-split-img.seam-left::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, #0f0f1c 0%, transparent 28%);
-  z-index: 2;
-  pointer-events: none;
-}
-/* gradient seam — right-to-left (image left, text right) */
-.et-split-img.seam-right::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to left, #0f0f1c 0%, transparent 28%);
-  z-index: 2;
-  pointer-events: none;
-}
-.et-split-img::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(8,4,18,.28);
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* ── Section 1: Hero Banner ────────────────────────────────────── */
-.et-hero-banner {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  min-height: 440px;
-  background-image: url('app-assets/img/photos/eagle10.png');
-  background-size: cover;
-  background-position: center right;
-  background-repeat: no-repeat;
-  box-shadow: 0 0 0 1px rgba(183,0,224,.28), 0 8px 48px rgba(183,0,224,.16);
-  display: flex;
-  align-items: center;
-}
-/* dark-to-transparent left overlay — keeps text readable */
-.et-hero-banner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to right,
-    rgba(6,3,16,.97) 0%,
-    rgba(6,3,16,.90) 28%,
-    rgba(6,3,16,.54) 62%,
-    rgba(6,3,16,.10) 78%,
-    transparent 100%
-  );
-  z-index: 1;
-  pointer-events: none;
-}
-.et-hero-content {
-  position: relative;
-  z-index: 2;
-  padding: 4rem 2.25rem 4rem 3.75rem;
-  max-width: 760px;
-}
-.et-hero-eyebrow {
-  font-size: var(--s2s-size-eyebrow);
-  font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--s2s-brand);
-  margin-bottom: var(--s2s-section-eyebrow-gap);
-}
-.et-hero-title {
-  font-size: var(--s2s-size-h1);
-  font-weight: 800;
-  color: var(--s2s-text-100);
-  line-height: var(--s2s-lh-tight);
-  margin-bottom: var(--s2s-sp-3);
-}
-.et-hero-sub {
-  font-size: var(--s2s-size-body-lg);
-  color: var(--s2s-text-80);
-  line-height: var(--s2s-lh-body);
-  margin-bottom: var(--s2s-sp-2);
-}
-.et-hero-note {
-  font-size: var(--s2s-size-body-sm);
-  color: var(--s2s-text-42);
-  margin-bottom: var(--s2s-sp-3);
-  line-height: var(--s2s-lh-compact);
-}
-
-/* Hero bullet list */
-.et-hero-bullets {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1.75rem;
-}
-.et-hero-bullets li {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  font-size: var(--s2s-size-body);
-  color: var(--s2s-text-80);
-  font-weight: 600;
-  margin-bottom: .45rem;
-}
-.et-hero-bullets li::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #b700e0;
-  flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(183,0,224,.7);
-}
-
-/* ── Section 2: Status bar ─────────────────────────────────────── */
-.et-status {
-  background: linear-gradient(90deg, #0a2a12 0%, #0d3318 100%);
-  border-left: 4px solid #28c76f;
-  border-radius: var(--s2s-radius-sm);
-  padding: .85rem var(--s2s-sp-6);
-  display: flex;
-  align-items: center;
-  gap: var(--s2s-sp-3);
-  font-size: var(--s2s-size-body);
-  color: var(--s2s-text-80);
-}
-.et-status i { color: #28c76f; font-size: 1.15rem; flex-shrink: 0; }
-.et-status strong { color: #28c76f; }
-
-/* ── Section 3: Aspiration grid ────────────────────────────────── */
-/* shared eyebrow used in aspiration + solution sections */
-.et-section-eyebrow {
-  font-size: var(--s2s-size-eyebrow);
-  font-weight: 700;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--s2s-brand);
-  margin-bottom: var(--s2s-section-eyebrow-gap);
-  display: block;
-}
-.et-section-header {
-  text-align: center;
-  padding: var(--s2s-section-pt) var(--s2s-sp-8) var(--s2s-section-pb);
-}
-.et-section-header h3 {
-  font-size: var(--s2s-size-h3);
-  font-weight: 800;
-  color: var(--s2s-text-100);
-  margin-bottom: var(--s2s-section-title-gap);
-}
-.et-section-header p {
-  font-size: var(--s2s-size-body);
-  color: var(--s2s-text-50);
-  margin: 0 auto;
-  max-width: 600px;
-  line-height: var(--s2s-lh-body);
-}
-
-.et-aspiration-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  margin-top: 1.75rem;
-}
-/* 4-column variant (Section 3) */
-.et-aspiration-grid--4col {
-  grid-template-columns: repeat(4, 1fr);
-}
-/* default: subtle border tiles (Section 5) */
-.et-aspiration-card {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.07);
-  padding: 1.4rem 1.25rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  transition: background .18s, border-color .18s;
-}
-.et-aspiration-card:hover {
-  background: rgba(183,0,224,.05);
-  border-color: rgba(183,0,224,.22);
-}
-/* frameless/open variant (Section 3) */
-.et-grid-open .et-aspiration-card {
-  border: none;
-  padding: 1.85rem 1.5rem;
-}
-.et-grid-open .et-aspiration-card:hover {
-  background: transparent;
-  border: none;
-}
-.et-aspiration-card i {
-  font-size: 1.6rem;
-  color: var(--s2s-brand);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.et-aspiration-card h5 {
-  color: var(--s2s-text-100);
-  font-size: var(--s2s-size-h4);
-  font-weight: 700;
-  margin: 0 0 var(--s2s-sp-1);
-}
-.et-aspiration-card p {
-  color: var(--s2s-text-50);
-  font-size: var(--s2s-size-body-sm);
-  margin: 0;
-  line-height: var(--s2s-lh-body);
-}
-
-/* ── Section 4: Why Most People — reversed split ───────────────── */
-.et-why {
-  background: #0f0f1c;
-  border-right: 5px solid #b700e0;
-}
-.et-why .et-split-text { padding: 3.5rem 3rem; }
-.et-why-title {
-  font-size: var(--s2s-size-h2);
-  font-weight: 800;
-  color: var(--s2s-text-100);
-  line-height: var(--s2s-lh-tight);
-  margin-bottom: var(--s2s-sp-4);
-}
-.et-why-title span { color: var(--s2s-brand); }
-.et-why p {
-  font-size: var(--s2s-size-body);
-  color: var(--s2s-text-65);
-  line-height: var(--s2s-lh-loose);
-  margin-bottom: var(--s2s-sp-3);
-}
-.et-why p:last-child { margin-bottom: 0; }
-
-/* ── Section 5: Solution block ─────────────────────────────────── */
-.et-solution-wrap {
-  background: linear-gradient(135deg, #10082a 0%, #1a1040 100%);
-  border-radius: 8px;
-  overflow: hidden;
-}
-.et-solution-header {
-  text-align: center;
-  padding: 3rem 2.5rem 2.5rem;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-}
-.et-solution-header .et-section-eyebrow { margin-bottom: var(--s2s-section-eyebrow-gap); }
-.et-solution-header h3 {
-  font-size: var(--s2s-size-h3);
-  font-weight: 800;
-  color: var(--s2s-text-100);
-  margin: 0 0 var(--s2s-section-title-gap);
-  line-height: var(--s2s-lh-tight);
-}
-.et-solution-header p {
-  font-size: var(--s2s-size-body);
-  color: var(--s2s-text-50);
-  margin: 0 auto;
-  max-width: 560px;
-  line-height: var(--s2s-lh-body);
-}
-.et-solution-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-}
-.et-solution-item {
-  padding: 2.5rem 2.25rem;
-  border-right: 1px solid rgba(255,255,255,.07);
-}
-.et-solution-item:last-child { border-right: none; }
-.et-solution-item i {
-  display: block;
-  font-size: 1.8rem;
-  color: #b700e0;
-  margin-bottom: 1rem;
-}
-.et-solution-item h5 {
-  font-size: var(--s2s-size-h4);
-  font-weight: 800;
-  color: var(--s2s-text-100);
-  margin: 0 0 var(--s2s-sp-2);
-  line-height: var(--s2s-lh-heading);
-}
-.et-solution-item p {
-  font-size: var(--s2s-size-body-sm);
-  color: var(--s2s-text-50);
-  line-height: var(--s2s-lh-body);
-  margin: 0;
-}
-
-/* ── Section 6: Final CTA ──────────────────────────────────────── */
-.et-cta {
-  background: linear-gradient(135deg, #0a0a16 0%, #140828 100%);
-  border-left: 5px solid #b700e0;
-  border-radius: 8px;
-  overflow: hidden;
-  min-height: 420px;
-}
-.et-cta .et-split-text {
-  padding: 3.5rem 2.75rem 3.5rem 4rem;
-  align-items: flex-start;
-}
-/* guarantee button never stretches — belt + braces */
-.et-cta .et-btn {
-  align-self: flex-start;
-  width: auto;
-  max-width: 280px;
-}
-/* ensure image column has visible height */
-.et-cta .et-split-img {
-  min-height: 420px;
-}
-.et-cta-eyebrow {
-  font-size: var(--s2s-size-eyebrow);
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--s2s-brand);
-  font-weight: 700;
-  margin-bottom: var(--s2s-section-eyebrow-gap);
-}
-.et-cta-title {
-  font-size: var(--s2s-size-h2);
-  font-weight: 800;
-  color: var(--s2s-text-100);
-  line-height: var(--s2s-lh-tight);
-  margin-bottom: var(--s2s-sp-3);
-}
-.et-cta-body {
-  font-size: var(--s2s-size-body);
-  color: var(--s2s-text-65);
-  line-height: var(--s2s-lh-body);
-  margin-bottom: var(--s2s-sp-8);
-}
-
-/* ── Tablet ─────────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .et-hero-content {
-    max-width: 660px;
-    padding: 3rem 2rem 3rem 3rem;
-  }
-
-  .et-cta .et-split-text {
-    padding: 3rem 2rem 3rem 3rem;
-  }
-
-  /* font-size + section header padding handled by token overrides in style.css */
-
-  .et-aspiration-grid--4col {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* ── Mobile ────────────────────────────────────────────────────── */
-@media (max-width: 767px) {
-  .et-split {
-    flex-direction: column;
-    min-height: auto;
-  }
-
-  .et-split-text {
-    flex: none;
-    padding: 2rem 1.5rem !important;
-  }
-
-  .et-split-img {
-    flex: none;
-    min-height: 220px;
-  }
-
-  .et-why {
-    flex-direction: column-reverse !important;
-    border-right: none;
-    border-left: 4px solid var(--s2s-brand);
-  }
-
-  .et-hero-banner {
-    min-height: 340px;
-    background-position: 70% center;
-  }
-
-  .et-hero-banner::before {
-    background: linear-gradient(
-      to bottom,
-      rgba(6,3,16,.85) 0%,
-      rgba(6,3,16,.70) 60%,
-      rgba(6,3,16,.55) 100%
-    );
-  }
-
-  .et-hero-content {
-    padding: 2rem 1.5rem;
-    max-width: 100%;
-  }
-
-  /* all font-sizes now scale via token overrides in style.css */
-
-  .et-grid-open .et-aspiration-card {
-    padding: 1.5rem 1.25rem;
-  }
-
-  .et-aspiration-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .et-aspiration-grid--4col {
-    grid-template-columns: 1fr;
-  }
-
-  .et-solution-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .et-solution-item {
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,.07);
-    padding: 2rem 1.75rem;
-  }
-
-  .et-solution-item:last-child {
-    border-bottom: none;
-  }
-
-  .et-cta .et-split-img {
-    min-height: 240px;
-  }
-
-  .et-cta .et-btn {
-    max-width: 100%;
-  }
-}
-@media (max-width: 480px) {
-  .et-aspiration-grid { grid-template-columns: 1fr; }
-}
-</style>
-
-<?php require_once "parts/navbar.php"; ?>
+<?php require_once 'parts/navbar.php'; ?>
 
 <div class="wrapper">
-  <?php require_once "parts/sidebar.php"; ?>
+  <?php require_once 'parts/sidebar.php'; ?>
 
   <div class="main-panel">
     <div class="main-content">
       <div class="content-overlay"></div>
-      <div class="content-wrapper et-page">
+      <main class="content-wrapper mission-page">
 
+        <?php if (($_GET['profile'] ?? '') === 'saved'): ?>
+          <div class="mission-flash" role="status">
+            <i class="ft-check-circle"></i>
+            <span>Your personal goal has been saved. We will use it to keep your next steps relevant.</span>
+          </div>
+        <?php endif; ?>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 2 — STATUS BAR
-════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="et-status">
-    <i class="ft-check-circle"></i>
-    <span><strong>Your free account is active.</strong> Your next step is ready.</span>
-  </div>
-</section>
+        <?php if (($_GET['plan'] ?? '') === 'saved'): ?>
+          <div class="mission-flash" role="status">
+            <i class="ft-check-circle"></i>
+            <span>Your next-step plan is set. Keep the promise small, specific and doable.</span>
+          </div>
+        <?php endif; ?>
 
+        <?php if (($_GET['profile'] ?? '') === 'error' || ($_GET['plan'] ?? '') === 'error'): ?>
+          <div class="mission-flash" role="alert" style="border-color:rgba(234,84,85,.35);background:rgba(234,84,85,.09);">
+            <i class="ft-alert-circle" style="color:#ea5455;"></i>
+            <span>We could not save that choice. Please try again or contact support if the problem continues.</span>
+          </div>
+        <?php endif; ?>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 1 — HERO: full-bleed banner, eagle10.png background
-════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="et-hero-banner" style="margin-bottom:0;">
-    <div class="et-hero-content">
-      <div class="et-hero-eyebrow">Eagle Team &bull; Simple2Success</div>
-      <h1 class="et-hero-title">
-        Welcome<?= $userName ? ', ' . $userName : '' ?> —<br>
-        You Just Joined <span style="color:#b700e0;">Mission 1000 Families.</span>
-      </h1>
-      <p class="et-hero-sub">
-        You now have access to a proven step-by-step system designed to help ordinary people build additional income online — and a mission bigger than any single opportunity.
-      </p>
-      <p class="et-hero-note">
-        You do not need to know everything today.
-        You do not need to keep changing the plan.
-        You simply need the next step and the discipline to follow it.
-      </p>
-      <ul class="et-hero-bullets">
-        <li>A Proven Step-By-Step System</li>
-        <li>Clear Daily Actions</li>
-        <li>A Real Path You Can Follow</li>
-      </ul>
-      <a href="start.php" class="et-btn">Continue to Step 1 &amp; Step 2 &rarr;</a>
-    </div>
-  </div>
-</section>
+        <section class="mission-hero" aria-labelledby="mission-title">
+          <div class="mission-hero__content">
+            <span class="mission-eyebrow">Simple2Success · Eagle Team · Mission 1000 Families</span>
+            <h1 id="mission-title">
+              <?= $firstName !== '' ? 'Welcome, ' . htmlspecialchars($firstName) . '.' : 'Welcome.' ?><br>
+              <span class="mission-gradient"><?= htmlspecialchars($activation['title']) ?></span>
+            </h1>
+            <p class="mission-hero__lead"><?= htmlspecialchars($activation['body']) ?></p>
+            <?php if ($goalLabel !== ''): ?>
+              <p class="mission-hero__note">
+                Your reason: <strong style="color:#fff;"><?= htmlspecialchars($goalLabel) ?></strong>.
+                Keep that reason visible; focus only on the next action.
+              </p>
+            <?php else: ?>
+              <p class="mission-hero__note">
+                You do not need to master the whole business today. Choose your reason, take one clear action and build from there.
+              </p>
+            <?php endif; ?>
+            <div class="mission-actions">
+              <a class="mission-primary" href="<?= htmlspecialchars($activation['cta_url']) ?>">
+                <?= htmlspecialchars($activation['cta_label']) ?> <i class="ft-arrow-right"></i>
+              </a>
+              <span class="mission-meta">One clear next step · no pressure · full transparency</span>
+            </div>
+          </div>
+        </section>
 
+        <section aria-label="Your activation progress">
+          <div class="card mission-progress-card">
+            <div class="mission-progress-top">
+              <div>
+                <strong>Your activation path</strong><br>
+                <span><?= htmlspecialchars($activation['eyebrow']) ?></span>
+              </div>
+              <span class="mission-progress-value"><?= (int)$activation['completed'] ?> of 3 complete · <?= (int)$activation['percent'] ?>%</span>
+            </div>
+            <div class="mission-progress-track" aria-hidden="true">
+              <span style="width:<?= (int)$activation['percent'] ?>%;"></span>
+            </div>
+            <div class="mission-progress-steps">
+              <div class="mission-progress-step is-done"><b>✓</b><span>Simple2Success account</span></div>
+              <div class="mission-progress-step <?= $step1Done ? 'is-done' : 'is-current' ?>">
+                <b><?= $step1Done ? '✓' : '2' ?></b><span>Open partner registration</span>
+              </div>
+              <div class="mission-progress-step <?= $step2Done ? 'is-done' : ($step1Done ? 'is-current' : '') ?>">
+                <b><?= $step2Done ? '✓' : '3' ?></b><span>Save Partner ID</span>
+              </div>
+            </div>
+          </div>
+        </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 2a — WELCOME VIDEO
-     TODO: Vimeo-ID eintragen und Kommentar entfernen, sobald das
-     Welcome Video (HeyGen V2) fertig ist. VIMEO_ID ersetzen!
-════════════════════════════════════════════════════════════ -->
-<!--
-<section>
-  <div class="card" style="margin-bottom:0;">
-    <div class="card-body" style="padding:2rem 2.5rem 1rem;">
-      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:.6rem;">Start Here</span>
-      <h3 style="font-weight:800;margin-bottom:.5rem;">Watch This First — Your Welcome Message</h3>
-      <p style="opacity:.75;margin:0;">2 minutes that show you exactly why you are here and what happens next.</p>
-    </div>
-    <div class="card-body" style="padding:0 2.5rem 2rem;">
-      <div style="padding:56.25% 0 0 0;position:relative;">
-        <iframe id="vimeo-welcome"
-                src="https://player.vimeo.com/video/VIMEO_ID?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0"
-                frameborder="0"
-                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                referrerpolicy="strict-origin-when-cross-origin"
-                style="position:absolute;top:0;left:0;width:100%;height:100%;"
-                title="Welcome to Simple2Success"></iframe>
-      </div>
-      <script src="https://player.vimeo.com/api/player.js"></script>
-    </div>
-  </div>
-</section>
+        <section class="mission-grid" aria-label="Your reason and our mission">
+          <div class="mission-card">
+            <span class="mission-eyebrow">Make the mission personal</span>
+            <h2>What would meaningful progress change for you?</h2>
+            <p>A personal reason is easier to act on than a generic income promise. Choose the outcome that matters most right now.</p>
 
-<script>
-(function() {
-  if (typeof Vimeo === 'undefined') return;
-  var trackUrl = '../includes/track-video.php';
-  var page = window.location.pathname;
+            <?php if ($goalLabel !== ''): ?>
+              <div class="mission-goal-current">
+                <i class="<?= htmlspecialchars($goalOptions[$selectedGoal]['icon']) ?>"></i>
+                <span><strong>Your current focus:</strong> <?= htmlspecialchars($goalLabel) ?></span>
+              </div>
+              <details>
+                <summary style="cursor:pointer;color:rgba(255,255,255,.62);font-size:.82rem;">Change my focus</summary>
+            <?php endif; ?>
 
-  function send(evt, title) {
-    fetch(trackUrl, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: 'event='  + encodeURIComponent(evt)
-          + '&video=' + encodeURIComponent(title)
-          + '&page='  + encodeURIComponent(page),
-      credentials: 'same-origin'
-    }).catch(function(){});
-  }
+            <form method="post" action="onboarding-action.php">
+              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+              <input type="hidden" name="action" value="set_goal">
+              <div class="mission-goal-grid">
+                <?php foreach ($goalOptions as $code => $option): ?>
+                  <label class="mission-goal-option">
+                    <input type="radio" name="goal" value="<?= htmlspecialchars($code) ?>"
+                           <?= $selectedGoal === $code ? 'checked' : '' ?> required>
+                    <span><i class="<?= htmlspecialchars($option['icon']) ?>"></i><?= htmlspecialchars($option['label']) ?></span>
+                  </label>
+                <?php endforeach; ?>
+              </div>
+              <button type="submit" class="mission-secondary">
+                <i class="ft-check"></i> Save My Focus
+              </button>
+            </form>
 
-  var el = document.getElementById('vimeo-welcome');
-  if (el) {
-    var p = new Vimeo.Player(el), t = {};
-    p.on('play', function() {
-      if (!t.p) { t.p = 1; send('welcome_video_play', 'Welcome Video'); }
-    });
-    p.on('timeupdate', function(d) {
-      if (!d) return;
-      if (!t.p25 && d.percent >= .25) { t.p25 = 1; send('welcome_video_25', 'Welcome Video'); }
-      if (!t.p50 && d.percent >= .50) { t.p50 = 1; send('welcome_video_50', 'Welcome Video'); }
-      if (!t.p75 && d.percent >= .75) { t.p75 = 1; send('welcome_video_75', 'Welcome Video'); }
-    });
-    p.on('ended', function() {
-      if (!t.c) { t.c = 1; send('welcome_video_complete', 'Welcome Video'); }
-    });
-  }
-})();
-</script>
--->
+            <?php if ($goalLabel !== ''): ?></details><?php endif; ?>
+          </div>
 
+          <aside class="mission-card mission-card--accent">
+            <span class="mission-eyebrow">Our shared north star</span>
+            <div class="mission-number"><span>1,000</span> families</div>
+            <h3>More choice, built one repeatable action at a time.</h3>
+            <p>
+              Our mission is to support 1,000 families worldwide as they build business skills, a consistent routine and a path toward at least $1,000 in additional monthly income.
+            </p>
+            <p>
+              Greater flexibility, travel and partner incentives can be meaningful milestones, but they are earned outcomes with separate qualification requirements—not automatic benefits.
+            </p>
+            <p class="mission-disclaimer">
+              This is a mission target, not an earnings guarantee. Results vary with effort, skills, market conditions, time and expenses.
+            </p>
+          </aside>
+        </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 2b — MISSION 1000 FAMILIES
-════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="card" style="margin-bottom:0;border:2px solid rgba(183,0,224,.45);background:linear-gradient(135deg,rgba(183,0,224,.07) 0%,rgba(183,0,224,.02) 100%);box-shadow:0 0 32px rgba(183,0,224,.14);">
-    <div class="card-body" style="padding:2.25rem 2.5rem;">
-      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:.6rem;">Our Mission</span>
-      <h2 style="font-weight:800;margin-bottom:1rem;line-height:1.25;">Mission <span style="color:#b700e0;">1000 Families</span></h2>
-      <p style="font-size:1.05rem;line-height:1.7;margin-bottom:.75rem;">
-        Our mission is to help <strong>1,000 families</strong> build real freedom with the Simple2Success Eagle Team system —
-        earning <strong>$1,000+ per month</strong>, traveling the world, driving a car funded through our partner program,
-        and living life on their own terms.
-      </p>
-      <p style="font-size:1.05rem;line-height:1.7;margin-bottom:1rem;">
-        Not by jumping from system to system. By following <strong style="color:#b700e0;">ONE proven system</strong>, step by step.
-      </p>
-      <p style="font-size:.78rem;opacity:.55;margin:0;line-height:1.5;">
-        Results are not guaranteed. Success depends on consistent execution, repetition and staying with the system.
-      </p>
-    </div>
-  </div>
-</section>
+        <?php if (!$step2Done): ?>
+          <section>
+            <div class="mission-card mission-card--accent">
+              <span class="mission-eyebrow">Turn intention into action</span>
+              <h2>When will you take your next step?</h2>
+              <p>Choose a realistic moment. A specific plan is more useful than another burst of motivation.</p>
+              <?php if ($commitmentLabel !== ''): ?>
+                <div class="mission-commitment-saved"><i class="ft-check-circle"></i><?= htmlspecialchars($commitmentLabel) ?></div>
+              <?php endif; ?>
+              <form method="post" action="onboarding-action.php" class="mission-commitments">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="set_commitment">
+                <?php foreach ($commitmentOptions as $code => $label): ?>
+                  <button type="submit" name="commitment" value="<?= htmlspecialchars($code) ?>"><?= htmlspecialchars($label) ?></button>
+                <?php endforeach; ?>
+              </form>
+            </div>
+          </section>
+        <?php endif; ?>
 
+        <section aria-labelledby="system-principles-title">
+          <span class="mission-eyebrow">How Simple2Success should feel</span>
+          <h2 id="system-principles-title" style="color:#fff;font-weight:800;margin-bottom:1rem;">Clear enough to start. Simple enough to repeat.</h2>
+          <div class="mission-principles">
+            <article class="mission-principle">
+              <i class="ft-crosshair"></i>
+              <h3>One next action</h3>
+              <p>The system shows the action that matters now instead of presenting every tool at once.</p>
+            </article>
+            <article class="mission-principle">
+              <i class="ft-shield"></i>
+              <h3>Transparent decisions</h3>
+              <p>You see what happens next, review current terms yourself and stay in control of every decision.</p>
+            </article>
+            <article class="mission-principle">
+              <i class="ft-repeat"></i>
+              <h3>Consistency over hype</h3>
+              <p>Skills, follow-up and repeatable daily actions matter more than switching to the next opportunity.</p>
+            </article>
+          </div>
+        </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 2c — YOUR ROADMAP (endowed progress)
-════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="card" style="margin-bottom:0;">
-    <div class="card-body" style="padding:1.75rem 2.5rem;">
-      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:1rem;">Your Roadmap — You Are Already On The Way</span>
-      <div style="display:flex;flex-wrap:wrap;gap:.6rem;">
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Account created</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Logged in</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">3 · Watch the videos</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">4 · Step 1: Register</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">5 · Step 2: Enter Partner ID</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">6 · Step 3–5: Execute</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">7 · Repeat</span>
-      </div>
-      <p style="font-size:.85rem;opacity:.6;margin:.9rem 0 0;">2 of 7 steps already done. Your next move: watch the videos and complete Step 1 &amp; Step 2.</p>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 3 — ASPIRATION GRID
-════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="card" style="margin-bottom:0;padding-bottom:2.5rem;">
-    <div class="et-section-header">
-      <span class="et-section-eyebrow">The Opportunity</span>
-      <h3>What Would More Progress Mean For You?</h3>
-      <p>You came here for a reason. Let that reason pull you forward.</p>
-    </div>
-    <div class="et-aspiration-grid et-aspiration-grid--4col et-grid-open" style="margin:0 2.5rem 0;">
-      <div class="et-aspiration-card">
-        <i class="ft-crosshair"></i>
-        <div><h5>More Clarity</h5><p>Know exactly what to do next.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-repeat"></i>
-        <div><h5>More Consistency</h5><p>Repeat the right steps instead of changing direction.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-sliders"></i>
-        <div><h5>More Control</h5><p>Your progress depends on your actions.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-activity"></i>
-        <div><h5>More Momentum</h5><p>Small daily actions add up over time.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-trending-up"></i>
-        <div><h5>More Income</h5><p>Your first goal: $1,000+ per month — built step by step.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-globe"></i>
-        <div><h5>More Flexibility</h5><p>Work from anywhere, on your own schedule.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-anchor"></i>
-        <div><h5>More Stability</h5><p>Build on a system, not on motivation.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-sun"></i>
-        <div><h5>More Freedom</h5><p>Travel. Car. Choice. The life your family deserves.</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 4 — WHY MOST PEOPLE FAIL: reversed split
-     Image LEFT, text RIGHT
-════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="card et-split et-why" style="margin-bottom:0;flex-direction:row-reverse;">
-
-    <!-- Right: text (appears right on desktop due to row-reverse) -->
-    <div class="et-split-text">
-      <h2 class="et-why-title">
-        Why Most People<br>
-        <span>Never Get Results</span>
-      </h2>
-      <p>
-        They try one thing, then jump to the next. They consume more information, but never stay with one process long enough to see results.
-      </p>
-      <p>
-        They keep changing direction. They overthink simple actions. They start again and again instead of repeating what already works.
-      </p>
-      <p>
-        The problem is never effort. The problem is <strong style="color:#fff;">no system. No structure. No clear next step.</strong>
-      </p>
-      <p>
-        The ones who win are not smarter. <strong style="color:#fff;">They simply stopped switching systems.</strong>
-      </p>
+      </main>
     </div>
 
-    <!-- Left: eagle #2 — strategic / focused -->
-    <div class="et-split-img seam-right">
-      <img src="app-assets/img/photos/eagle6b.png" alt="Focus">
-    </div>
-
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 5 — SOLUTION
-════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="card" style="margin-bottom:0;padding-bottom:2.5rem;">
-    <div class="et-section-header">
-      <span class="et-section-eyebrow">The Solution</span>
-      <h3>That Is Why The Eagle Team Exists</h3>
-      <p>We built this system to give you what most people never have — clear structure, simple actions and a path you can actually follow.</p>
-    </div>
-    <div class="et-aspiration-grid et-grid-open" style="margin:0 2.5rem 0;">
-      <div class="et-aspiration-card">
-        <i class="ft-list"></i>
-        <div><h5>Clear Step-By-Step Plan</h5><p>No guessing. No overwhelm. You know exactly what to do next at every stage.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-zap"></i>
-        <div><h5>Proven Marketing System</h5><p>A ready-to-use funnel and tools that help you stay focused on the actions that matter.</p></div>
-      </div>
-      <div class="et-aspiration-card">
-        <i class="ft-repeat"></i>
-        <div><h5>Built For Consistency</h5><p>The goal is not constant change. The goal is to follow the right process long enough to get results.</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SECTION 6 — FINAL CTA: 50/50 split, text left, eagle right
-════════════════════════════════════════════════════════════ -->
-<section style="margin-bottom:2rem;">
-  <div class="et-split et-cta" style="margin-bottom:0;">
-
-    <!-- Left: text + CTA -->
-    <div class="et-split-text">
-      <div class="et-cta-eyebrow">Your Next Move</div>
-      <h2 class="et-cta-title">Your Next Step<br>Starts Now.</h2>
-      <p class="et-cta-body">
-        With the Eagle Team system, you do not have to guess or start over again.<br><br>
-        You now have a clear direction, a step-by-step system and the right next move.<br><br>
-        On the next page, you will see exactly what to do next.
-      </p>
-      <a href="start.php" class="et-btn">Start Step 1 Now — It's Free &rarr;</a>
-    </div>
-
-    <!-- Right: eagle #3 — dynamic / momentum -->
-    <div class="et-split-img seam-left">
-      <img src="app-assets/img/photos/eagle7b.jpg" alt="Move forward">
-    </div>
-
-  </div>
-</section>
-
-
-      </div><!-- /.content-wrapper -->
-    </div><!-- /.main-content -->
-
-    <?php require_once "parts/footer.php"; ?>
+    <?php require_once 'parts/footer.php'; ?>
     <button class="btn btn-primary scroll-top" type="button"><i class="ft-arrow-up"></i></button>
-  </div><!-- /.main-panel -->
-</div><!-- /.wrapper -->
+  </div>
+</div>
 
 <div class="sidenav-overlay"></div>
 <div class="drag-target"></div>

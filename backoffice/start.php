@@ -1,881 +1,330 @@
 <?php
-include '../includes/conn.php';
-
-// ── Step 1 click-tracking handler (AJAX POST) ────────────────────────────────
-if (isset($_POST["click"])) {
-    $clickTime = $_POST["click"];
-    $userid    = (int)$_POST["userid"];
-    $step1ip   = mysqli_real_escape_string($link, getClientIp());
-    mysqli_query($link, "UPDATE users SET signuproot='$clickTime', step1_at=NOW(), step1_ip='$step1ip' WHERE leadid=$userid");
-    mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, page, ip)
-        VALUES ($userid, 'step1_button_click', 'backoffice/start.php', '$step1ip')");
-    die();
-}
-
-// ── Auth ─────────────────────────────────────────────────────────────────────
-if (!isset($_SESSION)) { session_start(); }
-if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
+if (session_status() === PHP_SESSION_NONE) session_start();
+if (empty($_SESSION['userid'])) {
     header('Location: login.php');
     exit();
 }
 
-$userid = $_SESSION['userid'];
+require_once '../includes/conn.php';
+require_once '../includes/onboarding.php';
 
-// ── Log "Next Step" button click from index.php ───────────────────────────────
+$userid = (int)$_SESSION['userid'];
+$userRow = mysqli_fetch_assoc(mysqli_query($link,
+    "SELECT name, email, username, paidstatus, profile_pic, referer, step1_at, step2_at
+     FROM users WHERE leadid=$userid LIMIT 1")) ?: [];
+$name = (string)($userRow['name'] ?? '');
+$username = (string)($userRow['username'] ?? '');
+$useremail = (string)($userRow['email'] ?? '');
+$paidstatus = (string)($userRow['paidstatus'] ?? 'Free');
+$profile_pic = (string)($userRow['profile_pic'] ?? 'user_default.png');
+$activation = s2sActivationState($userRow);
+$profile = s2sGetOnboardingProfile($link, $userid);
+$csrfToken = s2sCsrfToken();
+
+$currentUserPm = trim((string)($userRow['username'] ?? ''));
+$step1Started = !empty($userRow['step1_at']);
+$step2Complete = $activation['key'] === 'activated';
+$pmLocked = $step2Complete && preg_match('/^\d+$/', $currentUserPm);
+$isAdmin = !empty($_SESSION['is_admin']);
+
+$sponsorPartnerId = '';
+$refererId = (int)($userRow['referer'] ?? 0);
+if ($refererId > 0) {
+    $sponsorRow = mysqli_fetch_assoc(mysqli_query($link,
+        "SELECT username FROM users WHERE leadid=$refererId LIMIT 1"));
+    $candidateSponsor = trim((string)($sponsorRow['username'] ?? ''));
+    if (preg_match('/^\d+$/', $candidateSponsor)) {
+        $sponsorPartnerId = $candidateSponsor;
+    }
+}
+
 $referer = $_SERVER['HTTP_REFERER'] ?? '';
-if (stripos($referer, 'index.php') !== false || substr($referer, -1) === '/') {
-    $logIp   = mysqli_real_escape_string($link, getClientIp());
-    $logPage = mysqli_real_escape_string($link, 'backoffice/index.php');
-    mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, page, ip)
-        VALUES ($userid, 'start_step_click', '$logPage', '$logIp')");
+if (stripos($referer, '/backoffice/index.php') !== false || preg_match('~/backoffice/?$~', $referer)) {
+    s2sLogLeadEvent($link, $userid, 'start_step_click', 'backoffice/index.php', $activation['key']);
 }
 
-// ── Sponsor's PM partner number (for Step 1 registration link TP=) ───────────
-$user_detailsdata = mysqli_query($link, "SELECT referer FROM users WHERE leadid = $userid");
-$user_referer = '';
-foreach ($user_detailsdata as $userData) { $user_referer = $userData["referer"]; }
-
-$referer_username = '';
-if (!empty($user_referer) && is_numeric($user_referer)) {
-    $get_refererdata = mysqli_query($link, "SELECT username FROM users WHERE leadid = $user_referer");
-    foreach ($get_refererdata as $referData) { $referer_username = $referData["username"]; }
+$step2Error = '';
+$errorCode = $_GET['err'] ?? '';
+if ($errorCode === 'locked') {
+    $step2Error = 'Your Partner ID is already saved. Please contact support if a correction is necessary.';
+} elseif ($errorCode === 'invalidpm') {
+    $step2Error = 'Enter the numeric Partner ID exactly as shown in your confirmation.';
+} elseif ($errorCode === 'csrf') {
+    $step2Error = 'Your session expired. Please reload the page and try again.';
+} elseif ($errorCode === 'duplicatepm') {
+    $step2Error = 'This Partner ID is already connected to another Simple2Success account. Please check the number or contact support.';
+} elseif ($errorCode === 'sponsor') {
+    $step2Error = 'We could not verify your sponsoring partner. Please contact support before registering so your account is connected correctly.';
 }
 
-// ── Current user data (PM number, Step 1 tracking, admin flag, error msg) ────
-$current_user_row = mysqli_fetch_assoc(mysqli_query($link, "SELECT username, step1_at FROM users WHERE leadid = $userid"));
-$current_user_pm  = $current_user_row['username'] ?? '';
-$step1_clicked    = !empty($current_user_row['step1_at']);
-$pm_locked        = !empty($current_user_pm) && preg_match('/^\d+$/', trim($current_user_pm));
-$is_admin         = !empty($_SESSION['is_admin']);
-
-$step2_error   = '';
-$step2_success = '';
-if (isset($_GET['err'])) {
-    if ($_GET['err'] === 'locked')    $step2_error = 'Your Partner ID is already saved and cannot be changed. Contact support if an update is needed.';
-    if ($_GET['err'] === 'invalidpm') $step2_error = 'Please enter a valid PM Partner ID (numbers only, e.g. 6304013).';
-}
-if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
-    $step2_success = 'Your Partner ID has been saved — your Simple2Success system is now activated. Welcome to the Eagle Team — your family is now part of Mission 1000. Continue with the steps below.';
-}
+$step2Success = (($_GET['step2'] ?? '') === 'done');
+$commitmentOptions = s2sCommitmentOptions();
+$commitmentLabel = $commitmentOptions[$profile['commitment_code'] ?? ''] ?? '';
+$pageStylesheets = ['assets/css/activation.css'];
 ?>
-<!DOCTYPE html>
-<html class="loading" lang="en">
-<?php require_once "parts/head.php"; ?>
-<body class="vertical-layout vertical-menu 2-columns navbar-static layout-dark" data-menu="vertical-menu" data-col="2-columns">
-<link rel="stylesheet" href="app-assets/css/pages/ex-component-media-player.css">
-<link rel="stylesheet" type="text/css" href="app-assets/vendors/css/plyr.css">
-<style>
-  /* ── Step progress bar ─────────────────────────────────────── */
-  .s2s-step-bar { display:flex; align-items:flex-start; justify-content:center; padding:1.5rem 1rem 0.5rem; gap:0; }
-  .s2s-step-bar .s2s-step { flex:1; text-align:center; position:relative; }
-  .s2s-step-bar .s2s-step:not(:last-child)::after {
-    content:''; position:absolute; top:18px; left:50%; width:100%; height:3px;
-    background:rgba(255,255,255,.12); z-index:0;
-  }
-  .s2s-step-bar .s2s-step.active:not(:last-child)::after { background:#b700e0; }
-  .s2s-step-bar .s2s-step .s2s-step-circle {
-    width:38px; height:38px; border-radius:50%; display:inline-flex; align-items:center;
-    justify-content:center; font-weight:700; font-size:1rem; position:relative; z-index:1;
-    background:rgba(255,255,255,.1); color:rgba(255,255,255,.4); border:2px solid rgba(255,255,255,.15);
-  }
-  .s2s-step-bar .s2s-step.active .s2s-step-circle {
-    background:#b700e0; color:#fff; border-color:#b700e0;
-    box-shadow:0 0 0 5px rgba(183,0,224,.25), 0 0 18px rgba(183,0,224,.4);
-    width:42px; height:42px; font-size:1.05rem;
-  }
-  .s2s-step-bar .s2s-step.done .s2s-step-circle {
-    background:rgba(183,0,224,.3); color:#b700e0; border-color:#b700e0;
-  }
-  .s2s-step-bar .s2s-step-label {
-    display:block; font-size:var(--s2s-size-eyebrow); margin-top:0.4rem;
-    color:var(--s2s-text-42); line-height:var(--s2s-lh-label);
-  }
-  .s2s-step-bar .s2s-step.active .s2s-step-label { color:var(--s2s-brand); font-weight:600; }
-  .s2s-step-bar .s2s-step.done .s2s-step-label  { color:rgba(183,0,224,.7); }
+<?php require_once 'parts/head.php'; ?>
+<body class="vertical-layout vertical-menu 2-columns navbar-static layout-dark"
+      data-menu="vertical-menu" data-col="2-columns">
 
-  /* ── Primary action cards ──────────────────────────────────── */
-  .s2s-primary-card {
-    border-left: 4px solid #b700e0 !important;
-    border-top:none; border-right:none; border-bottom:none;
-  }
+<?php require_once 'parts/navbar.php'; ?>
 
-  /* ── Trust grid ────────────────────────────────────────────── */
-  .s2s-trust-item { display:flex; align-items:flex-start; gap:14px; padding:var(--s2s-sp-4) 0; }
-  .s2s-trust-item i { font-size:1.5rem; color:var(--s2s-brand); flex-shrink:0; margin-top:2px; }
-  .s2s-trust-item h6 { margin:0 0 2px; font-weight:600; font-size:var(--s2s-size-h4); }
-  .s2s-trust-item p  { margin:0; font-size:var(--s2s-size-body-sm); color:var(--s2s-text-65); line-height:var(--s2s-lh-body); }
-
-  /* ── Step 2 input group ────────────────────────────────────── */
-  .s2s-id-prefix {
-    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15);
-    border-right:none; border-radius:4px 0 0 4px;
-    padding:0.55rem 0.75rem; font-size:var(--s2s-size-eyebrow); color:var(--s2s-text-50);
-    white-space:nowrap; display:flex; align-items:center;
-  }
-  .s2s-id-input {
-    flex:1; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15);
-    border-radius:0 4px 4px 0; padding:0.55rem 0.75rem; color:var(--s2s-text-100); font-size:var(--s2s-size-body) !important;
-    min-width:0;
-  }
-  .s2s-id-input:focus { outline:none; border-color:#b700e0; background:rgba(183,0,224,.08); }
-  .s2s-id-input::placeholder { color:rgba(255,255,255,.35); }
-
-  /* ── Secondary steps ───────────────────────────────────────── */
-  .s2s-secondary-card { opacity:.9; }
-  .s2s-secondary-card .card-header h4 { font-size:var(--s2s-size-h4); }
-
-  /* ── Trust footer strip ────────────────────────────────────── */
-  .s2s-trust-strip {
-    border-top:1px solid rgba(255,255,255,.08);
-    padding:var(--s2s-sp-4) var(--s2s-sp-6); display:flex; align-items:center;
-    justify-content:center; gap:2rem; flex-wrap:wrap;
-    font-size:var(--s2s-size-small); color:var(--s2s-text-42);
-  }
-  .s2s-trust-strip span { display:flex; align-items:center; gap:6px; }
-  .s2s-trust-strip i { color:#b700e0; }
-</style>
-
-<?php require_once "parts/navbar.php"; ?>
 <div class="wrapper">
-  <?php require_once "parts/sidebar.php"; ?>
+  <?php require_once 'parts/sidebar.php'; ?>
+
   <div class="main-panel">
     <div class="main-content">
       <div class="content-overlay"></div>
-      <div class="content-wrapper">
+      <main class="content-wrapper mission-page">
 
+        <?php if ($step2Success): ?>
+          <div class="mission-flash" role="status">
+            <i class="ft-check-circle"></i>
+            <span><strong>Activation complete.</strong> Your Partner ID has been saved and your next-phase plan is now available.</span>
+          </div>
+        <?php endif; ?>
 
+        <?php if ($step2Error !== ''): ?>
+          <div class="mission-flash" role="alert" style="border-color:rgba(234,84,85,.35);background:rgba(234,84,85,.09);">
+            <i class="ft-alert-circle" style="color:#ea5455;"></i>
+            <span><?= htmlspecialchars($step2Error) ?></span>
+          </div>
+        <?php endif; ?>
 
+        <header class="activation-header">
+          <span class="mission-eyebrow">Mission 1000 Families · Your activation path</span>
+          <h1 class="activation-heading"><?= htmlspecialchars($activation['title']) ?></h1>
+          <p><?= htmlspecialchars($activation['body']) ?></p>
+        </header>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION MISSION STRIP
-        ════════════════════════════════════════════════════════════ -->
-        <section style="margin-top:.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div style="background:linear-gradient(90deg,rgba(183,0,224,.12) 0%,rgba(183,0,224,.04) 100%);border-left:3px solid #b700e0;border-radius:6px;padding:.7rem 1.2rem;font-size:.9rem;color:rgba(255,255,255,.85);">
-                <strong style="color:#d36ce8;">Mission 1000 Families</strong> — your family's story starts with Step 1 and Step 2.
+        <section aria-label="Activation progress">
+          <div class="card mission-progress-card">
+            <div class="mission-progress-top">
+              <div>
+                <strong>Account → partner registration → Partner ID</strong><br>
+                <span>Only the step that applies to you is highlighted.</span>
+              </div>
+              <span class="mission-progress-value"><?= (int)$activation['completed'] ?> of 3 complete · <?= (int)$activation['percent'] ?>%</span>
+            </div>
+            <div class="mission-progress-track" aria-hidden="true">
+              <span style="width:<?= (int)$activation['percent'] ?>%;"></span>
+            </div>
+            <div class="mission-progress-steps">
+              <div class="mission-progress-step is-done"><b>✓</b><span>Simple2Success account</span></div>
+              <div class="mission-progress-step <?= $step1Started || $step2Complete ? 'is-done' : 'is-current' ?>">
+                <b><?= $step1Started || $step2Complete ? '✓' : '2' ?></b><span>Open registration</span>
+              </div>
+              <div class="mission-progress-step <?= $step2Complete ? 'is-done' : ($step1Started ? 'is-current' : '') ?>">
+                <b><?= $step2Complete ? '✓' : '3' ?></b><span>Save Partner ID</span>
               </div>
             </div>
           </div>
         </section>
 
+        <?php if (!$step2Complete): ?>
+          <section class="activation-status">
+            <i class="ft-info"></i>
+            <div>
+              <strong>You stay in control.</strong>
+              <span>Read the current partner terms on the official registration page before submitting. A learnable system can improve execution; it cannot guarantee income.</span>
+            </div>
+          </section>
+        <?php endif; ?>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION 3 — STEP PROGRESS INDICATOR
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-progress" style="margin-top:.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div class="card" style="background:rgba(255,255,255,.03);">
-                <div class="s2s-step-bar">
-                  <div class="s2s-step active">
-                    <div class="s2s-step-circle">1</div>
-                    <span class="s2s-step-label">Register<br>with PM</span>
-                  </div>
-                  <div class="s2s-step active">
-                    <div class="s2s-step-circle">2</div>
-                    <span class="s2s-step-label">Enter<br>Partner ID</span>
-                  </div>
-                  <div class="s2s-step">
-                    <div class="s2s-step-circle">3</div>
-                    <span class="s2s-step-label">Order<br>Traffic</span>
-                  </div>
-                  <div class="s2s-step">
-                    <div class="s2s-step-circle">4</div>
-                    <span class="s2s-step-label">Product<br>Start</span>
-                  </div>
-                  <div class="s2s-step">
-                    <div class="s2s-step-circle">5</div>
-                    <span class="s2s-step-label">Keep<br>Going</span>
-                  </div>
+        <section class="activation-flow" aria-label="Step 1 and Step 2">
+          <article id="step1" class="activation-step <?= $step1Started || $step2Complete ? 'is-done' : 'is-current' ?>">
+            <div class="activation-step__top">
+              <span class="activation-step__number"><?= $step1Started || $step2Complete ? '✓' : '1' ?></span>
+              <span class="activation-pill"><?= $step1Started || $step2Complete ? 'Registration opened' : 'Do this now' ?></span>
+            </div>
+            <h2>Review and open your PM-International partner registration</h2>
+            <p>
+              PM-International is the product and compensation-plan partner. Simple2Success provides the onboarding, tools and repeatable workflow around it.
+            </p>
+            <ul class="activation-list">
+              <li>Your sponsoring partner is passed to the official registration page.</li>
+              <li>You review the current terms and decide before submitting.</li>
+              <li>After confirmation, PM-International provides your Partner ID.</li>
+            </ul>
+
+            <?php if ($sponsorPartnerId !== ''): ?>
+              <div class="activation-alert">
+                <strong>Important:</strong> The official page should show sponsoring Partner ID
+                <strong><?= htmlspecialchars($sponsorPartnerId) ?></strong>. Do not replace it, or your account may not connect to the correct Eagle Team sponsor.
+              </div>
+              <form method="post" action="step1-click.php" target="_blank">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <button id="step1-registration" class="mission-primary" type="submit">
+                  <?= $step1Started ? 'Open Registration Again' : 'Open Official Registration' ?> <i class="ft-external-link"></i>
+                </button>
+              </form>
+              <p class="activation-form-note">Opens the official PM-International page in a new tab. Keep this page open for Step 2.</p>
+            <?php else: ?>
+              <div class="activation-alert">
+                <strong>Connection check required:</strong> We could not verify a sponsoring Partner ID for this account. Please contact support before registering.
+              </div>
+              <a class="mission-secondary" href="support.php"><i class="ft-help-circle"></i> Contact Support</a>
+            <?php endif; ?>
+          </article>
+
+          <article id="step2" class="activation-step <?= $step2Complete ? 'is-done' : ($step1Started ? 'is-current' : '') ?>">
+            <div class="activation-step__top">
+              <span class="activation-step__number"><?= $step2Complete ? '✓' : '2' ?></span>
+              <span class="activation-pill"><?= $step2Complete ? 'Complete' : ($step1Started ? 'Your next action' : 'After registration') ?></span>
+            </div>
+            <h2>Save your personal Partner ID</h2>
+
+            <?php if ($pmLocked && !$isAdmin): ?>
+              <div class="activation-success">
+                <strong><i class="ft-check-circle"></i> Step 2 complete.</strong><br>
+                Partner ID <?= htmlspecialchars($currentUserPm) ?> is saved and protected against accidental changes.
+              </div>
+              <p>If this ID is incorrect, contact support. It cannot be changed from your account after activation.</p>
+            <?php else: ?>
+              <?php if ($isAdmin && $pmLocked): ?>
+                <div class="activation-alert"><strong>Admin override:</strong> You can correct the saved Partner ID.</div>
+              <?php endif; ?>
+              <p>
+                Already received your confirmation? Copy the numeric Partner ID exactly as shown and paste it below. This is the only field required for Step 2.
+              </p>
+              <form method="post" action="welcome.php" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <label class="activation-id-label" for="partner-id">Your PM Partner ID</label>
+                <input id="partner-id" class="activation-id-input" type="text" name="root"
+                       value="<?= htmlspecialchars($currentUserPm) ?>"
+                       placeholder="e.g. 6304013" inputmode="numeric" pattern="[0-9]{4,12}"
+                       minlength="4" maxlength="12" required>
+                <p class="activation-form-note">Numbers only. Check every digit before saving; the ID is locked after activation.</p>
+                <button type="submit" class="mission-primary"><i class="ft-lock"></i> Save Partner ID and Activate</button>
+              </form>
+            <?php endif; ?>
+          </article>
+        </section>
+
+        <?php if (!$step2Complete): ?>
+          <section>
+            <details class="activation-video">
+              <summary>
+                <div><i class="ft-play-circle" style="color:#d87bee;margin-right:.5rem;"></i>Want context before deciding?</div>
+                <span>Watch the business overview (optional)</span>
+              </summary>
+              <div class="activation-video__body">
+                <p style="color:var(--mission-muted);font-size:.86rem;">Use this overview to understand the company and model. The registration decision remains yours.</p>
+                <div class="activation-video__frame">
+                  <iframe id="vimeo-start-1"
+                          src="https://player.vimeo.com/video/1183822471?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
+                          frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                          referrerpolicy="strict-origin-when-cross-origin" title="Simple2Success business overview"></iframe>
                 </div>
               </div>
+            </details>
+          </section>
+        <?php endif; ?>
+
+        <section id="after-activation" class="activation-next">
+          <span class="mission-eyebrow"><?= $step2Complete ? 'Your next phase' : 'What unlocks after activation' ?></span>
+          <h2 style="color:#fff;font-weight:800;margin-bottom:.55rem;">
+            <?= $step2Complete ? 'Build a 90-day routine—not another short burst.' : 'You will get one simple execution plan.' ?>
+          </h2>
+          <p style="color:var(--mission-muted);max-width:800px;line-height:1.65;">
+            <?= $step2Complete
+              ? 'Your focus now shifts from setup to consistent, measurable activity. Start with your personal links, choose one outreach method and review results before spending more.'
+              : 'We will reveal the execution tools after Step 2 so you can focus on activation now without information overload.' ?>
+          </p>
+          <div class="activation-next-grid">
+            <div class="activation-next-item"><b>1 · Prepare</b><span>Review your personal links and make sure your profile is ready.</span></div>
+            <div class="activation-next-item"><b>2 · Act</b><span>Choose one compliant outreach or traffic method and start small.</span></div>
+            <div class="activation-next-item"><b>3 · Learn</b><span>Track leads and Step 2 activations, then improve one bottleneck at a time.</span></div>
+          </div>
+          <?php if ($step2Complete): ?>
+            <div class="mission-actions">
+              <a class="mission-primary" href="links.php">Review My Personal Links <i class="ft-arrow-right"></i></a>
+              <a class="mission-secondary" href="swipe.php">Open Outreach Templates</a>
             </div>
+          <?php else: ?>
+            <span class="mission-meta"><i class="ft-lock"></i> Complete Step 2 to unlock the next-phase actions.</span>
+          <?php endif; ?>
+          <?php if ($commitmentLabel !== ''): ?>
+            <div class="mission-commitment-saved"><i class="ft-check-circle"></i>Your plan: <?= htmlspecialchars($commitmentLabel) ?></div>
+          <?php endif; ?>
+        </section>
+
+        <section aria-labelledby="activation-faq-title">
+          <span class="mission-eyebrow">Questions before you continue</span>
+          <h2 id="activation-faq-title" style="color:#fff;font-weight:800;margin-bottom:1rem;">Clear answers build better decisions.</h2>
+          <div class="activation-faq">
+            <details>
+              <summary>Is income guaranteed?</summary>
+              <p>No. Simple2Success provides a process and tools. Results vary based on effort, skill, time, market conditions and expenses.</p>
+            </details>
+            <details>
+              <summary>Why do I need a Partner ID?</summary>
+              <p>It confirms your partner registration and connects your Simple2Success account to the correct workflow and sponsor relationship.</p>
+            </details>
+            <details>
+              <summary>What happens after I save it?</summary>
+              <p>Your next-phase tools become available. Start with your links and a focused 90-day routine; later steps should not distract you now.</p>
+            </details>
+            <details>
+              <summary>Can I change the ID later?</summary>
+              <p>Not from your account. This protects the sponsor connection from accidental changes. Support can review genuine corrections.</p>
+            </details>
           </div>
         </section>
 
+        <p class="mission-disclaimer" style="margin:1.25rem 0 2rem;">
+          Mission 1000 Families describes our support goal. $1,000+ per month, travel and vehicle-program participation are possible objectives—not typical or guaranteed outcomes. Always review current partner terms, qualification rules and costs.
+        </p>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION VIDEO-MAIN — BUSINESS PRESENTATION
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-presentation" style="margin-top:.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-body" style="padding:2rem 2rem 1.5rem;">
-                  <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;
-                               color:rgba(183,0,224,.85);text-transform:uppercase;
-                               display:block;margin-bottom:.6rem;">Step 1 — Start Here</span>
-                  <h3 style="color:var(--s2s-text-100);font-size:var(--s2s-size-h3);
-                             font-weight:800;margin-bottom:.75rem;line-height:var(--s2s-lh-tight);">
-                    Before You Register —<br>
-                    <span style="color:var(--s2s-brand);">Understand Our Product Partner First</span>
-                  </h3>
-                  <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
-                            margin:0;line-height:var(--s2s-lh-body);">
-                    Simple2Success is your step-by-step system. But to build a real business, you also need real products, a proven company and a strong international partner. That is why we work with PM-International as our product partner — a company active in 40+ countries with more than 1 billion products sold. Watch this short presentation first, so you understand the foundation before you complete Step 1.
-                  </p>
-                </div>
-                <div class="card-body" style="padding-bottom:.75rem;">
-                  <div style="padding:56.25% 0 0 0;position:relative;">
-                    <iframe id="vimeo-start-1"
-                            src="https://player.vimeo.com/video/1183822471?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
-                            frameborder="0"
-                            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                            referrerpolicy="strict-origin-when-cross-origin"
-                            style="position:absolute;top:0;left:0;width:100%;height:100%;"
-                            title="Business Presentation"></iframe>
-                  </div>
-                  <script src="https://player.vimeo.com/api/player.js"></script>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+      </main>
+    </div>
 
-
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION VIDEO-BOOSTER — INSPIRE
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-booster" style="margin-top:.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div class="card-body" style="padding:.5rem 0 .25rem;">
-                <p style="font-size:.78rem;font-weight:700;letter-spacing:.07em;color:rgba(183,0,224,.7);text-transform:uppercase;text-align:center;margin-bottom:1rem;">
-                  See What's Possible
-                </p>
-              </div>
-            </div>
-
-            <!-- Video 2: From Our Founder -->
-            <div class="col-lg-4 col-md-6 col-12" style="margin-top:.5rem;">
-              <div class="card" style="height:100%;">
-                <div class="card-content">
-                  <div style="padding:56.25% 0 0 0;position:relative;">
-                    <iframe id="vimeo-start-2"
-                            src="https://player.vimeo.com/video/1183845597?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
-                            frameborder="0"
-                            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                            referrerpolicy="strict-origin-when-cross-origin"
-                            style="position:absolute;top:0;left:0;width:100%;height:100%;"
-                            title="A Message from PM-International's Founder"></iframe>
-                  </div>
-                  <div class="card-body" style="padding:.75rem 1rem .85rem;">
-                    <h6 style="margin:0 0 .25rem;font-weight:700;font-size:.95rem;">A Message from PM-International's Founder</h6>
-                    <p style="font-size:.82rem;opacity:.65;margin:0;line-height:1.5;">
-                      "If I can do it, so can you." — Rolf Sorg
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Video 3: World Tour 2027 Promo -->
-            <div class="col-lg-4 col-md-6 col-12" style="margin-top:.5rem;">
-              <div class="card" style="height:100%;">
-                <div class="card-content">
-                  <div style="padding:56.25% 0 0 0;position:relative;">
-                    <iframe id="vimeo-start-3"
-                            src="https://player.vimeo.com/video/1199487088?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;title=0&amp;byline=0&amp;portrait=0"
-                            frameborder="0"
-                            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                            referrerpolicy="strict-origin-when-cross-origin"
-                            style="position:absolute;top:0;left:0;width:100%;height:100%;"
-                            title="World Tour 2027 Promo"></iframe>
-                  </div>
-                  <div class="card-body" style="padding:.75rem 1rem .85rem;">
-                    <h6 style="margin:0 0 .25rem;font-weight:700;font-size:.95rem;">World Tour 2027 Promo</h6>
-                    <p style="font-size:.82rem;opacity:.65;margin:0;line-height:1.5;">
-                      Experience the journey — PM-International World Tour 2027.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- TODO: Video 4 (Direct Cash) — nur nach Angabe echter Vimeo-ID aktivieren -->
-
-          </div>
-        </section>
-
-
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION BRIDGE — CONFIRM (Registration CTA, 3-column layout)
-        ════════════════════════════════════════════════════════════ -->
-        <section id="step1-action" style="margin-top:.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div class="card s2s-primary-card"
-                   style="background:linear-gradient(135deg,#0d0d1a 0%,#1a1a2e 60%,#200a30 100%);
-                          overflow:hidden;position:relative;border:1px solid rgba(183,0,224,.2);
-                          box-shadow:0 0 40px rgba(183,0,224,.12);">
-                <div class="card-body" style="padding:2.25rem 2rem 2rem;position:relative;z-index:2;">
-                  <div class="row align-items-center">
-
-                    <!-- SPALTE 1: Text (links) -->
-                    <div class="col-lg-5 col-12" style="padding-right:1.5rem;">
-                      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;
-                                   color:rgba(183,0,224,.85);text-transform:uppercase;
-                                   display:block;margin-bottom:.6rem;">Your Next Move</span>
-                      <h1 style="color:var(--s2s-text-100);font-size:var(--s2s-size-h1);
-                                 font-weight:800;margin-bottom:var(--s2s-sp-2);
-                                 line-height:var(--s2s-lh-tight);">
-                        Complete <span style="color:var(--s2s-brand);">Step 1</span><br>
-                        and Unlock Step 2
-                      </h1>
-                      <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
-                                margin:0;line-height:var(--s2s-lh-body);">
-                        Sign up with PM-International — it's free and takes less than 3 minutes.
-                        Then return here, enter your Partner ID, and your system is active.
-                      </p>
-                      <ul style="list-style:none;padding:0;margin:1rem 0 0;font-size:.88rem;color:rgba(255,255,255,.75);line-height:2;">
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> 100% free registration — no purchase required</li>
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Takes less than 3 minutes</li>
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Your sponsor connection is already prepared</li>
-                      </ul>
-                    </div>
-
-                    <!-- SPALTE 2: Button (Mitte) -->
-                    <div class="col-lg-3 col-12 text-center"
-                         style="padding:1.5rem 1rem;display:flex;flex-direction:column;
-                                align-items:center;justify-content:center;">
-                      <div class="alert" role="alert" style="background:rgba(255,193,7,.12);border:1px solid rgba(255,193,7,.5);border-left:4px solid #ffc107;color:rgba(255,255,255,.9);padding:.85rem 1.1rem;margin-bottom:1rem;border-radius:6px;font-size:.88rem;text-align:left;">
-                        <strong>⚠️ Important for your registration:</strong> When the PM-International registration page opens, please confirm the pre-selected sponsoring partner and <strong>do not change the sponsor</strong>. This ensures your registration is correctly connected to our Simple2Success Eagle Team.
-                      </div>
-                      <a id="sforpm"
-                         href="https://www.pmebusiness.com/registrationv2/?TP=<?= htmlspecialchars($referer_username) ?>"
-                         target="_blank"
-                         class="btn btn-lg btn-block"
-                         style="background:#b700e0;border-color:#b700e0;color:#fff;
-                                font-size:1.05rem;padding:.85rem 1.75rem;
-                                box-shadow:0 4px 24px rgba(183,0,224,.45);
-                                font-weight:700;white-space:normal;
-                                border-radius:8px;line-height:1.4;">
-                        <i class="ft-external-link mr-2"></i>
-                        Start PM-International Registration
-                      </a>
-                      <?php if (empty($referer_username)): ?>
-                      <small style="color:rgba(255,200,0,.7);display:block;margin-top:.6rem;font-size:.78rem;">
-                        <i class="ft-info mr-1"></i> No sponsor ID linked — you will register directly with PM-International.
-                      </small>
-                      <?php endif; ?>
-                      <p style="font-size:.78rem;opacity:.45;margin-top:.6rem;margin-bottom:0;line-height:1.4;">
-                        Opens in a new tab.<br>Keep this page open.
-                      </p>
-                    </div>
-
-                    <!-- SPALTE 3: Adler-Bild (rechts, nur desktop) -->
-                    <div class="col-lg-4 d-none d-lg-flex align-items-center justify-content-end"
-                         style="padding:0;overflow:hidden;min-height:200px;">
-                      <img src="app-assets/img/photos/eagle6c.jpg" alt=""
-                           style="width:100%;max-height:280px;object-fit:contain;
-                                  object-position:right center;
-                                  filter:drop-shadow(0 0 24px rgba(183,0,224,.35));
-                                  pointer-events:none;">
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION 7 — STEP 2 ACTION CARD (primary)
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-step2-action" style="margin-top:.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div class="card" style="border:2px solid #b700e0;background:rgba(183,0,224,.06);box-shadow:0 0 28px rgba(183,0,224,.18);">
-                <div class="card-content">
-                  <div class="card-header" style="border-bottom:1px solid rgba(183,0,224,.25);background:rgba(183,0,224,.08);">
-                    <h4 class="card-title" style="color:#b700e0;">
-                      <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#b700e0;color:#fff;font-size:.9rem;margin-right:10px;box-shadow:0 0 0 4px rgba(183,0,224,.25);">2</span>
-                      Enter Your PM Partner ID
-                      <span style="margin-left:.75rem;font-size:.72rem;font-weight:600;background:#b700e0;color:#fff;padding:.2rem .6rem;border-radius:20px;letter-spacing:.04em;vertical-align:middle;">STEP 2</span>
-                    </h4>
-                  </div>
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-lg-8 col-12">
-
-                        <?php if ($step2_success): ?>
-                        <div class="alert bg-light-success mb-2" role="alert" style="font-size:.95rem;">
-                          <i class="ft-check-circle mr-2"></i><strong>Step 2 complete.</strong> <?= htmlspecialchars($step2_success) ?>
-                        </div>
-                        <?php endif; ?>
-                        <?php if ($step2_error): ?>
-                        <div class="alert bg-light-danger mb-2 py-1 px-2" role="alert" style="font-size:.88rem;">
-                          <i class="ft-alert-circle mr-1"></i> <?= htmlspecialchars($step2_error) ?>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if ($pm_locked && !$is_admin): ?>
-                        <!-- ── STATE A: Locked ── -->
-                        <div class="alert bg-light-success mb-0" role="alert" style="font-size:.97rem;">
-                          <i class="ft-lock mr-2"></i>
-                          <strong>Step 2 complete.</strong>
-                          Your Partner ID <strong><?= htmlspecialchars($current_user_pm) ?></strong> is saved and locked.
-                        </div>
-                        <p style="font-size:.85rem;opacity:.6;margin-top:.6rem;margin-bottom:0;">
-                          Partner IDs cannot be changed once saved. If you need to update it for an important reason,
-                          please contact support.
-                        </p>
-
-                        <?php else: ?>
-                        <!-- ── STATE C: Form available (always shown when not locked) ── -->
-                        <?php if ($is_admin && $pm_locked): ?>
-                        <div class="alert bg-light-warning mb-2 py-1 px-2" style="font-size:.83rem;">
-                          <i class="ft-shield mr-1"></i>
-                          <strong>Admin override active.</strong> You can update the Partner ID even though it is locked.
-                        </div>
-                        <?php endif; ?>
-                        <p style="font-size:1rem;margin-bottom:.75rem;">
-                          After registering with PM-International (Step 1), you will receive your personal Partner ID. Copy it from your confirmation email or your PM account, paste it into the field below and click Save to activate your Simple2Success system.
-                        </p>
-                        <p style="opacity:.75;font-size:.9rem;margin-bottom:1.25rem;">
-                          Once saved, your Partner ID is permanently locked and cannot be changed by you.
-                          Contact support if an update is ever needed.
-                        </p>
-                        <form method="POST" action="welcome.php" style="max-width:640px;">
-                          <input type="hidden" name="userid" value="<?= isset($userid) ? (int)$userid : '' ?>">
-                          <label style="font-size:.9rem;font-weight:600;color:#b700e0;margin-bottom:.5rem;display:block;letter-spacing:.02em;">
-                            YOUR PM PARTNER ID
-                          </label>
-                          <div style="display:flex;margin-bottom:1rem;">
-                            <span class="s2s-id-prefix" style="font-size:.75rem;padding:.75rem .85rem;">pmebusiness.com/registrationv2/?TP=</span>
-                            <input type="text"
-                                   class="s2s-id-input"
-                                   name="root"
-                                   placeholder="e.g. 6304013"
-                                   required
-                                   style="font-size:1.15rem;padding:.75rem 1rem;font-weight:600;letter-spacing:.04em;"
-                                   value="<?= !empty($current_user_pm) ? htmlspecialchars($current_user_pm) : '' ?>">
-                          </div>
-                          <button type="submit"
-                                  class="btn btn-lg"
-                                  style="background:#b700e0;border-color:#b700e0;color:#fff;padding:.75rem 2rem;font-weight:600;font-size:1rem;box-shadow:0 4px 16px rgba(183,0,224,.35);">
-                            <i class="ft-save mr-2"></i> Save Partner ID
-                          </button>
-                        </form>
-                        <?php endif; ?>
-
-                      </div>
-                      <div class="col-lg-4 col-12 d-none d-lg-flex align-items-center justify-content-center">
-                        <div style="text-align:center;opacity:.4;">
-                          <i class="ft-key" style="font-size:5rem;color:#b700e0;display:block;margin-bottom:.75rem;"></i>
-                          <span style="font-size:.82rem;">Your Partner ID is your key to activating your system</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION 4 — WHY PM-INTERNATIONAL (trust points)
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-why-pm" style="margin-top:.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-content">
-                  <div class="card-header">
-                    <h4 class="card-title">Why PM-International?</h4>
-                  </div>
-                  <div class="card-body" style="padding-top:.5rem;">
-                    <div class="row">
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-calendar"></i>
-                          <div>
-                            <h6>Founded in 1993</h6>
-                            <p>Over 30 years of operational experience in the international health and nutrition market.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-package"></i>
-                          <div>
-                            <h6>1 Billion+ Products Sold</h6>
-                            <p>More than one billion FitLine products sold worldwide — a globally proven brand.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-shield"></i>
-                          <div>
-                            <h6>70+ Registered Patents</h6>
-                            <p>Proprietary NTC technology protected by more than 70 patents across multiple markets.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-xl-3 col-md-6 col-12">
-                        <div class="s2s-trust-item">
-                          <i class="ft-award"></i>
-                          <div>
-                            <h6>1,000+ Top Athletes</h6>
-                            <p>Trusted by over 1,000 professional athletes and sports organisations worldwide.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        <!-- ═══════════════════════════════════════════════════════════
-             INCOME EXAMPLE — Why Step 3 to 5 matter
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-income-example" style="margin-top:1.25rem;">
-          <div class="row">
-            <div class="col-12">
-              <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem;padding-left:.15rem;">
-                <span style="font-size:.72rem;font-weight:700;letter-spacing:.08em;color:rgba(255,255,255,.35);text-transform:uppercase;">Next Steps — After Steps 1 &amp; 2 are complete</span>
-                <span style="flex:1;height:1px;background:rgba(255,255,255,.08);"></span>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-              <div class="card" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);">
-                <div class="card-body" style="padding:var(--s2s-card-pad-lg);">
-
-                  <!-- Headline -->
-                  <h3 style="color:var(--s2s-text-100);font-weight:800;margin-bottom:.5rem;text-align:center;">
-                    <i class="ft-trending-up" style="color:var(--s2s-brand);margin-right:10px;"></i>
-                    Why Step 3 to 5 Are Your Keys to Financial Freedom
-                  </h3>
-                  <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);text-align:center;margin-bottom:2.5rem;max-width:800px;margin-left:auto;margin-right:auto;line-height:var(--s2s-lh-body);">
-                    The Simple2Success system is designed to unlock <strong>multiple income streams simultaneously</strong> through the PM-International compensation plan. Here is exactly what happens when you turn on your traffic:
-                  </p>
-
-                  <div class="row" style="align-items:stretch;">
-
-                    <!-- Box 1: Immediate Cash Flow -->
-                    <div class="col-lg-4 col-md-12 mb-4">
-                      <div style="background:rgba(255,255,255,.04);padding:var(--s2s-card-pad);border-radius:var(--s2s-radius-lg);border-top:4px solid rgba(183,0,224,.5);height:100%;position:relative;overflow:hidden;">
-                        <div style="position:absolute;top:-15px;right:-15px;opacity:.08;"><i class="ft-zap" style="font-size:6rem;color:var(--s2s-brand);"></i></div>
-                        <p style="color:rgba(183,0,224,.7);font-weight:800;font-size:var(--s2s-size-eyebrow);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem;">
-                          1. Immediate Cash Flow
-                        </p>
-                        <h4 style="color:var(--s2s-text-100);font-weight:700;margin-bottom:var(--s2s-sp-4);">Training Bonus (EAB)</h4>
-                        <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:var(--s2s-sp-4);line-height:var(--s2s-lh-compact);">
-                          Every time your automated traffic generates a new active partner, PM pays you a direct <strong>€60 Training Bonus</strong>.
-                        </p>
-                        <div style="background:var(--s2s-brand-subtle);padding:10px;border-radius:var(--s2s-radius-sm);border-left:3px solid rgba(183,0,224,.5);">
-                          <p style="color:var(--s2s-text-100);font-size:1.1rem;font-weight:700;margin-bottom:0;">
-                            5 Partners = <span style="color:rgba(183,0,224,.9);">€300 instantly</span>
-                          </p>
-                          <small style="color:var(--s2s-text-65);">Covers your traffic costs immediately.</small>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Box 2: Monthly Passive Income -->
-                    <div class="col-lg-4 col-md-12 mb-4">
-                      <div style="background:rgba(255,255,255,.04);padding:var(--s2s-card-pad);border-radius:var(--s2s-radius-lg);border-top:4px solid rgba(183,0,224,.75);height:100%;position:relative;overflow:hidden;">
-                        <div style="position:absolute;top:-15px;right:-15px;opacity:.08;"><i class="ft-refresh-cw" style="font-size:6rem;color:var(--s2s-brand);"></i></div>
-                        <p style="color:rgba(183,0,224,.85);font-weight:800;font-size:var(--s2s-size-eyebrow);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem;">
-                          2. Monthly Passive Income
-                        </p>
-                        <h4 style="color:var(--s2s-text-100);font-weight:700;margin-bottom:var(--s2s-sp-4);">First-Line Bonus (EB)</h4>
-                        <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:var(--s2s-sp-4);line-height:var(--s2s-lh-compact);">
-                          You earn a <strong>10% Bonus</strong> on the business volume of your direct partners' monthly product subscriptions (Autoship).
-                        </p>
-                        <div style="background:var(--s2s-brand-subtle);padding:10px;border-radius:var(--s2s-radius-sm);border-left:3px solid rgba(183,0,224,.75);">
-                          <p style="color:var(--s2s-text-100);font-size:1.1rem;font-weight:700;margin-bottom:0;">
-                            Paid <span style="color:rgba(183,0,224,.9);">Month After Month</span>
-                          </p>
-                          <small style="color:var(--s2s-text-65);">Builds your secure financial foundation.</small>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Box 3: Exponential Wealth -->
-                    <div class="col-lg-4 col-md-12 mb-4">
-                      <div style="background:rgba(255,255,255,.04);padding:var(--s2s-card-pad);border-radius:var(--s2s-radius-lg);border-top:4px solid var(--s2s-brand);height:100%;position:relative;overflow:hidden;">
-                        <div style="position:absolute;top:-15px;right:-15px;opacity:.08;"><i class="ft-star" style="font-size:6rem;color:var(--s2s-brand);"></i></div>
-                        <p style="color:var(--s2s-brand);font-weight:800;font-size:var(--s2s-size-eyebrow);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem;">
-                          3. Exponential Wealth
-                        </p>
-                        <h4 style="color:var(--s2s-text-100);font-weight:700;margin-bottom:var(--s2s-sp-4);">Deep Bonuses &amp; Lifestyle</h4>
-                        <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:var(--s2s-sp-4);line-height:var(--s2s-lh-compact);">
-                          When your partners duplicate this system, you unlock <strong>Deep Bonuses (3-5%)</strong> and <strong>Management Bonuses (2-21%)</strong> on your entire organization.
-                        </p>
-                        <div style="background:var(--s2s-brand-subtle);padding:10px;border-radius:var(--s2s-radius-sm);border-left:3px solid var(--s2s-brand);">
-                          <p style="color:var(--s2s-text-100);font-size:1.1rem;font-weight:700;margin-bottom:0;">
-                            <span style="color:var(--s2s-brand);">+ Car Bonus &amp; Travel</span>
-                          </p>
-                          <small style="color:var(--s2s-text-65);">Drive your dream car paid by PM.</small>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div><!-- /row -->
-
-                  <!-- CTA summary -->
-                  <div style="margin-top:var(--s2s-sp-4);padding:var(--s2s-card-pad);background:rgba(183,0,224,.15);border-radius:var(--s2s-radius);border:1px solid rgba(183,0,224,.5);text-align:center;box-shadow:inset 0 0 20px rgba(183,0,224,0.1);">
-                    <h4 style="color:var(--s2s-text-100);font-weight:800;margin-bottom:.5rem;">
-                      The Math is Simple: <span style="color:var(--s2s-brand);">Traffic = Duplication = Freedom</span>
-                    </h4>
-                    <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:0;max-width:750px;margin-left:auto;margin-right:auto;line-height:var(--s2s-lh-body);">
-                      If you don't order traffic (Step 3) and activate your product (Step 4), the system stops here.
-                      <strong>Turn on your traffic now</strong> to start the engine and let the Simple2Success automation build your team!
-                    </p>
-                  </div>
-
-                  <!-- Link to full compensation plan -->
-                  <div style="text-align:center;margin-top:1.25rem;">
-                    <a href="/simple2success/docs/en/EN_PM_IncomePlan_Brochure-APAC-2026-2.pdf"
-                       target="_blank"
-                       rel="noopener"
-                       style="color:rgba(255,255,255,.35);font-size:.82rem;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.2);padding-bottom:2px;transition:color .2s;">
-                      <i class="ft-file-text mr-1"></i>
-                      View the full PM-International Income Plan (PDF) →
-                    </a>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
- 
-
-        
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION 8 — STEPS 3 / 4 / 5 (secondary)
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-next-steps" style="margin-top:1.25rem;">
-          <!-- Pure CSS flex row — no match-height JS. Bootstrap 4 .row is already
-               display:flex;flex-wrap:wrap;align-items:stretch, so all columns
-               equalise to the tallest. height:100% on .card fills the column,
-               then the flex chain propagates all the way to the CTA. -->
-          <div class="row" style="align-items:stretch;">
-
-            <!-- STEP 3 -->
-            <div class="col-lg-4 col-md-6 col-12" style="display:flex;flex-direction:column;">
-              <div class="card s2s-secondary-card" style="border-top:3px solid rgba(183,0,224,.4);flex:1;display:flex;flex-direction:column;">
-                <div class="card-header" style="padding-bottom:.5rem;flex-shrink:0;">
-                  <h4 class="card-title" style="display:flex;align-items:center;gap:10px;">
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(183,0,224,.25);color:#b700e0;font-size:.82rem;font-weight:700;flex-shrink:0;">3</span>
-                    Order Traffic
-                  </h4>
-                </div>
-                <div class="card-content" style="flex:1;display:flex;flex-direction:column;">
-                  <img class="img-fluid" src="app-assets/img/photos/step3.jpg" alt="Step 3" style="opacity:.88;flex-shrink:0;">
-                  <div class="card-body" style="flex:1;display:flex;flex-direction:column;">
-                    <div style="flex:1;">
-                      <p style="font-size:.92rem;margin-bottom:0;">
-                        Boost your reach with our trusted traffic sources. More traffic means more leads,
-                        and more leads means more growth.
-                      </p>
-                    </div>
-                    <div style="margin-top:auto;padding-top:1rem;">
-                      <a href="traffic.php" class="btn btn-primary btn-block">
-                        <i class="ft-trending-up mr-1"></i> Order Traffic
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-           <!-- STEP 4 -->
-            <div class="col-lg-4 col-md-6 col-12" style="display:flex;flex-direction:column;">
-              <div class="card s2s-secondary-card" style="border-top:3px solid rgba(183,0,224,.4);flex:1;display:flex;flex-direction:column;">
-                <div class="card-header" style="padding-bottom:.5rem;flex-shrink:0;">
-                  <h4 class="card-title" style="display:flex;align-items:center;gap:10px;">
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(183,0,224,.25);color:#b700e0;font-size:.82rem;font-weight:700;flex-shrink:0;">4</span>
-                    Activate Your Product Subscription
-                  </h4>
-                </div>
-                <div class="card-content" style="flex:1;display:flex;flex-direction:column;">
-                  <img class="img-fluid" src="app-assets/img/photos/step4.jpg" alt="Step 4" style="opacity:.88;flex-shrink:0;">
-                  <div class="card-body" style="flex:1;display:flex;flex-direction:column;">
-                    <div style="flex:1;">
-                      <p style="font-size:.92rem;margin-bottom:.5rem;">
-                        Not yet started with a product subscription? Activate it now to unlock your full earning potential.
-                        Choose between <strong>Teampartner Start</strong> or <strong>Manager Quickstart</strong> — your monthly autoship activates your commissions and gives you authentic product experience.
-                      </p>
-                      <p style="font-size:.82rem;opacity:.6;margin-bottom:0;">
-                        Already selected a start option during registration? Then you're all set — your autoship will ship automatically next month.
-                      </p>
-                    </div>
-                    <div style="margin-top:auto;padding-top:1rem;">
-                      <?php if (!empty($current_user_pm)): ?>
-                        <a href="https://www.fitline.com/autoship/create?sponsor=<?= urlencode($current_user_pm ) ?>&productId=9700732"
-                           target="_blank"
-                           class="btn btn-primary btn-block">
-                          <i class="ft-external-link mr-1"></i> Activate My Product Subscription
-                        </a>
-                      <?php else: ?>
-                        <button class="btn btn-secondary btn-block" disabled>
-                          <i class="ft-lock mr-1"></i> Complete Step 2 First
-                        </button>
-                        <small style="opacity:.5;display:block;margin-top:.4rem;font-size:.78rem;text-align:center;">
-                          Save your Partner ID in Step 2 to unlock this.
-                        </small>
-                      <?php endif; ?>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- STEP 5 -->
-            <div class="col-lg-4 col-md-6 col-12" style="display:flex;flex-direction:column;">
-              <div class="card s2s-secondary-card" style="border-top:3px solid rgba(183,0,224,.4);flex:1;display:flex;flex-direction:column;">
-                <div class="card-header" style="padding-bottom:.5rem;flex-shrink:0;">
-                  <h4 class="card-title" style="display:flex;align-items:center;gap:10px;">
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(183,0,224,.25);color:#b700e0;font-size:.82rem;font-weight:700;flex-shrink:0;">5</span>
-                    Keep the Momentum Going
-                  </h4>
-                </div>
-                <div class="card-content" style="flex:1;display:flex;flex-direction:column;">
-                  <img class="img-fluid" src="app-assets/img/photos/step5.jpg" alt="Step 5" style="opacity:.88;flex-shrink:0;">
-                  <div class="card-body" style="flex:1;display:flex;flex-direction:column;">
-                    <div style="flex:1;">
-                      <p style="font-size:.92rem;margin-bottom:0;">
-                        Repeat Step 3 — order traffic from our trusted traffic sources.
-                        Consistency is the key to long-term success. Keep the leads coming and keep moving forward.
-                      </p>
-                    </div>
-                    <div style="margin-top:auto;padding-top:1rem;">
-                      <a href="traffic.php" class="btn btn-primary btn-block">
-                        <i class="ft-repeat mr-1"></i> Show Traffic Sources
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-
-        <!-- ═══════════════════════════════════════════════════════════
-             SECTION 9 — TRUST FOOTER STRIP
-        ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-trust-footer" style="margin-top:.25rem;margin-bottom:1.5rem;">
-          <div class="row">
-            <div class="col-12">
-              <div class="card" style="background:rgba(255,255,255,.02);">
-                <div class="s2s-trust-strip">
-                  <span><i class="ft-shield"></i> In partnership with PM-International</span>
-                  <span><i class="ft-calendar"></i> Est. 1993</span>
-                  <span><i class="ft-globe"></i> Active in 40+ countries</span>
-                  <span><i class="ft-award"></i> 1,000+ top athletes trust FitLine</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-      </div><!-- /.content-wrapper -->
-    </div><!-- /.main-content -->
-
-    <?php require_once "parts/footer.php"; ?>
+    <?php require_once 'parts/footer.php'; ?>
     <button class="btn btn-primary scroll-top" type="button"><i class="ft-arrow-up"></i></button>
-  </div><!-- /.main-panel -->
-</div><!-- /.wrapper -->
+  </div>
+</div>
 
 <div class="sidenav-overlay"></div>
 <div class="drag-target"></div>
 
 <script src="app-assets/vendors/js/vendors.min.js"></script>
 <script src="app-assets/vendors/js/switchery.min.js"></script>
-<script src="app-assets/vendors/js/chartist.min.js"></script>
-<script src="app-assets/vendors/js/plyr.min.js"></script>
 <script src="app-assets/js/core/app-menu.js"></script>
 <script src="app-assets/js/core/app.js"></script>
 <script src="app-assets/js/notification-sidebar.js"></script>
 <script src="app-assets/js/customizer.js"></script>
 <script src="app-assets/js/scroll-top.js"></script>
-<script src="app-assets/js/dashboard1.js"></script>
-<script src="app-assets/js/ex-component-media-player.js"></script>
 <script src="assets/js/scripts.js"></script>
-
+<?php if (!$step2Complete): ?>
+<script src="https://player.vimeo.com/api/player.js"></script>
 <script>
-  // Init Plyr video players
-  document.addEventListener('DOMContentLoaded', () => {
-    new Plyr('#plyr-video-player');
-    new Plyr('#plyr-video-player-2');
-  });
-
-  // Track Step 1 PM-International registration click
-  $(document).ready(function () {
-    $("#sforpm").on("click", function () {
-      $.post("<?= $baseurl ?>/backoffice/start.php", {
-        click:  "<?= date('Y-m-d H:i:s') ?>",
-        userid: "<?= (int)$_SESSION['userid'] ?>"
-      }, function (data, status) {
-        console.log("Step 1 tracked: " + status);
-      });
-    });
-  });
-</script>
-<script>
-(function() {
+(function () {
   if (typeof Vimeo === 'undefined') return;
-  var trackUrl = '../includes/track-video.php';
-  var page = window.location.pathname;
-
-  function send(evt, title) {
-    fetch(trackUrl, {
+  var element = document.getElementById('vimeo-start-1');
+  if (!element) return;
+  var player = new Vimeo.Player(element);
+  var fired = {};
+  function send(eventName) {
+    if (fired[eventName]) return;
+    fired[eventName] = true;
+    fetch('../includes/track-video.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: 'event='  + encodeURIComponent(evt)
-          + '&video=' + encodeURIComponent(title)
-          + '&page='  + encodeURIComponent(page),
-      credentials: 'same-origin'
-    }).catch(function(){});
+      credentials: 'same-origin',
+      body: 'event=' + encodeURIComponent(eventName)
+        + '&video=' + encodeURIComponent('Business Overview')
+        + '&page=' + encodeURIComponent(window.location.pathname)
+    }).catch(function () {});
   }
-
-  // Video 1 — Business Presentation (with milestones)
-  var el1 = document.getElementById('vimeo-start-1');
-  if (el1) {
-    var p1 = new Vimeo.Player(el1), t1 = {};
-    p1.on('play', function() {
-      if (!t1.p) { t1.p = 1; send('video_play', 'Business Presentation'); }
-    });
-    p1.on('timeupdate', function(d) {
-      if (!d) return;
-      if (!t1.p25 && d.percent >= .25) { t1.p25 = 1; send('video_25',  'Business Presentation'); }
-      if (!t1.p50 && d.percent >= .50) { t1.p50 = 1; send('video_50',  'Business Presentation'); }
-      if (!t1.p75 && d.percent >= .75) { t1.p75 = 1; send('video_75',  'Business Presentation'); }
-    });
-    p1.on('ended', function() {
-      if (!t1.c) { t1.c = 1; send('video_complete', 'Business Presentation'); }
-    });
-  }
-
-  // Videos 2/3/4 — play event only
-  [['vimeo-start-2', 'video2_play', 'From Our Founder'],
-   ['vimeo-start-3', 'video3_play', 'Incentive Trips'],
-   ['vimeo-start-4', 'video4_play', 'Direct Cash']
-  ].forEach(function(cfg) {
-    var el = document.getElementById(cfg[0]);
-    if (!el) return;
-    var p = new Vimeo.Player(el), fired = false;
-    p.on('play', function() { if (!fired) { fired = true; send(cfg[1], cfg[2]); } });
+  player.on('play', function () { send('video_play'); });
+  player.on('timeupdate', function (data) {
+    if (!data) return;
+    if (data.percent >= .25) send('video_25');
+    if (data.percent >= .50) send('video_50');
+    if (data.percent >= .75) send('video_75');
   });
+  player.on('ended', function () { send('video_complete'); });
 })();
 </script>
+<?php endif; ?>
 </body>
 </html>

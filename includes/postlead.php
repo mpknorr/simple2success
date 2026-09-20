@@ -5,21 +5,41 @@ include "conn.php";
 $userIP = getClientIp();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email    = mysqli_real_escape_string($link, $_POST["email"] ?? '');
-    $name     = mysqli_real_escape_string($link, $_POST["name"] ?? '');
-    $referer  = mysqli_real_escape_string($link, $_POST["referer"] ?? '');
-    $source       = mysqli_real_escape_string($link, $_POST["source"]       ?? '');
-    $a            = mysqli_real_escape_string($link, $_POST["a"]            ?? '');
-    $tr           = mysqli_real_escape_string($link, $_POST["tr"]           ?? '');
-    $page         = mysqli_real_escape_string($link, $_POST["page"]         ?? '');
-    $utm_source   = mysqli_real_escape_string($link, $_POST["utm_source"]   ?? $_GET["utm_source"]   ?? '');
-    $utm_medium   = mysqli_real_escape_string($link, $_POST["utm_medium"]   ?? $_GET["utm_medium"]   ?? '');
-    $utm_campaign = mysqli_real_escape_string($link, $_POST["utm_campaign"] ?? $_GET["utm_campaign"] ?? '');
+    // Honeypot: real visitors never fill this visually hidden field.
+    if (!empty($_POST['website'])) {
+        http_response_code(204);
+        exit();
+    }
+
+    $allowedPages = ['link1','link2','link3','link4','linkp1','linkp2','linkp3','linkp4'];
+    $pageRaw = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_POST['page'] ?? ''));
+    $pageRaw = in_array($pageRaw, $allowedPages, true) ? $pageRaw : 'link1';
+    $returnUrl = rtrim($baseurl, '/') . '/' . $pageRaw . '/';
+
+    $emailRaw = strtolower(trim((string)($_POST['email'] ?? '')));
+    $nameRaw = trim(strip_tags((string)($_POST['name'] ?? '')));
+    if (!filter_var($emailRaw, FILTER_VALIDATE_EMAIL) || $nameRaw === '') {
+        header('Location: ' . $returnUrl . '?err=invalid');
+        exit();
+    }
+
+    $email    = mysqli_real_escape_string($link, mb_substr($emailRaw, 0, 190));
+    $name     = mysqli_real_escape_string($link, mb_substr($nameRaw, 0, 100));
+    $refererRaw = $_POST['referer'] ?? '';
+    $referer  = (is_numeric($refererRaw) && (int)$refererRaw > 0) ? (string)(int)$refererRaw : '';
+    $source       = mysqli_real_escape_string($link, mb_substr((string)($_POST["source"] ?? ''), 0, 100));
+    $a            = mysqli_real_escape_string($link, mb_substr((string)($_POST["a"] ?? ''), 0, 100));
+    $tr           = mysqli_real_escape_string($link, mb_substr((string)($_POST["tr"] ?? ''), 0, 100));
+    $page         = mysqli_real_escape_string($link, $pageRaw);
+    $utm_source   = mysqli_real_escape_string($link, mb_substr((string)($_POST["utm_source"] ?? ''), 0, 100));
+    $utm_medium   = mysqli_real_escape_string($link, mb_substr((string)($_POST["utm_medium"] ?? ''), 0, 100));
+    $utm_campaign = mysqli_real_escape_string($link, mb_substr((string)($_POST["utm_campaign"] ?? ''), 0, 150));
     // Language: from hidden field (landing page sets this) or auto-detected from browser
     $lang_raw = $_POST["lang"] ?? $_GET["lang"] ?? '';
     $lang     = mysqli_real_escape_string($link, detectLanguage($lang_raw));
     // Country: auto-detected from IP (silent failure on localhost/private IPs)
     $country_detected = mysqli_real_escape_string($link, detectCountry($userIP));
+    $userIP           = mysqli_real_escape_string($link, $userIP);
     $profile_pic = "user_default.png";
     $timestamp   = date("Y-m-d H:i:s");
 
@@ -41,12 +61,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             VALUES ($existingLeadId, 'signup_attempt', '$esc_page', '$esc_source',
                     '$esc_utm_source', '$esc_utm_medium', '$esc_utm_campaign', '$esc_ip')");
 
-        $tmPhttp_redir = $_SERVER["HTTP_REFERER"];
-        $tmpRedirUrl   = $tmPhttp_redir . "?err=eae";
-        if (strpos($tmPhttp_redir, "err") !== false) {
-            $tmpRedirUrl = $_SERVER["HTTP_REFERER"];
-        }
-        header("Location: " . $tmpRedirUrl);
+        // Redirect only to a known local landing page (prevents open redirects).
+        header('Location: ' . $returnUrl . '?err=eae');
         exit();
     } else {
         // ── Rotator: assign referer if empty ────────────────────────────
@@ -82,6 +98,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if (mysqli_query($link, $sql)) {
             $last_id = mysqli_insert_id($link);
+
+            // Record which signup notice was displayed. This is an audit trail,
+            // not a substitute for any jurisdiction-specific consent requirement.
+            mysqli_query($link, "CREATE TABLE IF NOT EXISTS lead_signup_notices (
+                user_id INT NOT NULL PRIMARY KEY,
+                notice_version VARCHAR(40) NOT NULL,
+                page VARCHAR(40) NOT NULL,
+                recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )");
+            $noticeVersion = mysqli_real_escape_string($link, mb_substr((string)($_POST['email_notice_version'] ?? 'mission-v2'), 0, 40));
+            mysqli_query($link, "INSERT IGNORE INTO lead_signup_notices (user_id, notice_version, page)
+                VALUES ($last_id, '$noticeVersion', '$page')");
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }

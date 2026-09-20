@@ -11,6 +11,7 @@ if (!empty($_premSnips)) {
     $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 }
 require_once __DIR__ . '/../includes/lang.php';
+$referer   = isset($referer) && is_numeric($referer) ? (int)$referer : 0;
 $_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
 $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
@@ -23,7 +24,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 <?php require_once __DIR__ . '/../includes/head-tracking.php'; ?>
   <meta charset="utf-8">
   <title>Are You Ready to Soar? — Simple2Success</title>
-  <meta content="Something life-changing is happening. Get your 100% free Simple2Success account and see for yourself." name="description">
+  <meta content="Explore the Simple2Success activation path, practical tools and one clear next action with free account access." name="description">
   <meta content="width=device-width, initial-scale=1" name="viewport">
   <link rel="shortcut icon" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon.ico">
   <link href="<?= $baseurl ?>/linkp2/css/normalize.css" rel="stylesheet" type="text/css">
@@ -34,8 +35,8 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 <body class="s2s-body">
   <div class="s2s-section">
     <div class="s2s-banner-wrap">
-      <div class="s2s-banner-text">The Team System That Builds Your Income <span class="s2s-span-accent">While You Sleep</span></div>
-      <p class="s2s-subtitle">See how it works — your 100% FREE Simple2Success account is ready for you</p>
+      <div class="s2s-banner-text">A Team System Built for <span class="s2s-span-accent">Clear, Repeatable Action</span></div>
+      <p class="s2s-subtitle">See the process first — your 100% FREE Simple2Success account is ready for you</p>
     </div>
   </div>
   <div class="s2s-section-3">
@@ -46,9 +47,9 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <div class="s2s-form-col">
         <div class="s2s-form-col-wrap">
           <div class="s2s-container">
-            <h1 class="s2s-heading"><span class="s2s-span-reserve">RESERVE</span><br><span style="white-space:nowrap;">YOUR SPOT</span></h1>
-            <p class="s2s-subtitle action">Free spots are limited by sponsor capacity — yours has been reserved</p>
-            <p style="margin:4px 0 12px;font-size:13px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+            <h1 class="s2s-heading"><span class="s2s-span-reserve">START</span><br><span style="white-space:nowrap;">YOUR PLAN</span></h1>
+            <p class="s2s-subtitle action">Free access to a clear first step — decide at your own pace</p>
+            <p style="margin:4px 0 12px;font-size:13px;font-weight:600;color:#cb2ebc;">🦅 Mission 1000 Families: one clear system, real support and a path toward a personal additional-income goal.</p>
             <div class="s2s-form-inner">
               <div class="s2s-form-block w-form">
                 <?php if ($_eae): ?>
@@ -65,17 +66,23 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
                   <input type="hidden" name="lang" value="en">
                   <input type="hidden" name="referer" value="<?= $referer ?>">
                   <input type="hidden" name="source" value="<?= $source ?>">
-                  <input type="text" class="s2s-name-field" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name">
+                  <input type="hidden" name="utm_source" value="<?= htmlspecialchars($_GET['utm_source'] ?? '') ?>">
+                  <input type="hidden" name="utm_medium" value="<?= htmlspecialchars($_GET['utm_medium'] ?? '') ?>">
+                  <input type="hidden" name="utm_campaign" value="<?= htmlspecialchars($_GET['utm_campaign'] ?? '') ?>">
+                  <input type="hidden" name="email_notice_version" value="mission-v2">
+                  <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+                  <input type="text" class="s2s-name-field" maxlength="100" name="name" placeholder="Your First Name" required autocomplete="given-name">
                   <div class="s2s-divider"></div>
                   <input type="email" class="s2s-email-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
                   <div class="s2s-divider"></div>
-                  <input type="submit" value="Reserve My Free Spot →" class="s2s-btn">
+                  <input type="submit" value="Show Me My First Step →" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
+            <p style="margin:7px 0 0;font-size:11px;line-height:1.45;opacity:.58;text-align:center;">Includes account access and action-focused follow-up emails. Unsubscribe anytime. No earnings guarantee.</p>
                 </form>
                 <?php endif; ?>
               </div>
             </div>
-            <div class="s2s-cta-label">Get Your FREE Account!</div>
+            <div class="s2s-cta-label">See Your First Clear Step</div>
           </div>
         </div>
       </div>
@@ -84,7 +91,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
   <section class="s2s-perks-section">
     <div class="s2s-perks-wrap">
       <div class="s2s-perks-col">
-        <div class="s2s-perks-text">Active in 40+ Countries <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Multiple Income Streams</div>
+        <div class="s2s-perks-text">Active in 40+ Countries <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Trackable Activation Steps</div>
       </div>
       <div class="s2s-logo-col"></div>
     </div>

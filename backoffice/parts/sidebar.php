@@ -44,9 +44,10 @@
                         <li class="nav-item"><a href="index.php"><i class="ft-home"></i><span class="menu-title" data-i18n="Dashboard">Dashboard</span></a>
                         </li>
 
-                        <li class="nav-item"><a href="start.php"><i class="ft-dollar-sign"></i><span class="menu-title" data-i18n="Your Success Steps">Your Success Steps</span></a>
+                        <li class="nav-item"><a href="start.php"><i class="ft-compass"></i><span class="menu-title" data-i18n="Your Success Steps">Your Next Step</span></a>
                         </li>
 
+                        <?php if (!empty($username) && preg_match('/^\d+$/', trim((string)$username))): ?>
                         <li class=" nav-item"><a href="links.php"><i class="ft-link"></i><span class="menu-title" data-i18n="Your Links">Your Links</span></a>
                         </li>
                         
@@ -61,12 +62,16 @@
                         
                         <li class=" nav-item"><a href="traffic.php"><i class="ft-cpu"></i><span class="menu-title" data-i18n="Traffic Sources">Traffic Sources</span></a>
                         </li>
-                        <?php
-                        if(!empty($username)){
-                        ?>
+
                         <li class="nav-item"><a href="subscription.php"><i class="ft-help-circle"></i><span class="menu-title" data-i18n="Subscription">Subscription</span></a>    
                         </li>
-                        <?php }?>
+                        <?php else: ?>
+                        <li class="nav-item">
+                            <a href="start.php#step2" title="Complete Step 2 to unlock your execution tools">
+                                <i class="ft-lock"></i><span class="menu-title">Tools unlock after Step 2</span>
+                            </a>
+                        </li>
+                        <?php endif; ?>
 
                         <li class="nav-item"><a href="support.php"><i class="ft-help-circle"></i><span class="menu-title" data-i18n="Subscription">Support</span></a>    
                         </li>

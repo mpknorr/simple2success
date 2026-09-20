@@ -5,17 +5,16 @@ if (empty($_SESSION['userid'])) {
     exit();
 }
 require_once '../includes/conn.php';
+require_once '../includes/onboarding.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !s2sVerifyCsrf($_POST['csrf_token'] ?? null)) {
+    header('Location: start.php?err=csrf#step1');
+    exit();
+}
 
 $userid  = (int)$_SESSION['userid'];
-$step1ip = mysqli_real_escape_string($link, $_SERVER['REMOTE_ADDR'] ?? '');
+$step1ip = mysqli_real_escape_string($link, function_exists('getClientIp') ? getClientIp() : ($_SERVER['REMOTE_ADDR'] ?? ''));
 $now     = date('Y-m-d H:i:s');
-
-// Record Step 1 click — only set if not already set
-mysqli_query($link, "UPDATE users SET
-    signuproot = IF(signuproot IS NULL OR signuproot = '', '$now', signuproot),
-    step1_at   = IF(step1_at IS NULL, NOW(), step1_at),
-    step1_ip   = IF(step1_ip IS NULL OR step1_ip = '', '$step1ip', step1_ip)
-    WHERE leadid = $userid");
 
 // Get sponsor's PM number for TP= parameter
 $row = mysqli_fetch_assoc(mysqli_query($link, "SELECT referer FROM users WHERE leadid = $userid"));
@@ -25,8 +24,23 @@ if (!empty($row['referer']) && is_numeric($row['referer'])) {
     $referer_username = $ref['username'] ?? '';
 }
 
-$tp  = !empty($referer_username) ? '?TP=' . urlencode($referer_username) : '';
-$url = 'https://www.pmebusiness.com/registrationv2/' . $tp;
+// Never send a lead into registration without a verified numeric sponsor ID.
+// A missing sponsor creates a wrong team connection that is difficult to undo.
+if (!preg_match('/^\d+$/', trim((string)$referer_username))) {
+    s2sLogLeadEvent($link, $userid, 'step1_sponsor_missing', 'backoffice/start.php');
+    header('Location: start.php?err=sponsor#step1');
+    exit();
+}
+
+// Record Step 1 only after the sponsor relationship has been verified.
+mysqli_query($link, "UPDATE users SET
+    signuproot = IF(signuproot IS NULL OR signuproot = '', '$now', signuproot),
+    step1_at   = IF(step1_at IS NULL, NOW(), step1_at),
+    step1_ip   = IF(step1_ip IS NULL OR step1_ip = '', '$step1ip', step1_ip)
+    WHERE leadid = $userid");
+s2sLogLeadEvent($link, $userid, 'step1_button_click', 'backoffice/start.php', 'verified_sponsor');
+
+$url = 'https://www.pmebusiness.com/registrationv2/?TP=' . urlencode($referer_username);
 
 header('Location: ' . $url);
 exit();
