@@ -79,7 +79,7 @@ $pageStylesheets = ['assets/css/activation.css'];
         <?php if ($step2Success): ?>
           <div class="mission-flash" role="status">
             <i class="ft-check-circle"></i>
-            <span><strong>Activation complete.</strong> Your Partner ID has been saved and your next-phase plan is now available.</span>
+            <span><strong>Account setup complete.</strong> Your Partner ID has been saved. Continue below with Steps 3, 4 and 5.</span>
           </div>
         <?php endif; ?>
 
@@ -91,7 +91,7 @@ $pageStylesheets = ['assets/css/activation.css'];
         <?php endif; ?>
 
         <header class="activation-header">
-          <span class="mission-eyebrow">Mission 1000 Families · Your activation path</span>
+          <span class="mission-eyebrow">Mission 1000 Families · Your five-step path</span>
           <h1 class="activation-heading"><?= htmlspecialchars($activation['title']) ?></h1>
           <p><?= htmlspecialchars($activation['body']) ?></p>
         </header>
@@ -100,10 +100,10 @@ $pageStylesheets = ['assets/css/activation.css'];
           <div class="card mission-progress-card">
             <div class="mission-progress-top">
               <div>
-                <strong>Account → partner registration → Partner ID</strong><br>
-                <span>Only the step that applies to you is highlighted.</span>
+                <strong>Account setup · Steps 1 and 2</strong><br>
+                <span>After setup, continue with Steps 3, 4 and 5 below.</span>
               </div>
-              <span class="mission-progress-value"><?= (int)$activation['completed'] ?> of 3 complete · <?= (int)$activation['percent'] ?>%</span>
+              <span class="mission-progress-value">Setup: <?= (int)$activation['percent'] ?>% · account + Steps 1–2</span>
             </div>
             <div class="mission-progress-track" aria-hidden="true">
               <span style="width:<?= (int)$activation['percent'] ?>%;"></span>
@@ -111,10 +111,10 @@ $pageStylesheets = ['assets/css/activation.css'];
             <div class="mission-progress-steps">
               <div class="mission-progress-step is-done"><b>✓</b><span>Simple2Success account</span></div>
               <div class="mission-progress-step <?= $step1Started || $step2Complete ? 'is-done' : 'is-current' ?>">
-                <b><?= $step1Started || $step2Complete ? '✓' : '2' ?></b><span>Open registration</span>
+                <b><?= $step1Started || $step2Complete ? '✓' : '1' ?></b><span>Step 1 · Open registration</span>
               </div>
               <div class="mission-progress-step <?= $step2Complete ? 'is-done' : ($step1Started ? 'is-current' : '') ?>">
-                <b><?= $step2Complete ? '✓' : '3' ?></b><span>Save Partner ID</span>
+                <b><?= $step2Complete ? '✓' : '2' ?></b><span>Step 2 · Save Partner ID</span>
               </div>
             </div>
           </div>
@@ -221,26 +221,65 @@ $pageStylesheets = ['assets/css/activation.css'];
         <?php endif; ?>
 
         <section id="after-activation" class="activation-next">
-          <span class="mission-eyebrow"><?= $step2Complete ? 'Your next phase' : 'What unlocks after activation' ?></span>
+          <span class="mission-eyebrow"><?= $step2Complete ? 'Setup complete · Continue in order' : 'Your next steps · Preview' ?></span>
           <h2 style="color:#fff;font-weight:800;margin-bottom:.55rem;">
-            <?= $step2Complete ? 'Build a 90-day routine—not another short burst.' : 'You will get one simple execution plan.' ?>
+            <?= $step2Complete ? 'Follow Steps 3, 4 and 5.' : 'After Step 2, your path continues.' ?>
           </h2>
           <p style="color:var(--mission-muted);max-width:800px;line-height:1.65;">
             <?= $step2Complete
-              ? 'Your focus now shifts from setup to consistent, measurable activity. Start with your personal links, choose one outreach method and review results before spending more.'
-              : 'We will reveal the execution tools after Step 2 so you can focus on activation now without information overload.' ?>
+              ? 'Start with Step 3, then review Step 4 and make Step 5 your routine. The setup bar above does not measure these ongoing actions.'
+              : 'Complete Steps 1 and 2 first. Then use the actions below in order: traffic, product subscription and consistent activity.' ?>
           </p>
-          <div class="activation-next-grid">
-            <div class="activation-next-item"><b>1 · Prepare</b><span>Review your personal links and make sure your profile is ready.</span></div>
-            <div class="activation-next-item"><b>2 · Act</b><span>Choose one compliant outreach or traffic method and start small.</span></div>
-            <div class="activation-next-item"><b>3 · Learn</b><span>Track leads and Step 2 activations, then improve one bottleneck at a time.</span></div>
+          <div class="activation-next-grid" aria-label="Steps 3, 4 and 5">
+            <article id="step3" class="activation-step <?= $step2Complete ? 'is-current' : '' ?>">
+              <div class="activation-step__top">
+                <span class="activation-step__number">3</span>
+                <span class="activation-pill"><?= $step2Complete ? 'Start here' : 'After Step 2' ?></span>
+              </div>
+              <h2>Order Traffic</h2>
+              <p>Choose a traffic source and use your personal capture-page link. Start with a budget you can afford and measure qualified leads before increasing it.</p>
+              <?php if ($step2Complete): ?>
+                <p><a class="mission-secondary" href="links.php">Check My Personal Link</a></p>
+                <a class="mission-primary" href="traffic.php">Choose Traffic <i class="ft-arrow-right"></i></a>
+              <?php else: ?>
+                <span class="mission-meta"><i class="ft-lock"></i> Available after Step 2</span>
+              <?php endif; ?>
+              <p class="activation-form-note">Traffic can cost money. Buying visitors does not guarantee registrations or income.</p>
+            </article>
+            <article id="step4" class="activation-step">
+              <div class="activation-step__top">
+                <span class="activation-step__number">4</span>
+                <span class="activation-pill"><?= $step2Complete ? 'Then review' : 'After Step 2' ?></span>
+              </div>
+              <h2>Review Your Product Subscription</h2>
+              <p>Check your product start or subscription in your partner account. If you already arranged one during registration, review the existing order instead of creating a second one.</p>
+              <?php if ($step2Complete && $pmLocked): ?>
+                <a class="mission-secondary" href="https://www.fitline.com/autoship/create?sponsor=<?= rawurlencode($currentUserPm) ?>&amp;productId=9700732" target="_blank" rel="noopener noreferrer">Review Product Subscription <i class="ft-external-link"></i></a>
+              <?php elseif ($step2Complete): ?>
+                <p class="activation-alert">A numeric Partner ID is required for your personal product link. <a href="support.php">Contact Support</a> to check your saved ID.</p>
+              <?php else: ?>
+                <span class="mission-meta"><i class="ft-lock"></i> Available after Step 2</span>
+              <?php endif; ?>
+              <p class="activation-form-note">Opens the partner website. Check current availability, prices, recurring charges and cancellation terms before placing an order. Opening this link does not confirm a subscription.</p>
+            </article>
+            <article id="step5" class="activation-step">
+              <div class="activation-step__top">
+                <span class="activation-step__number">5</span>
+                <span class="activation-pill">Repeat regularly</span>
+              </div>
+              <h2>Keep the Momentum Going</h2>
+              <p>Review your leads and their progress each week. Follow up using the provided templates, improve your approach and repeat Step 3 when the results and your budget justify it.</p>
+              <?php if ($step2Complete): ?>
+                <p><a class="mission-secondary" href="leads.php">Review My Leads</a></p>
+                <p><a class="mission-secondary" href="swipe.php">Open Follow-up Templates</a></p>
+                <a class="mission-secondary" href="traffic.php">Return to Traffic Sources</a>
+              <?php else: ?>
+                <span class="mission-meta"><i class="ft-lock"></i> Available after Step 2</span>
+              <?php endif; ?>
+              <p class="activation-form-note">This is an ongoing routine, not a one-time task. Traffic purchases and product subscriptions are not automatically verified here.</p>
+            </article>
           </div>
-          <?php if ($step2Complete): ?>
-            <div class="mission-actions">
-              <a class="mission-primary" href="links.php">Review My Personal Links <i class="ft-arrow-right"></i></a>
-              <a class="mission-secondary" href="swipe.php">Open Outreach Templates</a>
-            </div>
-          <?php else: ?>
+          <?php if (!$step2Complete): ?>
             <span class="mission-meta"><i class="ft-lock"></i> Complete Step 2 to unlock the next-phase actions.</span>
           <?php endif; ?>
           <?php if ($commitmentLabel !== ''): ?>
@@ -262,7 +301,7 @@ $pageStylesheets = ['assets/css/activation.css'];
             </details>
             <details>
               <summary>What happens after I save it?</summary>
-              <p>Your next-phase tools become available. Start with your links and a focused 90-day routine; later steps should not distract you now.</p>
+              <p>Steps 3, 4 and 5 become available: start traffic with your personal link, review your product subscription, then follow up and repeat your activity. The 100% indicator refers only to account setup.</p>
             </details>
             <details>
               <summary>Can I change the ID later?</summary>

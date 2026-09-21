@@ -99,10 +99,10 @@ $pageStylesheets = ['assets/css/activation.css'];
           <div class="card mission-progress-card">
             <div class="mission-progress-top">
               <div>
-                <strong>Your activation path</strong><br>
+                <strong>Your account setup</strong><br>
                 <span><?= htmlspecialchars($activation['eyebrow']) ?></span>
               </div>
-              <span class="mission-progress-value"><?= (int)$activation['completed'] ?> of 3 complete · <?= (int)$activation['percent'] ?>%</span>
+              <span class="mission-progress-value">Setup: <?= (int)$activation['percent'] ?>% · account + Steps 1–2</span>
             </div>
             <div class="mission-progress-track" aria-hidden="true">
               <span style="width:<?= (int)$activation['percent'] ?>%;"></span>
@@ -110,12 +110,13 @@ $pageStylesheets = ['assets/css/activation.css'];
             <div class="mission-progress-steps">
               <div class="mission-progress-step is-done"><b>✓</b><span>Simple2Success account</span></div>
               <div class="mission-progress-step <?= $step1Done ? 'is-done' : 'is-current' ?>">
-                <b><?= $step1Done ? '✓' : '2' ?></b><span>Open partner registration</span>
+                <b><?= $step1Done ? '✓' : '1' ?></b><span>Step 1 · Open partner registration</span>
               </div>
               <div class="mission-progress-step <?= $step2Done ? 'is-done' : ($step1Done ? 'is-current' : '') ?>">
-                <b><?= $step2Done ? '✓' : '3' ?></b><span>Save Partner ID</span>
+                <b><?= $step2Done ? '✓' : '2' ?></b><span>Step 2 · Save Partner ID</span>
               </div>
             </div>
+            <p class="mission-meta">This measures account setup only. Your next actions are Steps 3–5: traffic, product subscription and consistent activity.</p>
           </div>
         </section>
 

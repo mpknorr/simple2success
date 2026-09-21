@@ -85,11 +85,11 @@ function s2sActivationState(array $user): array
             'key' => 'activated',
             'completed' => 3,
             'percent' => 100,
-            'eyebrow' => 'Activation complete',
-            'title' => 'Your Simple2Success foundation is ready.',
-            'body' => 'You have completed the account and partner connection. Your next goal is a simple 90-day routine you can repeat.',
-            'cta_label' => 'Open My Next-Phase Plan',
-            'cta_url' => 'start.php#after-activation',
+            'eyebrow' => 'Account setup complete — continue with Steps 3–5',
+            'title' => 'Your setup is complete. Continue with Step 3.',
+            'body' => 'Follow the next steps in order: start your traffic, review your product subscription, then repeat and improve your activity.',
+            'cta_label' => 'Continue to Step 3',
+            'cta_url' => 'start.php#step3',
         ];
     }
 
