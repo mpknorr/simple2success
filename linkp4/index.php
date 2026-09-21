@@ -11,6 +11,7 @@ if (!empty($_premSnips)) {
     $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 }
 require_once __DIR__ . '/../includes/lang.php';
+$referer   = isset($referer) && is_numeric($referer) ? (int)$referer : 0;
 $_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
 $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
@@ -22,8 +23,8 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 <?php require_once __DIR__ . '/../includes/head-tracking.php'; ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simple2Success – Eagle Elite Access | Join Free</title>
-<meta name="description" content="Join the Simple2Success Eagle Team — a proven, step-by-step system that turns daily actions into lasting income. 100% free to start.">
+<title>Simple2Success – Mission 1000 Families | Free Access</title>
+<meta name="description" content="See the Simple2Success Eagle Team system: a clear activation path, practical tools and one next action. Free to explore; results are not guaranteed.">
 <link rel="shortcut icon" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon.ico">
 <link rel="stylesheet" href="<?= $baseurl ?>/linkp4/fonts/fonts.css">
 <link rel="stylesheet" href="<?= $baseurl ?>/linkp4/css/style.css">
@@ -40,24 +41,24 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
   <div class="hero-content">
     <div class="badge-top">
       <span class="badge-dot"></span>
-      Eagle Elite Access — Free Registration
+      Mission 1000 Families — Free Simple2Success Access
     </div>
 
     <h1>
-      Stop Guessing.<br>
-      <span class="highlight">Start Earning.</span>
+      Stop Switching.<br>
+      <span class="highlight">Start Following One Clear Plan.</span>
     </h1>
 
     <p class="hero-sub">
-      Join the Simple2Success Eagle Team — a proven, step-by-step system<br>
-      that turns daily actions into lasting income.
+      See a step-by-step system built to reduce uncertainty,<br>
+      strengthen your skills and show one practical next action.
     </p>
 
     <p class="hero-proof">
-      ✦ 10,000+ Members in 40+ Countries &nbsp;·&nbsp; 100% FREE to Start
+      ✦ Clear onboarding &nbsp;·&nbsp; Human support &nbsp;·&nbsp; 100% free access
     </p>
 
-    <p style="margin:10px auto 0;max-width:640px;font-size:15px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+    <p style="margin:10px auto 0;max-width:700px;font-size:15px;font-weight:600;color:#cb2ebc;">🦅 Our mission: support 1,000 families as they build skills, consistency and a path toward at least $1,000 in additional monthly income.</p>
 
     <?php if ($_eae): ?>
       <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -73,20 +74,26 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <input type="hidden" name="lang" value="en">
       <input type="hidden" name="referer" value="<?= $referer ?>">
       <input type="hidden" name="source" value="<?= $source ?>">
-      <input type="text" name="name" placeholder="Your First Name" autocomplete="given-name">
+      <input type="hidden" name="utm_source" value="<?= htmlspecialchars($_GET['utm_source'] ?? '') ?>">
+      <input type="hidden" name="utm_medium" value="<?= htmlspecialchars($_GET['utm_medium'] ?? '') ?>">
+      <input type="hidden" name="utm_campaign" value="<?= htmlspecialchars($_GET['utm_campaign'] ?? '') ?>">
+      <input type="hidden" name="email_notice_version" value="mission-v2">
+      <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+      <input type="text" name="name" placeholder="Your First Name" maxlength="100" required autocomplete="given-name">
       <input type="email" name="email" placeholder="Your Best Email" required autocomplete="email">
       <button type="submit" class="btn-primary">
-        Claim My Free Position Now
+        Show Me the Step-by-Step System
         <span class="btn-arrow">→</span>
       </button>
     </form>
     <?php endif; ?>
 
     <div class="trust-row">
-      <div class="trust-item"><span class="trust-icon">✓</span> 100% Free Registration</div>
+      <div class="trust-item"><span class="trust-icon">✓</span> 100% Free Access</div>
       <div class="trust-item"><span class="trust-icon">✓</span> No Credit Card Required</div>
-      <div class="trust-item"><span class="trust-icon">✓</span> Instant Access</div>
+      <div class="trust-item"><span class="trust-icon">✓</span> Unsubscribe Anytime</div>
     </div>
+    <p style="margin:12px auto 0;max-width:680px;font-size:11px;line-height:1.5;color:rgba(255,255,255,.42);">Includes account access and action-focused follow-up emails. $1,000+ is a mission target, not an earnings guarantee; results vary.</p>
   </div>
 </section>
 
@@ -95,23 +102,23 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 ════════════════════════════════════════════════════════════ -->
 <div class="proof-bar">
   <div class="proof-stat">
-    <span class="num">10,000+</span>
-    <span class="label">Active Members</span>
+    <span class="num">1,000</span>
+    <span class="label">Family Mission</span>
   </div>
   <div class="proof-divider"></div>
   <div class="proof-stat">
-    <span class="num">40+</span>
-    <span class="label">Countries</span>
+    <span class="num">3</span>
+    <span class="label">Activation Steps</span>
   </div>
   <div class="proof-divider"></div>
   <div class="proof-stat">
-    <span class="num">1B+</span>
-    <span class="label">Products Delivered Worldwide</span>
+    <span class="num">1</span>
+    <span class="label">Clear Next Action</span>
   </div>
   <div class="proof-divider"></div>
   <div class="proof-stat">
-    <span class="num">30+</span>
-    <span class="label">Years of Industry Experience</span>
+    <span class="num">0</span>
+    <span class="label">Income Guarantees</span>
   </div>
 </div>
 
@@ -140,7 +147,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
     <div class="problem-card">
       <span class="icon">🏝️</span>
       <h3>Working Alone</h3>
-      <p>Trying to build income without a team, without support, and without proven marketing tools.</p>
+      <p>Trying to build a business routine without a team, without support, and without practical marketing tools.</p>
     </div>
     <div class="problem-card">
       <span class="icon">⏳</span>
@@ -157,42 +164,42 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 ════════════════════════════════════════════════════════════ -->
 <div class="section">
   <span class="section-label">The Solution</span>
-  <h2 class="section-title">Everything You Need to <span class="hl">Build Real Income</span></h2>
+  <h2 class="section-title">A System Designed for <span class="hl">Clarity and Consistency</span></h2>
   <p class="section-desc">
-    The Eagle Team system gives you structure, proven tools, and a team
-    that handles the marketing — so you can focus on what matters.
+    The Eagle Team system gives you structure, practical tools and support
+    so you can focus on the next useful action instead of information overload.
   </p>
 
   <div class="benefits-grid">
     <div class="benefit-card">
       <span class="benefit-num">01 — Clarity</span>
       <h3>A Step-by-Step Roadmap</h3>
-      <p>No guessing. No overwhelm. You know exactly what to do at every stage — from Day 1 to full-time income.</p>
+      <p>No guessing and no giant checklist. You see the step that matters now and what unlocks after it.</p>
     </div>
     <div class="benefit-card">
       <span class="benefit-num">02 — Leverage</span>
-      <h3>Done-For-You Marketing System</h3>
-      <p>Professional funnels, capture pages, and email sequences — all built and ready to deploy with your link.</p>
+      <h3>Ready-to-Use Marketing Tools</h3>
+      <p>Personal links, capture pages and follow-up tools are prepared so you can spend more time learning and acting.</p>
     </div>
     <div class="benefit-card">
-      <span class="benefit-num">03 — Income</span>
-      <h3>Multiple Revenue Streams</h3>
-      <p>Training bonuses, first-line bonuses, deep bonuses, and lifestyle rewards — all unlocked step by step as your team grows.</p>
+      <span class="benefit-num">03 — Measurement</span>
+      <h3>Progress You Can See</h3>
+      <p>Track account creation, partner-registration activity and completed activations instead of relying on vague motivation.</p>
     </div>
     <div class="benefit-card">
       <span class="benefit-num">04 — Community</span>
       <h3>A Team That Has Your Back</h3>
-      <p>Join a global network of motivated partners who share strategies, celebrate wins, and keep each other accountable.</p>
+      <p>Build alongside people who share practical lessons, celebrate real progress and encourage consistent action.</p>
     </div>
     <div class="benefit-card">
-      <span class="benefit-num">05 — Freedom</span>
-      <h3>Work From Anywhere</h3>
-      <p>Your own schedule. Your own pace. Build your business from your laptop — whether you're at home or on the road.</p>
+      <span class="benefit-num">05 — Flexibility</span>
+      <h3>A Routine That Fits Real Life</h3>
+      <p>Choose a realistic schedule and build skills around family and work commitments. Progress still requires consistent effort.</p>
     </div>
     <div class="benefit-card">
       <span class="benefit-num">06 — Momentum</span>
-      <h3>Duplication That Scales</h3>
-      <p>When you follow the system, your team duplicates it. That's how small daily actions compound into exponential growth.</p>
+      <h3>A Process Others Can Learn</h3>
+      <p>A simple process is easier to explain, repeat and improve. Small actions can compound, but outcomes always vary.</p>
     </div>
   </div>
 </div>
@@ -204,10 +211,10 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 ════════════════════════════════════════════════════════════ -->
 <div class="section">
   <span class="section-label">How It Works</span>
-  <h2 class="section-title">3 Simple Steps to <span class="hl">Your First Income</span></h2>
+  <h2 class="section-title">3 Simple Steps to <span class="hl">Activate Your Plan</span></h2>
   <p class="section-desc">
-    The system is designed to be simple enough for anyone to follow —
-    and powerful enough to create real, lasting results.
+    The process is designed to be easy to understand. Your individual outcome
+    still depends on skill-building, consistent action, time and expenses.
   </p>
 
   <div class="steps-wrapper">
@@ -216,24 +223,24 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
     <div class="step-item">
       <div class="step-dot">1</div>
       <div class="step-body">
-        <h3>Register for Free &amp; Claim Your Position</h3>
-        <p>Create your free Simple2Success account and secure your spot in the Eagle Team network. No credit card. No risk. Takes less than 2 minutes.</p>
+        <h3>Create Your Free Simple2Success Account</h3>
+        <p>Open Mission Control, choose your personal reason and see the single next action. No credit card is required for Simple2Success access.</p>
       </div>
     </div>
 
     <div class="step-item">
       <div class="step-dot">2</div>
       <div class="step-body">
-        <h3>Complete Step 2 — Activate Your Partnership</h3>
-        <p>Create your free partner account and enter your Partner ID. This activates your marketing system and unlocks all income streams.</p>
+        <h3>Review the Partner Registration</h3>
+        <p>Open the official partner page, check the current terms and sponsor connection, and decide whether it fits you.</p>
       </div>
     </div>
 
     <div class="step-item">
       <div class="step-dot">3</div>
       <div class="step-body">
-        <h3>Order Traffic &amp; Let the System Work</h3>
-        <p>Use our trusted solo ad traffic sources to send leads into your funnel. The system handles follow-up, conversion, and duplication automatically.</p>
+        <h3>Save Your Partner ID and Start Building</h3>
+        <p>After confirmation, save your Partner ID. Then follow a focused 90-day routine using your links, outreach tools and measured follow-up.</p>
       </div>
     </div>
   </div>
@@ -245,42 +252,42 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
      TESTIMONIALS
 ════════════════════════════════════════════════════════════ -->
 <div class="section">
-  <span class="section-label">Real Results</span>
-  <h2 class="section-title">What Eagle Team Members <span class="hl">Are Saying</span></h2>
+  <span class="section-label">What Progress Looks Like</span>
+  <h2 class="section-title">Measure Actions Before <span class="hl">Outcomes</span></h2>
 
   <div class="testimonials-grid">
     <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <p class="testimonial-text">"I had tried three other systems before this. Simple2Success was the first one where I actually knew what to do every day. Within 60 days I had my first team members and my first commissions."</p>
+      <div class="stars">STEP 1</div>
+      <p class="testimonial-text">Understand the partner, review the current terms and make an informed decision. A clear decision is the first measurable win.</p>
       <div class="testimonial-author">
-        <div class="author-avatar">MK</div>
+        <div class="author-avatar">01</div>
         <div>
-          <div class="author-name">Michael K.</div>
-          <div class="author-location">Germany · 3 months in</div>
+          <div class="author-name">Clarity</div>
+          <div class="author-location">Know what happens next</div>
         </div>
       </div>
     </div>
 
     <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <p class="testimonial-text">"The done-for-you marketing system is incredible. I just share my link, the funnel does the work, and I focus on following up with people who are already interested."</p>
+      <div class="stars">STEP 2</div>
+      <p class="testimonial-text">Complete the account connection and save the correct Partner ID. Activation—not a page view—is the funnel milestone.</p>
       <div class="testimonial-author">
-        <div class="author-avatar">SL</div>
+        <div class="author-avatar">02</div>
         <div>
-          <div class="author-name">Sandra L.</div>
-          <div class="author-location">Austria · 5 months in</div>
+          <div class="author-name">Activation</div>
+          <div class="author-location">Finish the setup correctly</div>
         </div>
       </div>
     </div>
 
     <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <p class="testimonial-text">"What I love most is the community. Everyone is helping each other. The leaderboard keeps me motivated and the step-by-step system removes all the guesswork."</p>
+      <div class="stars">NEXT 90 DAYS</div>
+      <p class="testimonial-text">Use one outreach approach, track response and activation, and improve the biggest bottleneck before changing systems.</p>
       <div class="testimonial-author">
-        <div class="author-avatar">TM</div>
+        <div class="author-avatar">90</div>
         <div>
-          <div class="author-name">Thomas M.</div>
-          <div class="author-location">Switzerland · 2 months in</div>
+          <div class="author-name">Consistency</div>
+          <div class="author-location">Repeat, measure and improve</div>
         </div>
       </div>
     </div>
@@ -292,14 +299,14 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 ════════════════════════════════════════════════════════════ -->
 <div style="max-width:1100px; margin:0 auto; padding:0 20px;">
   <div class="urgency-banner">
-    <div class="urgency-icon">⚡</div>
+    <div class="urgency-icon">✓</div>
     <div class="urgency-text">
-      <strong>Limited Spots Available This Month</strong>
-      <span>To maintain team quality and support levels, we limit new registrations each month. Once the spots are filled, the next opening is next month.</span>
+      <strong>Start when you are ready to take the next step</strong>
+      <span>There is no artificial countdown. Free access lets you review the process first and make an informed decision.</span>
     </div>
     <div class="spots-counter">
-      <span class="spots-num">17</span>
-      <span class="spots-label">Spots Left</span>
+      <span class="spots-num">0</span>
+      <span class="spots-label">Fake Timers</span>
     </div>
   </div>
 </div>
@@ -310,12 +317,12 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 <div class="section" style="padding-bottom:80px;">
   <div class="cta-section">
     <h2>
-      Your Next Step Starts
-      <span style="background:linear-gradient(135deg,#a855f7,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Right Now.</span>
+      Your Next Step Is Ready
+      <span style="background:linear-gradient(135deg,#a855f7,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">When You Are.</span>
     </h2>
     <p>
-      Register for free, follow the system, and join thousands of people
-      who are already building their income with the Eagle Team.
+      Create your free account, see your exact next step and decide whether
+      the Eagle Team process fits your goal.
     </p>
 
     <?php if ($show_form): ?>
@@ -326,9 +333,14 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <input type="hidden" name="lang" value="en">
       <input type="hidden" name="referer" value="<?= $referer ?>">
       <input type="hidden" name="source" value="<?= $source ?>">
-      <input type="text" name="name" placeholder="First Name">
+      <input type="hidden" name="utm_source" value="<?= htmlspecialchars($_GET['utm_source'] ?? '') ?>">
+      <input type="hidden" name="utm_medium" value="<?= htmlspecialchars($_GET['utm_medium'] ?? '') ?>">
+      <input type="hidden" name="utm_campaign" value="<?= htmlspecialchars($_GET['utm_campaign'] ?? '') ?>">
+      <input type="hidden" name="email_notice_version" value="mission-v2">
+      <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+      <input type="text" name="name" placeholder="First Name" maxlength="100" required autocomplete="given-name">
       <input type="email" name="email" placeholder="Best Email" required>
-      <button type="submit" class="btn-cta">Get Free Access →</button>
+      <button type="submit" class="btn-cta">Show My Next Step →</button>
     </form>
     <?php else: ?>
     <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -339,12 +351,12 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 
     <div class="trust-row" style="margin-top:16px;">
       <div class="trust-item"><span class="trust-icon">✓</span> 100% Free</div>
-      <div class="trust-item"><span class="trust-icon">✓</span> No Spam</div>
-      <div class="trust-item"><span class="trust-icon">✓</span> Cancel Anytime</div>
+      <div class="trust-item"><span class="trust-icon">✓</span> Clear Expectations</div>
+      <div class="trust-item"><span class="trust-icon">✓</span> Unsubscribe Anytime</div>
     </div>
 
     <p class="cta-disclaimer">
-      By registering you agree to our
+      Includes account access and action-focused follow-up emails. Results are not guaranteed. By registering you agree to our
       <a href="<?= $baseurl ?>/legal.php?doc=terms-of-use" style="color:var(--purple-light);text-decoration:none;">Terms of Use</a>
       and
       <a href="<?= $baseurl ?>/legal.php?doc=privacy-policy" style="color:var(--purple-light);text-decoration:none;">Privacy Policy</a>.

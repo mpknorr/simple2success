@@ -58,9 +58,12 @@ $q = function($sql) use ($link) { return mysqli_fetch_assoc(mysqli_query($link, 
 $kpi_signups  = $q("SELECT COUNT(*) as c FROM users $where");
 $kpi_paid     = $q("SELECT COUNT(*) as c FROM users $where AND paidstatus = 'Paid'");
 $kpi_step1    = $q("SELECT COUNT(*) as c FROM users $where AND step1_at IS NOT NULL");
-$kpi_step2    = $q("SELECT COUNT(*) as c FROM users $where AND username IS NOT NULL AND username != ''");
+$kpi_step2    = $q("SELECT COUNT(*) as c FROM users $where AND (step2_at IS NOT NULL OR username REGEXP '^[0-9]+$')");
 $kpi_today    = $q("SELECT COUNT(*) as c FROM users WHERE DATE(timestamp) = CURDATE()");
 $kpi_week     = $q("SELECT COUNT(*) as c FROM users WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+$kpi_step2_rate = $kpi_signups > 0 ? round(((int)$kpi_step2 / (int)$kpi_signups) * 100, 2) : 0;
+$north_star_target = 2.0;
+$north_star_hit = $kpi_step2_rate >= $north_star_target;
 
 // ── Unsubscribe KPIs ─────────────────────────────────────────────────────────
 // Total opted-out (all-time, respects dimension filters but ignores date)
@@ -71,8 +74,13 @@ if ($sf_page    !== '') $_unsubWhere .= " AND page = '$sf_page'";
 if ($sf_source  !== '') $_unsubWhere .= " AND source = '$sf_source'";
 $kpi_unsub_total  = $q("SELECT COUNT(*) as c FROM users $_unsubWhere");
 // Unsubscribes in selected date range (via lead_events)
-$_unsubEvFilter = !empty($_evUserWhere)
-    ? " AND le.lead_id IN (SELECT leadid FROM users WHERE " . implode(' AND ', $_evUserWhere) . ")"
+$_unsubEventUserWhere = [];
+if ($sf_country !== '') $_unsubEventUserWhere[] = "country_detected = '$sf_country'";
+if ($sf_lang    !== '') $_unsubEventUserWhere[] = "lang = '$sf_lang'";
+if ($sf_page    !== '') $_unsubEventUserWhere[] = "page = '$sf_page'";
+if ($sf_source  !== '') $_unsubEventUserWhere[] = "source = '$sf_source'";
+$_unsubEvFilter = !empty($_unsubEventUserWhere)
+    ? " AND le.lead_id IN (SELECT leadid FROM users WHERE " . implode(' AND ', $_unsubEventUserWhere) . ")"
     : '';
 $kpi_unsub_period = $q("SELECT COUNT(*) as c FROM lead_events le
     WHERE le.event_type = 'unsubscribe'
@@ -92,7 +100,7 @@ function breakdownQuery($link, $dimension, $where, $limit = 20) {
     $sql = "SELECT $dimension as dim,
                 COUNT(*) AS signups,
                 SUM(step1_at IS NOT NULL) AS step1,
-                SUM(username IS NOT NULL AND username != '') AS step2
+                SUM(step2_at IS NOT NULL OR username REGEXP '^[0-9]+$') AS step2
             FROM users $where
             GROUP BY $dimension
             ORDER BY signups DESC
@@ -204,7 +212,7 @@ if ($_pvTableExists) {
                   SELECT page,
                          COUNT(DISTINCT leadid)                              AS signups,
                          SUM(step1_at IS NOT NULL)                          AS step1,
-                         SUM(username IS NOT NULL AND username != '')        AS step2
+                         SUM(step2_at IS NOT NULL OR username REGEXP '^[0-9]+$') AS step2
                   FROM users u
                   WHERE $userWhere
                   GROUP BY page
@@ -309,6 +317,10 @@ $evLabels = [
     'video3_play'        => '🎬 Incentive-Video gestartet',
     'video4_play'        => '🎬 Direct-Cash-Video gestartet',
     'step1_button_click' => '🔗 Step 1 Registrierungslink geklickt',
+    'step1_sponsor_missing' => '⚠️ Step 1 wegen fehlender Sponsor-ID blockiert',
+    'step2_completed'    => '✅ Step 2 abgeschlossen',
+    'goal_selected'      => '🎯 Persönliches Ziel gewählt',
+    'commitment_set'     => '📅 Nächsten Schritt terminiert',
     'email_sent'         => '📧 E-Mail gesendet',
     'email_hard_bounce'  => '⛔ E-Mail Hard Bounce',
     'email_spam'         => '🚫 E-Mail als Spam markiert',
@@ -511,6 +523,24 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
             <a href="admin-stats.php" class="btn btn-secondary btn-sm">Reset</a>
         </div>
     </form>
+</div>
+
+<!-- ══ NORTH STAR ═══════════════════════════════════════════════════════════ -->
+<div class="card mb-1" style="border:1px solid <?= $north_star_hit ? 'rgba(40,199,111,.42)' : 'rgba(255,159,67,.42)' ?>;background:linear-gradient(110deg,<?= $north_star_hit ? 'rgba(40,199,111,.1)' : 'rgba(255,159,67,.1)' ?>,rgba(255,255,255,.025));">
+    <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:1.25rem;flex-wrap:wrap;padding:1.2rem 1.4rem;">
+        <div>
+            <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--s2s-text-42);font-weight:700;margin-bottom:.25rem;">North-Star-KPI · Lead → Step 2</div>
+            <div style="font-size:1.05rem;color:var(--s2s-text-80);">
+                Ziel: mindestens <strong style="color:#fff;">1 von 50 Leads (2,00 %)</strong>
+            </div>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:.65rem;">
+            <strong style="font-size:2.25rem;line-height:1;color:<?= $north_star_hit ? '#28c76f' : '#ff9f43' ?>;"><?= number_format($kpi_step2_rate, 2, ',', '.') ?> %</strong>
+            <span style="font-size:.82rem;color:var(--s2s-text-50);">
+                <?= $north_star_hit ? 'Ziel erreicht' : number_format($north_star_target - $kpi_step2_rate, 2, ',', '.') . ' Prozentpunkte bis zum Ziel' ?>
+            </span>
+        </div>
+    </div>
 </div>
 
 

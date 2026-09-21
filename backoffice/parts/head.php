@@ -85,5 +85,10 @@ foreach($getuserdetails as $userData){
     <!-- END Page Level CSS-->
     <!-- BEGIN: Custom CSS-->
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+    <?php if (!empty($pageStylesheets) && is_array($pageStylesheets)): ?>
+        <?php foreach ($pageStylesheets as $stylesheet): ?>
+    <link rel="stylesheet" type="text/css" href="<?= htmlspecialchars((string)$stylesheet, ENT_QUOTES, 'UTF-8') ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
     <!-- END: Custom CSS-->
 </head>

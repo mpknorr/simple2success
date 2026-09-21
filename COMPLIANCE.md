@@ -46,7 +46,7 @@ Before committing changes to any public page, run this scan command:
 
 ```bash
 grep -rni "\bpm\b\|pm-\|fitline\|pmebusiness\|autoship\|teampartner\|quickstart\|starter.kit\|demo.bag\|pm products\|pm experience\|pm partnership\|pm compensation\|pm income" \
-  link1/ link2/ link3/ linkp1/ linkp2/ linkp3/ \
+  link1/ link2/ link3/ link4/ linkp1/ linkp2/ linkp3/ linkp4/ \
   --include="*.php" --include="*.html"
 ```
 

@@ -11,6 +11,7 @@ if (!empty($_premSnips)) {
     $disclaimerText = getLegalFooterSnippet($link, 'income-disclaimer');
 }
 require_once __DIR__ . '/../includes/lang.php';
+$referer   = isset($referer) && is_numeric($referer) ? (int)$referer : 0;
 $_eae      = isset($_GET['err']) && $_GET['err'] === 'eae';
 $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
@@ -23,7 +24,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 <?php require_once __DIR__ . '/../includes/head-tracking.php'; ?>
   <meta charset="utf-8">
   <title>Ignite Your Eagle Journey — Simple2Success</title>
-  <meta content="Soar Above the Rest with the Simple2Success Team. Free system, real results." name="description">
+  <meta content="Explore a clear Simple2Success activation path, practical tools and one next action. Free access; results vary." name="description">
   <meta content="width=device-width, initial-scale=1" name="viewport">
   <link rel="shortcut icon" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon.ico">
   <link href="<?= $baseurl ?>/linkp1/css/normalize.css" rel="stylesheet" type="text/css">
@@ -38,8 +39,8 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
         <div class="s2s-logo-wrap"></div>
         <h1 class="s2s-heading">Ignite Your Eagle Journey</h1>
         <div class="s2s-tagline">Soar Above the Rest with the Simple2Success Team!<br></div>
-        <div class="s2s-subline">Start Building Your Income Online — Step by Step, 100% Free</div>
-        <div style="margin:8px auto 4px;max-width:520px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</div>
+        <div class="s2s-subline">Explore One Clear Business Path — Step by Step, 100% Free</div>
+        <div style="margin:8px auto 4px;max-width:560px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Mission 1000 Families: one clear system, real support and a path toward a personal additional-income goal.</div>
         <div class="s2s-form-outer w-form">
           <?php if ($_eae): ?>
             <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -55,36 +56,42 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
             <input type="hidden" name="lang" value="en">
             <input type="hidden" name="referer" value="<?= $referer ?>">
             <input type="hidden" name="source" value="<?= $source ?>">
+            <input type="hidden" name="utm_source" value="<?= htmlspecialchars($_GET['utm_source'] ?? '') ?>">
+            <input type="hidden" name="utm_medium" value="<?= htmlspecialchars($_GET['utm_medium'] ?? '') ?>">
+            <input type="hidden" name="utm_campaign" value="<?= htmlspecialchars($_GET['utm_campaign'] ?? '') ?>">
+            <input type="hidden" name="email_notice_version" value="mission-v2">
+            <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
             <div class="s2s-inputs">
-              <div class="s2s-input-wrap"><input type="text" class="s2s-input-base s2s-input" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name"></div>
+              <div class="s2s-input-wrap"><input type="text" class="s2s-input-base s2s-input" maxlength="100" name="name" placeholder="Your First Name" required autocomplete="given-name"></div>
               <div class="s2s-input-wrap"><input type="email" class="s2s-input-base s2s-input" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email"></div>
             </div>
-            <input type="submit" value="Claim My Free Position →" class="s2s-btn">
+            <input type="submit" value="Show Me My First Step →" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
+            <p style="margin:7px 0 0;font-size:11px;line-height:1.45;opacity:.58;text-align:center;">Includes account access and action-focused follow-up emails. Unsubscribe anytime. No earnings guarantee.</p>
           </form>
           <?php endif; ?>
         </div>
         <div class="s2s-cta-label">
-          <div class="s2s-cta-hint">Lock-In My FREE Position Now!</div>
+          <div class="s2s-cta-hint">See Your First Clear Step</div>
         </div>
         <div class="s2s-benefit-row">
           <div class="s2s-check-icon topcheck"></div>
-          <div class="s2s-benefit-text top">Free Cutting-Edge Team System</div>
+          <div class="s2s-benefit-text top">A Clear Step-by-Step Roadmap</div>
         </div>
         <div class="s2s-benefit-row">
           <div class="s2s-check-icon"></div>
-          <div class="s2s-benefit-text">A Full-Time Income From Home</div>
+          <div class="s2s-benefit-text">A Flexible Routine You Can Learn</div>
         </div>
         <div class="s2s-benefit-row">
           <div class="s2s-check-icon"></div>
-          <div class="s2s-benefit-text">Recurring Monthly Income Potential</div>
+          <div class="s2s-benefit-text">Transparent Partner-Income Potential</div>
         </div>
         <div class="s2s-benefit-row last">
           <div class="s2s-check-icon"></div>
-          <div class="s2s-benefit-text">Multiple Income Streams</div>
+          <div class="s2s-benefit-text">Tools, Tracking and Team Support</div>
         </div>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;opacity:.45;text-align:center;">
-          Trusted Team System &mdash; Active in 40+ Countries &mdash; Free to Join
+          Team-Supported System &mdash; Active in 40+ Countries &mdash; Free S2S Access
         </div>
       </div>
       <div class="s2s-bg-col"></div>

@@ -4,8 +4,13 @@
  * Processes the PM Partner ID form, then redirects back to start.php.
  */
 if (session_status() === PHP_SESSION_NONE) session_start();
+if (empty($_SESSION['userid'])) {
+    header('Location: login.php');
+    exit();
+}
 require_once "../includes/conn.php";
 require_once "../includes/sendNewMemberMail.php";
+require_once "../includes/onboarding.php";
 
 // Ensure notifications table exists
 mysqli_query($link, "CREATE TABLE IF NOT EXISTS notifications (
@@ -18,9 +23,16 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS notifications (
     is_read TINYINT(1) DEFAULT 0
 )");
 
-if (isset($_POST["root"])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST["root"])) {
+    if (!s2sVerifyCsrf($_POST['csrf_token'] ?? null)) {
+        header("Location: start.php?err=csrf#step2");
+        exit();
+    }
+
     $root     = trim($_POST["root"]);
-    $userid   = (int)$_POST["userid"];
+    // The account being updated always comes from the authenticated session.
+    // Never trust a posted user ID here.
+    $userid   = (int)$_SESSION['userid'];
     $is_admin = !empty($_SESSION['is_admin']);
 
     // ── Lock check: if already saved a numeric PM number, block changes ──────
@@ -33,8 +45,17 @@ if (isset($_POST["root"])) {
     }
 
     // ── Numeric format validation ─────────────────────────────────────────────
-    if (!preg_match('/^\d+$/', $root)) {
-        header("Location: start.php?err=invalidpm");
+    if (!preg_match('/^\d{4,12}$/', $root)) {
+        header("Location: start.php?err=invalidpm#step2");
+        exit();
+    }
+
+    // A Partner ID belongs to one account. Prevent accidental cross-account links.
+    $rootCheck = mysqli_real_escape_string($link, $root);
+    $duplicate = mysqli_fetch_assoc(mysqli_query($link,
+        "SELECT leadid FROM users WHERE username='$rootCheck' AND leadid<>$userid LIMIT 1"));
+    if ($duplicate) {
+        header("Location: start.php?err=duplicatepm#step2");
         exit();
     }
 
@@ -48,9 +69,7 @@ if (isset($_POST["root"])) {
     }
 
     // ── Log step2 completion event ───────────────────────────────────────────
-    $ev_ip = mysqli_real_escape_string($link, $_SERVER['REMOTE_ADDR'] ?? '');
-    mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, page, ip, created_at)
-        VALUES ($userid, 'step2_completed', 'backoffice/start.php', '$ev_ip', NOW())");
+    s2sLogLeadEvent($link, $userid, 'step2_completed', 'backoffice/start.php', 'partner_id_saved');
 
     // ── Send notification email to referer (sponsor) ─────────────────────────
     $mailResult = sendNewMemberMail($link, $root);
@@ -69,7 +88,8 @@ if (isset($_POST["root"])) {
     }
 
     // ── Success: return to start.php with success state ──────────────────────
-    header("Location: start.php?step2=done");
+    unset($_SESSION['s2s_csrf_token']);
+    header("Location: start.php?step2=done#after-activation");
     exit();
 }
 
