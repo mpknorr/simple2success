@@ -130,6 +130,31 @@ $pageStylesheets = ['assets/css/activation.css'];
           </section>
         <?php endif; ?>
 
+        <section aria-labelledby="ai-scanner-title">
+          <details id="ai-scanner-opportunity" class="activation-opportunity">
+            <summary>
+              <span><i class="ft-star" aria-hidden="true"></i> Current product opportunity · FitLine AI Scanner</span>
+              <small>Optional · customer conversation tool</small>
+            </summary>
+            <div class="activation-opportunity__body">
+              <h2 id="ai-scanner-title">Show a personal result instead of guessing.</h2>
+              <p>Official partner information describes an app-based FitLine AI Scanner for individualized skincare. It evaluates more than 100 skin points and features and shows the products that match the customer’s profile.</p>
+              <ul class="activation-list">
+                <li>Review the current starter-set access, price, app version and partner terms before presenting it.</li>
+                <li>Use the same Team Partner account for the starter-set purchase and the FitLine App sign-in.</li>
+                <li>The launch material describes the scanner as patent pending and the formulas as based on NTC&reg;; use the official page for the current details.</li>
+                <li>Use the scan as a clear conversation aid. A scan does not guarantee a customer result, purchase or income.</li>
+              </ul>
+              <div class="activation-opportunity__links">
+                <a class="mission-secondary" href="https://www.pm-international.com/de/de-de/partner/news/every-skin-is-different" target="_blank" rel="noopener noreferrer">Official launch information <i class="ft-external-link"></i></a>
+                <a class="mission-secondary" href="https://icnk.io/u/_1TAGZbbzkp7/" target="_blank" rel="noopener noreferrer">Setup guide <i class="ft-external-link"></i></a>
+                <a class="mission-secondary" href="https://cdn.brandfolder.io/F2QEPJ72/as/43wq59jfbzcn7kccxgbsqj/DE_Skin_Understood.mp4" target="_blank" rel="noopener noreferrer">Watch the launch video <i class="ft-play-circle"></i></a>
+              </div>
+              <p class="activation-form-note">Other partner programs, including PM DirectCash and vehicle or retirement options, have separate eligibility, payout and cost terms. Review the current official conditions before presenting them.</p>
+            </div>
+          </details>
+        </section>
+
         <section class="activation-flow" aria-label="Step 1 and Step 2">
           <article id="step1" class="activation-step <?= $step1Started || $step2Complete ? 'is-done' : 'is-current' ?>">
             <div class="activation-step__top">
@@ -255,6 +280,7 @@ $pageStylesheets = ['assets/css/activation.css'];
               <p>Check your product start or subscription in your partner account. If you already arranged one during registration, review the existing order instead of creating a second one.</p>
               <?php if ($step2Complete && $pmLocked): ?>
                 <a class="mission-secondary" href="https://www.fitline.com/autoship/create?sponsor=<?= rawurlencode($currentUserPm) ?>&amp;productId=9700732" target="_blank" rel="noopener noreferrer">Review Product Subscription <i class="ft-external-link"></i></a>
+                <p><a class="mission-secondary" href="#ai-scanner-opportunity">See the current AI Scanner opportunity</a></p>
               <?php elseif ($step2Complete): ?>
                 <p class="activation-alert">A numeric Partner ID is required for your personal product link. <a href="support.php">Contact Support</a> to check your saved ID.</p>
               <?php else: ?>

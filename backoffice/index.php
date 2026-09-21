@@ -163,6 +163,9 @@ $pageStylesheets = ['assets/css/activation.css'];
               Our mission is to support 1,000 families worldwide as they build business skills, a consistent routine and a path toward at least $1,000 in additional monthly income.
             </p>
             <p>
+              Our funnel checkpoint is clear: at least 1 in 50 leads should complete Steps 1 and 2. The admin dashboard measures this as a 2% target so we can improve the process based on real activity.
+            </p>
+            <p>
               Greater flexibility, travel and partner incentives can be meaningful milestones, but they are earned outcomes with separate qualification requirements—not automatic benefits.
             </p>
             <p class="mission-disclaimer">

@@ -207,6 +207,17 @@
 .activation-status i { color: #d87bee; font-size: 1.2rem; margin-top: .12rem; }
 .activation-status strong { display: block; color: #fff; margin-bottom: .15rem; }
 .activation-status span { color: var(--mission-muted); font-size: .86rem; line-height: 1.5; }
+.activation-opportunity { overflow: hidden; border: 1px solid rgba(216,123,238,.3); border-radius: 13px; background: linear-gradient(145deg, rgba(183,0,224,.08), rgba(255,255,255,.025)); }
+.activation-opportunity summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.05rem 1.25rem; cursor: pointer; color: #fff; font-weight: 750; list-style: none; }
+.activation-opportunity summary::-webkit-details-marker { display: none; }
+.activation-opportunity summary > span:first-child { display: inline-flex; align-items: center; gap: .5rem; }
+.activation-opportunity summary i { color: #d87bee; }
+.activation-opportunity summary small { color: var(--mission-muted); font-size: .8rem; font-weight: 500; }
+.activation-opportunity__body { padding: 0 1.25rem 1.25rem; }
+.activation-opportunity__body h2 { margin: .1rem 0 .55rem; color: #fff; font-size: 1.2rem; font-weight: 800; }
+.activation-opportunity__body p { max-width: 880px; color: var(--mission-muted); line-height: 1.6; }
+.activation-opportunity__links { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1rem; }
+.activation-opportunity__links .mission-secondary { min-height: 42px; padding: .6rem .9rem; font-size: .82rem; }
 .activation-flow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: stretch; }
 .activation-step {
   position: relative;
@@ -273,6 +284,8 @@
   .mission-goal-grid { grid-template-columns: 1fr; }
   .mission-primary, .mission-secondary { width: 100%; }
   .mission-actions .mission-meta { width: 100%; text-align: center; }
+  .activation-opportunity summary { align-items: flex-start; flex-direction: column; gap: .35rem; }
+  .activation-opportunity__links .mission-secondary { width: 100%; }
   .activation-next-grid, .activation-faq { grid-template-columns: 1fr; }
   .activation-step, .mission-card, .activation-next { padding: 1.25rem; }
 }

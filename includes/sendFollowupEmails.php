@@ -126,7 +126,7 @@ function ensureFollowupTables($link) {
     mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
         VALUES ('Trigger: Account Ready, Step 1 Not Started', 'trigger_account_no_start', '$t0_subj', '$t0_body')");
 
-    $t2_subj = mysqli_real_escape_string($link, "{{name}}, Step 2 is done — here's what's missing");
+    $t2_subj = mysqli_real_escape_string($link, "{{name}}, your next steps are ready");
     $t2_body = mysqli_real_escape_string($link, '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
         . '<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">'
         . '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;"><tr><td align="center" style="padding:20px 0;">'
@@ -134,11 +134,13 @@ function ensureFollowupTables($link) {
         . '<tr><td><img src="' . $banner . '" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>'
         . '<tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.8;">'
         . '<h2 style="color:#cb2ebc;margin-top:0;">Hi {{name}},</h2>'
-        . '<p>Congratulations — Step 2 is done. Your system is active. But there\'s one step that separates an active account from a <strong>genuinely earning system</strong>: Step 4.</p>'
-        . '<p>Step 4 activates the full income structure. Without it, the system runs — but not at full potential. With it, every activity in your team directly benefits you.</p>'
-        . '<p style="background:#f9f0ff;border-left:4px solid #cb2ebc;padding:12px 16px;border-radius:4px;"><strong>You\'ve already done the hardest part. Step 4 is the next logical move.</strong></p>'
-        . '<div style="text-align:center;margin:28px 0;"><a href="{{cta_url}}" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Activate Step 4 Now &rarr;</a></div>'
-        . '<p style="color:#888;font-size:13px;">Your Simple2Success Team</p>'
+        . '<p>Step 2 is complete. Your account setup is ready for the next phase.</p>'
+        . '<p>Continue in order: Step 3 — choose your traffic, Step 4 — review your product options, then Step 5 — follow up and repeat what works.</p>'
+        . '<p>There is also an optional current product conversation tool: the FitLine AI Scanner. Official partner information describes an app-based skin scan that evaluates more than 100 skin points and features and shows products matched to the customer profile. Check the current starter-set access, price and terms, and use the same Team Partner account for the purchase and the FitLine App sign-in.</p>'
+        . '<p><a href="https://www.pm-international.com/de/de-de/partner/news/every-skin-is-different" style="color:#a51bc2;font-weight:bold;">View the official launch information &rarr;</a></p>'
+        . '<p style="background:#f9f0ff;border-left:4px solid #cb2ebc;padding:12px 16px;border-radius:4px;"><strong>Choose one next action, review the result and keep your decisions in your control.</strong></p>'
+        . '<div style="text-align:center;margin:28px 0;"><a href="{{cta_url}}" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Open Steps 3–5 &rarr;</a></div>'
+        . '<p style="color:#888;font-size:13px;">Customer outcomes and income are not guaranteed.<br>Your Simple2Success Team</p>'
         . '</td></tr>'
         . '<tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">Copyright &copy; 2025 <a href="https://www.simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>. All rights reserved.</td></tr>'
         . '</table></td></tr></table></body></html>');
@@ -362,7 +364,8 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
 }
 
 /**
- * BEHAVIORAL TRIGGER 2: "Step 2 done, Step 4 not started after 48h"
+ * BEHAVIORAL TRIGGER 2: Step 2 done; next-phase reminder after 48h.
+ * Product or subscription completion is not externally verified in this app.
  */
 function sendStep2DoneNoStep4Emails($link, $base_url) {
     $sent = 0; $errors = [];
