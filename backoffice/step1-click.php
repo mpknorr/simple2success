@@ -16,7 +16,7 @@ $userid  = (int)$_SESSION['userid'];
 $step1ip = mysqli_real_escape_string($link, function_exists('getClientIp') ? getClientIp() : ($_SERVER['REMOTE_ADDR'] ?? ''));
 $now     = date('Y-m-d H:i:s');
 
-// Get sponsor's PM number for TP= parameter
+// Get the referring sponsor's PM number for the registration sponsorId parameter.
 $row = mysqli_fetch_assoc(mysqli_query($link, "SELECT referer FROM users WHERE leadid = $userid"));
 $referer_username = '';
 if (!empty($row['referer']) && is_numeric($row['referer'])) {
@@ -40,7 +40,7 @@ mysqli_query($link, "UPDATE users SET
     WHERE leadid = $userid");
 s2sLogLeadEvent($link, $userid, 'step1_button_click', 'backoffice/start.php', 'verified_sponsor');
 
-$url = 'https://www.pmebusiness.com/registrationv2/?TP=' . urlencode($referer_username);
+$url = 'https://registration.pm-international.com/?sponsorId=' . rawurlencode(trim((string)$referer_username));
 
 header('Location: ' . $url);
 exit();
