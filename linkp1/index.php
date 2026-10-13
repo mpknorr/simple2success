@@ -62,7 +62,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
             <input type="submit" value="Explore the Free System →" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
           </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
           <?php endif; ?>
         </div>
         <div class="s2s-cta-label">
@@ -85,7 +85,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
           <div class="s2s-benefit-text">Multiple Income Streams</div>
         </div>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;opacity:.45;text-align:center;">
-          Trusted Team System &mdash; Active in Team Support &mdash; Free to Join
+          Step-by-Step Plan &mdash; Eagle Team Support &mdash; Free Simple2Success Account
         </div>
       </div>
       <div class="s2s-bg-col"></div>

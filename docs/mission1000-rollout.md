@@ -56,3 +56,9 @@ The user also confirmed that no genuine lead has completed Step 2 so far. Existi
 
 ## Registration-cost clarification
 Only the Simple2Success account is free. PM registration fees and product-package costs differ by country and are separate from system access. No global fixed price or free PM registration is claimed. Optimal-Set is recommended for product experience with local costs and subscription terms visible; a package order is separate from the Step-2 saved-ID KPI.
+
+## Agreed journey and target groups
+The existing dashboard welcomes beginners, experienced/returning network marketers, online-income seekers and people building alongside family life. It explains the mission and available system tools, then links to the existing business presentation. Presentation is orientation, not an extra numbered step or mandatory video gate. The dashboard uses exactly the same five steps as the step page.
+Step 1 opens PM registration. A click without saved ID keeps both reopening registration and Step-2 entry available. Step 2 only saves the user's PM Ref-ID. After activation, copy and emails direct users through the existing Steps 3, 4 and 5. No country price catalogue is introduced.
+The welcome-video block remains disabled until a real video ID is supplied; a placeholder is never published as a working video.
+Pilot: 250 purchased clicks may produce around 100 leads; target at least two genuine new saved Ref-IDs for 2%, not a guarantee. Measure real lead counts and acquisition costs, repeat a comparable pilot before scaling.

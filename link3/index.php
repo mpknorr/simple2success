@@ -203,7 +203,7 @@ $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) 
         </div>
         <input type="submit" class="btn-cta" value="Yes — Show Me the System →">
       </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
 
       <p class="micro-copy">🔒 100% Free — No Credit Card Required. We respect your privacy.</p>

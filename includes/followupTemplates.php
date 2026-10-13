@@ -13,8 +13,8 @@ function s2sTriggerTemplates(): array {
             'body' => s2sFollowupBody('<p>If you have completed your partner registration, copy your Partner ID from your confirmation email or partner account and save it in Step 2.</p><p>Your setup is complete once that number is saved. Enter only the ID, never your partner password. If registration is still open or you need help, the start page has the instructions and a support link.</p>', 'Continue my setup'),
         ],
         'trigger_next_action_v2' => [
-            'subject' => 'Your setup is complete — choose your next action',
-            'body' => s2sFollowupBody('<p>Your Partner ID is saved. Choose one manageable next action: understand the products, practise a customer conversation, or ask your sponsor for help.</p><p>Before ordering products or traffic, review the requirements and recurring costs and set a budget. If you have already started, use this as a chance to review your progress. Income is not guaranteed.</p>', 'Review my next steps'),
+            'subject' => 'Your PM Ref-ID is saved — continue with Step 3',
+            'body' => s2sFollowupBody('<p>Your PM Ref-ID is saved. Steps 1 and 2 are complete. Continue with Step 3: use the traffic guide to plan a measured first campaign with your personal link.</p><p>Then follow Step 4 for your product start and Step 5 to repeat and review. If you have already started, continue with the next open step. Check package terms and your budget before ordering. Income is not guaranteed.</p>', 'Review my next steps'),
         ],
         'trigger_overview_v2' => [
             'subject' => 'A clear overview before your next step',

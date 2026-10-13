@@ -80,7 +80,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
         <span class="btn-arrow">→</span>
       </button>
     </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
     <?php endif; ?>
 
     <div class="trust-row">
@@ -251,7 +251,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <input type="email" name="email" placeholder="Best Email" required>
       <button type="submit" class="btn-cta">Get Free Access →</button>
     </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
     <?php else: ?>
     <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
       <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>

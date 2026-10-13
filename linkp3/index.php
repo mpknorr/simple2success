@@ -16,7 +16,7 @@ $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
 $errorMsg  = ''; // kept for backwards compat
 $source    = htmlspecialchars($_GET['source'] ?? '');
-$countdownSeconds = 48 * 3600;
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,7 +39,7 @@ $countdownSeconds = 48 * 3600;
       <div class="s2s-form-header">
         <div class="s2s-header-inner">
           <div class="s2s-eyebrow-wrap">
-            <div class="s2s-form-eyebrow">Your sponsor has reserved your free access:</div>
+            <div class="s2s-form-eyebrow">Your free Simple2Success account:</div>
           </div>
           <div class="s2s-heading-wrap">
             <h1 class="s2s-modal-heading">You&#x27;re One Step Away From Your Free Account</h1>
@@ -72,7 +72,7 @@ $countdownSeconds = 48 * 3600;
         <input type="submit" value="Explore the Free System!" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
       </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
       <div class="w-form-done">
         <div>Thank you! Check your email for next steps.</div>
@@ -140,37 +140,6 @@ $countdownSeconds = 48 * 3600;
         </div>
       </div>
     </div>
-    <div class="s2s-timer-wrap">
-      <div class="s2s-timer-section">
-        <div class="s2s-team-label">Your sponsor has reserved a spot for you — this reservation expires in:</div>
-        <div class="s2s-countdown-row">
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-hours">00</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Hrs</div>
-          </div>
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-minutes">10</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Min</div>
-          </div>
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-seconds">00</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Sec</div>
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="s2s-cta-row">
       <div class="s2s-arrow-left"></div>
       <a href="#" class="s2s-main-btn" id="s2s-open-modal">Explore the Free System!</a>
@@ -224,31 +193,6 @@ $countdownSeconds = 48 * 3600;
         modal.style.display = 'none';
       });
     }
-    // Countdown timer (48h, stored in sessionStorage)
-    var KEY = 's2s_cd_end_p3';
-    var DURATION = <?= $countdownSeconds ?>;
-    var endTime = sessionStorage.getItem(KEY);
-    if (!endTime) {
-      endTime = Date.now() + DURATION * 1000;
-      sessionStorage.setItem(KEY, endTime);
-    } else {
-      endTime = parseInt(endTime, 10);
-    }
-    function pad(n) { return n < 10 ? '0' + n : n; }
-    function tick() {
-      var remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-      var h = Math.floor(remaining / 3600);
-      var m = Math.floor((remaining % 3600) / 60);
-      var s = remaining % 60;
-      var elH = document.getElementById('s2s-hours');
-      var elM = document.getElementById('s2s-minutes');
-      var elS = document.getElementById('s2s-seconds');
-      if (elH) elH.textContent = pad(h);
-      if (elM) elM.textContent = pad(m);
-      if (elS) elS.textContent = pad(s);
-      if (remaining > 0) setTimeout(tick, 1000);
-    }
-    tick();
   })();
   </script>
 </body>

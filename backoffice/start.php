@@ -52,7 +52,7 @@ if (isset($_GET['err'])) {
     if ($_GET['err'] === 'invalidpm') $step2_error = 'Please enter a valid PM Partner ID (numbers only, e.g. 6304013).';
 }
 if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
-    $step2_success = 'Your Partner ID has been saved. Steps 1 and 2 are complete. Welcome to the Eagle Team. Choose your next learning or customer action below.';
+    $step2_success = 'Your PM Ref-ID is saved. Steps 1 and 2 are complete. Welcome to the Eagle Team. Continue with Step 3 below.';
 }
 ?>
 <!DOCTYPE html>
@@ -198,14 +198,14 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
         <!-- ═══════════════════════════════════════════════════════════
              SECTION VIDEO-MAIN — BUSINESS PRESENTATION
         ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-presentation" style="margin-top:.5rem;">
+        <section id="business-presentation" class="s2s-presentation" style="margin-top:.5rem;">
           <div class="row">
             <div class="col-12">
               <div class="card">
                 <div class="card-body" style="padding:2rem 2rem 1.5rem;">
                   <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;
                                color:rgba(183,0,224,.85);text-transform:uppercase;
-                               display:block;margin-bottom:.6rem;">Step 1 — Start Here</span>
+                               display:block;margin-bottom:.6rem;">Business Presentation</span>
                   <h3 style="color:var(--s2s-text-100);font-size:var(--s2s-size-h3);
                              font-weight:800;margin-bottom:.75rem;line-height:var(--s2s-lh-tight);">
                     Before You Register —<br>
@@ -213,7 +213,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   </h3>
                   <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
                             margin:0;line-height:var(--s2s-lh-body);">
-                    Simple2Success is your step-by-step system. But to build a real business, you also need real products, a proven company and a strong international partner. That is why we work with PM-International as our product partner — a company active in 40+ countries with more than 1 billion products sold. Watch this short presentation first, so you understand the foundation before you complete Step 1.
+                    Simple2Success provides the plan, marketing pages and follow-up tools. PM-International is our product and business partner. You build your business by helping customers choose products and, where appropriate, supporting new partners under the PM compensation plan. This presentation explains the business; the five steps below guide your start.
                   </p>
                 </div>
                 <div class="card-body" style="padding-bottom:.75rem;">
@@ -326,11 +326,11 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                       </h1>
                       <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
                                 margin:0;line-height:var(--s2s-lh-body);">
-                        Your Simple2Success account is free. PM-International registration has separate country-specific fees and product options. Review the local costs, complete your registration, then return here and save your Partner ID.
+                        Your Simple2Success account is free. PM registration fees and package terms are shown on the PM registration page. Complete your registration there, then return here and save your PM Ref-ID in Step 2.
                       </p>
                       <ul style="list-style:none;padding:0;margin:1rem 0 0;font-size:.88rem;color:rgba(255,255,255,.75);line-height:2;">
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Review local PM registration fees and product-package prices before confirming</li>
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> We recommend considering an Optimal-Set for personal product experience; check local prices, contents and any subscription terms</li>
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Check the fees and package terms displayed by PM</li>
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Recommended product start: Optimal-Set; review the terms shown by PM</li>
                         <li><span style="color:#28c76f;font-weight:700;">✓</span> Your sponsor connection is already prepared</li>
                       </ul>
                     </div>
@@ -352,7 +352,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                                 font-weight:700;white-space:normal;
                                 border-radius:8px;line-height:1.4;">
                         <i class="ft-external-link mr-2"></i>
-                        Start PM-International Registration
+                        Step 1: Open PM Registration
                       </a>
                       <?php if (empty($referer_username)): ?>
                       <small style="color:rgba(255,200,0,.7);display:block;margin-top:.6rem;font-size:.78rem;">
@@ -360,7 +360,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                       </small>
                       <?php endif; ?>
                       <p style="font-size:.78rem;opacity:.45;margin-top:.6rem;margin-bottom:0;line-height:1.4;">
-                        Opens in a new tab. Return here afterwards.<br><a href="#step2-action">Already registered? Save your Partner ID.</a>
+                        Opens in a new tab. Return here afterwards.<br><a href="#step2-action">Already registered? Save your PM Ref-ID in Step 2.</a>
                       </p>
                     </div>
 
@@ -394,7 +394,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <div class="card-header" style="border-bottom:1px solid rgba(183,0,224,.25);background:rgba(183,0,224,.08);">
                     <h4 class="card-title" style="color:#b700e0;">
                       <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#b700e0;color:#fff;font-size:.9rem;margin-right:10px;box-shadow:0 0 0 4px rgba(183,0,224,.25);">2</span>
-                      Enter Your PM Partner ID
+                      Step 2: Save Your PM Ref-ID
                       <span style="margin-left:.75rem;font-size:.72rem;font-weight:600;background:#b700e0;color:#fff;padding:.2rem .6rem;border-radius:20px;letter-spacing:.04em;vertical-align:middle;">STEP 2</span>
                     </h4>
                   </div>
@@ -443,7 +443,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                         <form method="POST" action="welcome.php" style="max-width:640px;">
                           <input type="hidden" name="userid" value="<?= isset($userid) ? (int)$userid : '' ?>">
                           <label for="partner-id" style="font-size:.9rem;font-weight:600;color:#b700e0;margin-bottom:.5rem;display:block;letter-spacing:.02em;">
-                            YOUR PM PARTNER ID
+                            YOUR PM REF-ID
                           </label>
                           <div style="display:flex;margin-bottom:1rem;">
                             <span class="s2s-id-prefix" style="font-size:.75rem;padding:.75rem .85rem;">Partner ID</span>
@@ -633,8 +633,8 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                       The Math is Simple: <span style="color:var(--s2s-brand);">Learn, Support Customers, Review Results</span>
                     </h4>
                     <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:0;max-width:750px;margin-left:auto;margin-right:auto;line-height:var(--s2s-lh-body);">
-                      <strong>Choose a manageable next action:</strong> understand the products, practise a customer conversation, or ask your sponsor for help.
-                      Before buying traffic or products, set a budget and review recurring costs. Automation supports follow-up; customers and income are not guaranteed.
+                      <strong>Continue with the five-step plan:</strong> Step 3 covers traffic, Step 4 your product start, and Step 5 repeating and reviewing the process.
+                      Set a budget and review results before spending more. Your pages and emails support follow-up; income is not guaranteed.
                     </p>
                   </div>
 
@@ -681,8 +681,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <div class="card-body" style="flex:1;display:flex;flex-direction:column;">
                     <div style="flex:1;">
                       <p style="font-size:.92rem;margin-bottom:0;">
-                        Boost your reach with our trusted traffic sources. More traffic means more leads,
-                        and more leads means more growth.
+                        Use the traffic guide to plan a measured first campaign with your personal link. Set a budget and track real leads through Step 2 before increasing spend.
                       </p>
                     </div>
                     <div style="margin-top:auto;padding-top:1rem;">
@@ -713,7 +712,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                         Choose between <strong>Teampartner Start</strong> or <strong>Manager Quickstart</strong> — review product options, recurring costs and the commission requirements for your country before choosing.
                       </p>
                       <p style="font-size:.82rem;opacity:.6;margin-bottom:0;">
-                        Already selected a start option during registration? Then you're all set — your autoship will ship automatically next month.
+                        Already selected a product package during PM registration? Check your PM account and the applicable subscription terms before ordering again.
                       </p>
                     </div>
                     <div style="margin-top:auto;padding-top:1rem;">
@@ -751,8 +750,7 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <div class="card-body" style="flex:1;display:flex;flex-direction:column;">
                     <div style="flex:1;">
                       <p style="font-size:.92rem;margin-bottom:0;">
-                        Review customer feedback, activity, income and costs before deciding whether to repeat or change your approach.
-                        Consistency is the key to long-term success. Keep the leads coming and keep moving forward.
+                        Repeat the same process, review real Step-2 results and costs, and ask the team for help at the step that needs improvement. Increase traffic gradually when the results support it.
                       </p>
                     </div>
                     <div style="margin-top:auto;padding-top:1rem;">

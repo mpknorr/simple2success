@@ -72,7 +72,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
                   <input type="submit" value="Reserve My Free Spot →" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
                 </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
                 <?php endif; ?>
               </div>
             </div>
@@ -85,7 +85,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
   <section class="s2s-perks-section">
     <div class="s2s-perks-wrap">
       <div class="s2s-perks-col">
-        <div class="s2s-perks-text">Active in Team Support <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Multiple Income Streams</div>
+        <div class="s2s-perks-text">Eagle Team Support <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Multiple Income Streams</div>
       </div>
       <div class="s2s-logo-col"></div>
     </div>

@@ -41,7 +41,7 @@ $db->pdo->exec('CREATE TABLE followup_log(user_id INTEGER, sequence_id INTEGER, 
 $db->pdo->exec('CREATE TABLE followup_trigger_log(user_id INTEGER, sent_at TEXT)');
 $db->pdo->exec('CREATE TABLE users(leadid INTEGER PRIMARY KEY, name TEXT, email TEXT, username TEXT, timestamp TEXT, step2_at TEXT)');
 check(!\s2sSetupComplete(null) && !\s2sSetupComplete(''), 'No ID means setup incomplete');
-check(\s2sNextAction('', true)['href'] === 'start.php#step2-action', 'Click without ID offers Step 2 help, not completed setup');
+check(\s2sNextAction('', true)['href'] === 'start.php#step1-action', 'Click without ID keeps registration reachable, not completed setup');
 check(\s2sNextAction('6304013', false)['href'] === 'start.php#next-steps', 'Saved ID completes setup even without a tracked click');
 check(s2sReserveFollowupContact($db, 1), 'First follow-up can reserve contact');
 check(!s2sReserveFollowupContact($db, 1), 'Second worker/trigger is blocked by the reservation');
@@ -65,5 +65,5 @@ $db->pdo->exec("INSERT INTO followup_log VALUES(12,8,'2026-10-12 10:00:00')");
 check(mysqli_query($db, s2sDueFollowupRecipientsSql('member', 8, 1))->rows === [], 'Sent sequence is not repeated');
 check(count(\s2sTriggerTemplates()) === 3, 'Three versioned behaviour templates available');
 $next = \s2sTriggerTemplates()['trigger_next_action_v2']['body'];
-check(strpos($next, 'If you have already started') !== false, 'Post-setup reminder also fits existing product customers');
+check(strpos($next, 'If you have already started') !== false && strpos($next, 'Step 3') !== false, 'Post-setup reminder also fits existing product customers');
 echo "All mission tests passed. No external messages sent.\n";

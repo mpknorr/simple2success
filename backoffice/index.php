@@ -11,6 +11,9 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
 require_once '../includes/onboarding.php';
 $setupComplete = s2sSetupComplete($userRow['username'] ?? '');
 $nextAction = s2sNextAction($userRow['username'] ?? '', !empty($userRow['step1_at']));
+if (!$setupComplete && empty($userRow['step1_at'])) {
+    $nextAction = ['href' => 'start.php#business-presentation', 'label' => 'See how the system and business work'];
+}
 ?>
 <?php require_once "parts/head.php"; ?>
 <body class="vertical-layout vertical-menu 2-columns navbar-static layout-dark"
@@ -546,17 +549,15 @@ $nextAction = s2sNextAction($userRow['username'] ?? '', !empty($userRow['step1_a
         You Just Joined <span style="color:#b700e0;">Mission 1000 Families.</span>
       </h1>
       <p class="et-hero-sub">
-        Explore a step-by-step system for building additional income, with tools and team support. Start by understanding the process, then choose your next action.
+        Simple2Success brings together a clear five-step plan, ready-to-use marketing tools and the Eagle Team. Whether you are new, returning to network marketing or building a business alongside family life, you can follow the same path.
       </p>
       <p class="et-hero-note">
-        You do not need to know everything today.
-        Take one manageable step, ask questions, and review what you learn.
-        Your next action is ready below.
+        You do not have to design a new system. Understand the business in the presentation, then follow the five steps in order. Ask your team when you need help.
       </p>
       <ul class="et-hero-bullets">
-        <li>A Clear Step-By-Step System</li>
-        <li>Clear Daily Actions</li>
-        <li>A Real Path You Can Follow</li>
+        <li>One Five-Step Plan</li>
+        <li>Your Own Pages and Follow-Up Tools</li>
+        <li>Eagle Team Support</li>
       </ul>
       <a href="<?= htmlspecialchars($nextAction['href']) ?>" class="et-btn"><?= htmlspecialchars($nextAction['label']) ?> &rarr;</a>
     </div>
@@ -660,17 +661,15 @@ $nextAction = s2sNextAction($userRow['username'] ?? '', !empty($userRow['step1_a
 <section>
   <div class="card" style="margin-bottom:0;">
     <div class="card-body" style="padding:1.75rem 2.5rem;">
-      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:1rem;">Your Roadmap — You Are Already On The Way</span>
+      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:1rem;">Your Five-Step Plan</span>
       <div style="display:flex;flex-wrap:wrap;gap:.6rem;">
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Account created</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Logged in</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">Overview: understand the process</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">Step 1: Register</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">Step 2: Save Partner ID</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">Steps 3–5: Learn and act</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">Review and repeat</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 1 · Open PM Registration</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 2 · Save PM Ref-ID</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 3 · Order Traffic</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 4 · Product Start</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 5 · Repeat and Review</span>
       </div>
-      <p style="font-size:.85rem;opacity:.6;margin:.9rem 0 0;"><?= $setupComplete ? 'Partner ID saved: your setup is complete. Plan your next learning or customer action.' : 'Your system account is ready. Steps 1 and 2 are complete once you save your Partner ID.' ?> <a href="support.php">Need help?</a></p>
+      <p style="font-size:.85rem;opacity:.6;margin:.9rem 0 0;"><?= $setupComplete ? 'PM Ref-ID saved: Steps 1 and 2 are complete. Continue with Step 3.' : 'Your system account is ready. Steps 1 and 2 are complete once you save your Partner ID.' ?> <a href="support.php">Need help?</a></p>
     </div>
   </div>
 </section>
@@ -801,7 +800,7 @@ $nextAction = s2sNextAction($userRow['username'] ?? '', !empty($userRow['step1_a
       <p class="et-cta-body">
         With the Eagle Team system, you do not have to guess or start over again.<br><br>
         You now have a clear direction, a step-by-step system and the right next move.<br><br>
-        On the next page, you will see exactly what to do next.
+        The presentation explains the business behind the system. Then follow Step 1 and Step 2 to complete your setup.
       </p>
       <a href="<?= htmlspecialchars($nextAction['href']) ?>" class="et-btn"><?= htmlspecialchars($nextAction['label']) ?> &rarr;</a>
     </div>
