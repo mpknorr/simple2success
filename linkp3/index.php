@@ -16,7 +16,7 @@ $show_form = !$_eae;
 $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) ? $_GET['lang'] : 'en';
 $errorMsg  = ''; // kept for backwards compat
 $source    = htmlspecialchars($_GET['source'] ?? '');
-$countdownSeconds = 48 * 3600;
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,7 +39,7 @@ $countdownSeconds = 48 * 3600;
       <div class="s2s-form-header">
         <div class="s2s-header-inner">
           <div class="s2s-eyebrow-wrap">
-            <div class="s2s-form-eyebrow">Your sponsor has reserved your free access:</div>
+            <div class="s2s-form-eyebrow">Your free Simple2Success account:</div>
           </div>
           <div class="s2s-heading-wrap">
             <h1 class="s2s-modal-heading">You&#x27;re One Step Away From Your Free Account</h1>
@@ -69,9 +69,10 @@ $countdownSeconds = 48 * 3600;
         <div class="s2s-form-prompt">Where Should We Send The Info?</div>
         <input type="text" class="s2s-input-field name" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name">
         <input type="email" class="s2s-input-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
-        <input type="submit" value="Claim My Free Position!" class="s2s-btn">
+        <input type="submit" value="Explore the Free System!" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
       </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
       <div class="w-form-done">
         <div>Thank you! Check your email for next steps.</div>
@@ -93,8 +94,8 @@ $countdownSeconds = 48 * 3600;
     </div>
     <div class="s2s-perks-banner">
       <div class="s2s-description-wrap">
-        <p class="s2s-tagline">Join a proven step-by-step system used by 10,000+ members in 40+ countries to build real income online — 100% free to start.</p>
-        <p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+        <p class="s2s-tagline">Explore a step-by-step system with tools and team support. Create a free account to see how it works.</p>
+        <p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: supporting 1,000 people and families in building additional income, with a goal of $1,000+ per month. Results are not guaranteed.</p>
       </div>
     </div>
     <div class="s2s-benefits-grid">
@@ -139,40 +140,9 @@ $countdownSeconds = 48 * 3600;
         </div>
       </div>
     </div>
-    <div class="s2s-timer-wrap">
-      <div class="s2s-timer-section">
-        <div class="s2s-team-label">Your sponsor has reserved a spot for you — this reservation expires in:</div>
-        <div class="s2s-countdown-row">
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-hours">00</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Hrs</div>
-          </div>
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-minutes">10</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Min</div>
-          </div>
-          <div class="s2s-time-unit">
-            <div class="s2s-time-circle">
-              <div class="s2s-time-inner">
-                <div class="s2s-time-number" id="s2s-seconds">00</div>
-              </div>
-            </div>
-            <div class="s2s-time-label">Sec</div>
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="s2s-cta-row">
       <div class="s2s-arrow-left"></div>
-      <a href="#" class="s2s-main-btn" id="s2s-open-modal">Claim My Free Position!</a>
+      <a href="#" class="s2s-main-btn" id="s2s-open-modal">Explore the Free System!</a>
       <div class="s2s-arrow-right"></div>
     </div>
   </div>
@@ -223,31 +193,6 @@ $countdownSeconds = 48 * 3600;
         modal.style.display = 'none';
       });
     }
-    // Countdown timer (48h, stored in sessionStorage)
-    var KEY = 's2s_cd_end_p3';
-    var DURATION = <?= $countdownSeconds ?>;
-    var endTime = sessionStorage.getItem(KEY);
-    if (!endTime) {
-      endTime = Date.now() + DURATION * 1000;
-      sessionStorage.setItem(KEY, endTime);
-    } else {
-      endTime = parseInt(endTime, 10);
-    }
-    function pad(n) { return n < 10 ? '0' + n : n; }
-    function tick() {
-      var remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-      var h = Math.floor(remaining / 3600);
-      var m = Math.floor((remaining % 3600) / 60);
-      var s = remaining % 60;
-      var elH = document.getElementById('s2s-hours');
-      var elM = document.getElementById('s2s-minutes');
-      var elS = document.getElementById('s2s-seconds');
-      if (elH) elH.textContent = pad(h);
-      if (elM) elM.textContent = pad(m);
-      if (elS) elS.textContent = pad(s);
-      if (remaining > 0) setTimeout(tick, 1000);
-    }
-    tick();
   })();
   </script>
 </body>

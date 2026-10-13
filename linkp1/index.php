@@ -39,7 +39,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
         <h1 class="s2s-heading">Ignite Your Eagle Journey</h1>
         <div class="s2s-tagline">Soar Above the Rest with the Simple2Success Team!<br></div>
         <div class="s2s-subline">Start Building Your Income Online — Step by Step, 100% Free</div>
-        <div style="margin:8px auto 4px;max-width:520px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</div>
+        <div style="margin:8px auto 4px;max-width:520px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: supporting 1,000 people and families in building additional income, with a goal of $1,000+ per month. Results are not guaranteed.</div>
         <div class="s2s-form-outer w-form">
           <?php if ($_eae): ?>
             <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -59,9 +59,10 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
               <div class="s2s-input-wrap"><input type="text" class="s2s-input-base s2s-input" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name"></div>
               <div class="s2s-input-wrap"><input type="email" class="s2s-input-base s2s-input" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email"></div>
             </div>
-            <input type="submit" value="Claim My Free Position →" class="s2s-btn">
+            <input type="submit" value="Explore the Free System →" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
           </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
           <?php endif; ?>
         </div>
         <div class="s2s-cta-label">
@@ -73,7 +74,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
         </div>
         <div class="s2s-benefit-row">
           <div class="s2s-check-icon"></div>
-          <div class="s2s-benefit-text">A Full-Time Income From Home</div>
+          <div class="s2s-benefit-text">A Plan You Can Explore From Home</div>
         </div>
         <div class="s2s-benefit-row">
           <div class="s2s-check-icon"></div>
@@ -84,7 +85,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
           <div class="s2s-benefit-text">Multiple Income Streams</div>
         </div>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;opacity:.45;text-align:center;">
-          Trusted Team System &mdash; Active in 40+ Countries &mdash; Free to Join
+          Step-by-Step Plan &mdash; Eagle Team Support &mdash; Free Simple2Success Account
         </div>
       </div>
       <div class="s2s-bg-col"></div>

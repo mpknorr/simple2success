@@ -2,6 +2,8 @@
 require_once __DIR__ . '/BrevoMailer.php';
 require_once __DIR__ . '/emailFooter.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/followupPolicy.php';
+require_once __DIR__ . '/followupTemplates.php';
 
 function getSmtpSettingFU($link, $key) {
     $k = mysqli_real_escape_string($link, $key);
@@ -87,48 +89,22 @@ function ensureFollowupTables($link) {
         subject      VARCHAR(255) NOT NULL DEFAULT '',
         body         LONGTEXT NOT NULL,
         created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        category     ENUM('transaction','marketing') NOT NULL DEFAULT 'transaction'
     )");
 
-    // Seed behavioral trigger templates (INSERT IGNORE — never overwrites admin edits)
-    $banner = 'https://simple2success.com/backoffice/app-assets/img/banner/newleademailheader.jpg';
+    mysqli_query($link, "CREATE TABLE IF NOT EXISTS followup_contact_limits (
+        user_id INT PRIMARY KEY,
+        last_attempt_at DATETIME NOT NULL
+    )");
+    foreach (s2sTriggerTemplates() as $key => $template) {
+        $key = mysqli_real_escape_string($link, $key);
+        $subject = mysqli_real_escape_string($link, $template['subject']);
+        $body = mysqli_real_escape_string($link, $template['body']);
+        mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body, category)
+            VALUES ('$key', '$key', '$subject', '$body', 'marketing')");
+    }
 
-    $t1_subj = mysqli_real_escape_string($link, "You were this close, {{name}} — here's your direct link");
-    $t1_body = mysqli_real_escape_string($link, '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
-        . '<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">'
-        . '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;"><tr><td align="center" style="padding:20px 0;">'
-        . '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">'
-        . '<tr><td><img src="' . $banner . '" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>'
-        . '<tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.8;">'
-        . '<h2 style="color:#cb2ebc;margin-top:0;">Hi {{name}},</h2>'
-        . '<p>You opened our email and clicked the link — but Step 2 is still not complete. That tells us you\'re interested. Here\'s your direct link to pick up exactly where you left off.</p>'
-        . '<p style="background:#f9f0ff;border-left:4px solid #cb2ebc;padding:12px 16px;border-radius:4px;"><strong>Your system is waiting. One click away.</strong></p>'
-        . '<div style="text-align:center;margin:28px 0;"><a href="{{cta_url}}" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Complete Step 2 Now &rarr;</a></div>'
-        . '<p style="color:#888;font-size:13px;">Your Simple2Success Team</p>'
-        . '</td></tr>'
-        . '<tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">Copyright &copy; 2025 <a href="https://www.simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>. All rights reserved.</td></tr>'
-        . '</table></td></tr></table></body></html>');
-    mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
-        VALUES ('Trigger: Clicked Not Converted', 'trigger_clicked_not_converted', '$t1_subj', '$t1_body')");
-
-    $t2_subj = mysqli_real_escape_string($link, "{{name}}, Step 2 is done — here's what's missing");
-    $t2_body = mysqli_real_escape_string($link, '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
-        . '<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">'
-        . '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;"><tr><td align="center" style="padding:20px 0;">'
-        . '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">'
-        . '<tr><td><img src="' . $banner . '" width="600" alt="Simple2Success" style="display:block;width:100%;max-width:600px;"></td></tr>'
-        . '<tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.8;">'
-        . '<h2 style="color:#cb2ebc;margin-top:0;">Hi {{name}},</h2>'
-        . '<p>Congratulations — Step 2 is done. Your system is active. But there\'s one step that separates an active account from a <strong>genuinely earning system</strong>: Step 4.</p>'
-        . '<p>Step 4 activates the full income structure. Without it, the system runs — but not at full potential. With it, every activity in your team directly benefits you.</p>'
-        . '<p style="background:#f9f0ff;border-left:4px solid #cb2ebc;padding:12px 16px;border-radius:4px;"><strong>You\'ve already done the hardest part. Step 4 is the next logical move.</strong></p>'
-        . '<div style="text-align:center;margin:28px 0;"><a href="{{cta_url}}" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Activate Step 4 Now &rarr;</a></div>'
-        . '<p style="color:#888;font-size:13px;">Your Simple2Success Team</p>'
-        . '</td></tr>'
-        . '<tr><td style="background:#1a1a1a;padding:20px;text-align:center;color:#aaa;font-size:12px;">Copyright &copy; 2025 <a href="https://www.simple2success.com" style="color:#cb2ebc;text-decoration:none;">SIMPLE2SUCCESS</a>. All rights reserved.</td></tr>'
-        . '</table></td></tr></table></body></html>');
-    mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
-        VALUES ('Trigger: Step 2 Done No Step 4', 'trigger_step2_done_no_step4', '$t2_subj', '$t2_body')");
 }
 
 /**
@@ -191,15 +167,14 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
     $sent = 0; $errors = [];
 
     $tpl = mysqli_fetch_assoc(mysqli_query($link,
-        "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_clicked_not_converted' LIMIT 1"));
-    if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_clicked_not_converted template missing']];
+        "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_setup_help_v2' LIMIT 1"));
+    if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_setup_help_v2 template missing']];
 
     $sql = "SELECT DISTINCT u.leadid, u.name, u.email
             FROM users u
-            INNER JOIN followup_clicks fc ON fc.user_id = u.leadid
             WHERE (u.username IS NULL OR u.username = '')
-            AND fc.clicked_at >= DATE_SUB(NOW(), INTERVAL 48 HOUR)
-            AND fc.clicked_at <= DATE_SUB(NOW(), INTERVAL 2 HOUR)
+            AND u.step1_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            AND u.step1_at <= DATE_SUB(NOW(), INTERVAL 24 HOUR)
             AND u.leadid NOT IN (
                 SELECT user_id FROM followup_trigger_log WHERE trigger_type = 'clicked_no_step2'
             )";
@@ -216,9 +191,10 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
     while ($rec = mysqli_fetch_assoc($recipients)) {
         $uid     = (int)$rec['leadid'];
         $toEmail = $rec['email'];
-        $toName  = $rec['name'] ?: $toEmail;
+        $toName  = trim($rec['name'] ?? '') ?: 'there';
 
-        if (emailFooter_shouldSkip($link, $uid, 'trigger_clicked_not_converted')) continue;
+        if (emailFooter_shouldSkip($link, $uid, 'trigger_setup_help_v2')) continue;
+        if (!s2sReserveFollowupContact($link, $uid)) continue;
 
         $magicLink = generateMagicLink($link, $uid, 'trigger_clicked', 48, 'start.php');
         $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}', '{{magic_link}}'],
@@ -228,14 +204,14 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
                                $tpl['subject']);
         $body    = injectClickTracking($body, $base_url, $uid, 0);
-        $body   .= renderEmailFooter($link, 'trigger_clicked_not_converted', $uid);
+        $body   .= renderEmailFooter($link, 'trigger_setup_help_v2', $uid);
         $body    = injectPreheader($body);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         try {
             $messageId = $mailer->sendEmail(
                 $toEmail, $toName, $subject, $body,
-                ['followup', 'trigger', 'trigger_clicked_not_converted'],
+                ['followup', 'trigger', 'trigger_setup_help_v2'],
                 ['user_id' => $uid, 'trigger_type' => 'clicked_no_step2', 'email_type' => 'trigger']
             );
             $mid = mysqli_real_escape_string($link, $messageId);
@@ -255,14 +231,14 @@ function sendClickedButNotConvertedEmails($link, $base_url) {
 }
 
 /**
- * BEHAVIORAL TRIGGER 2: "Step 2 done, Step 4 not started after 48h"
+ * BEHAVIORAL TRIGGER 2: "Step 2 complete: general next-action support after 48h"
  */
-function sendStep2DoneNoStep4Emails($link, $base_url) {
+function sendStep2OnboardingEmails($link, $base_url) {
     $sent = 0; $errors = [];
 
     $tpl = mysqli_fetch_assoc(mysqli_query($link,
-        "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_step2_done_no_step4' LIMIT 1"));
-    if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_step2_done_no_step4 template missing']];
+        "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_next_action_v2' LIMIT 1"));
+    if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_next_action_v2 template missing']];
 
     $sql = "SELECT u.leadid, u.name, u.email
             FROM users u
@@ -285,9 +261,10 @@ function sendStep2DoneNoStep4Emails($link, $base_url) {
     while ($rec = mysqli_fetch_assoc($recipients)) {
         $uid     = (int)$rec['leadid'];
         $toEmail = $rec['email'];
-        $toName  = $rec['name'] ?: $toEmail;
+        $toName  = trim($rec['name'] ?? '') ?: 'there';
 
-        if (emailFooter_shouldSkip($link, $uid, 'trigger_step2_done_no_step4')) continue;
+        if (emailFooter_shouldSkip($link, $uid, 'trigger_next_action_v2')) continue;
+        if (!s2sReserveFollowupContact($link, $uid)) continue;
 
         $magicLink = generateMagicLink($link, $uid, 'trigger_step2_no_step4', 48, 'start.php');
         $body    = str_replace(['{{name}}', '{{email}}', '{{cta_url}}', '{{magic_link}}'],
@@ -297,14 +274,14 @@ function sendStep2DoneNoStep4Emails($link, $base_url) {
                                [htmlspecialchars($toName), htmlspecialchars($toEmail)],
                                $tpl['subject']);
         $body    = injectClickTracking($body, $base_url, $uid, 0);
-        $body   .= renderEmailFooter($link, 'trigger_step2_done_no_step4', $uid);
+        $body   .= renderEmailFooter($link, 'trigger_next_action_v2', $uid);
         $body    = injectPreheader($body);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         try {
             $messageId = $mailer->sendEmail(
                 $toEmail, $toName, $subject, $body,
-                ['followup', 'trigger', 'trigger_step2_done_no_step4'],
+                ['followup', 'trigger', 'trigger_next_action_v2'],
                 ['user_id' => $uid, 'trigger_type' => 'step2_done_no_step4', 'email_type' => 'trigger']
             );
             $mid = mysqli_real_escape_string($link, $messageId);
@@ -329,39 +306,17 @@ function sendStep2DoneNoStep4Emails($link, $base_url) {
 function sendNoVideoWatchedEmails($link, $base_url) {
     $sent = 0; $errors = [];
 
-    $tSubj = mysqli_real_escape_string($link, '{{name}}, you haven\'t watched the overview yet');
-    $banner = 'https://www.simple2success.com/assets/img/email-banner.jpg';
-    $tBody = mysqli_real_escape_string($link,
-        '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
-        . '<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">'
-        . '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;"><tr><td align="center" style="padding:20px 0;">'
-        . '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;">'
-        . '<tr><td><img src="' . $banner . '" width="600" alt="Simple2Success" style="display:block;width:100%;"></td></tr>'
-        . '<tr><td style="padding:30px 40px;color:#333;font-size:15px;line-height:1.8;">'
-        . '<h2 style="color:#cb2ebc;margin-top:0;">Hi {{name}},</h2>'
-        . '<p>You created your free account — but you haven\'t watched the business presentation yet.</p>'
-        . '<p>This overview shows you exactly what you\'re joining, how the income system works, and why people in 40+ countries use it to build additional income online.</p>'
-        . '<p style="background:#f9f0ff;border-left:4px solid #cb2ebc;padding:12px 16px;border-radius:4px;">'
-        . '<strong>You do not need to watch all of it right now. But the more you understand, the faster you move.</strong></p>'
-        . '<div style="text-align:center;margin:28px 0;">'
-        . '<a href="{{cta_url}}" style="background:#cb2ebc;color:white;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Watch the Presentation Now &rarr;</a>'
-        . '</div>'
-        . '<p style="color:#888;font-size:13px;">Most people who watch it complete Step 1 the same day.</p>'
-        . '</td></tr></table></td></tr></table></body></html>'
-    );
-
-    mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
-        VALUES ('Trigger: No Video Watched', 'trigger_no_video_watched', '$tSubj', '$tBody')");
-
     $tpl = mysqli_fetch_assoc(mysqli_query($link,
-        "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_no_video_watched' LIMIT 1"));
-    if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_no_video_watched template missing']];
+        "SELECT subject, body FROM email_templates WHERE template_key = 'trigger_overview_v2' LIMIT 1"));
+    if (!$tpl || empty($tpl['body'])) return ['sent' => 0, 'errors' => ['trigger_overview_v2 template missing']];
 
     $sql = "SELECT u.leadid, u.name, u.email
             FROM users u
             WHERE u.last_login IS NOT NULL
-              AND u.step2_at IS NULL
+              AND (u.username IS NULL OR u.username = '')
               AND u.last_login < NOW() - INTERVAL 24 HOUR
+              AND u.last_login >= NOW() - INTERVAL 7 DAY
+              AND u.step1_at IS NULL
               AND u.leadid NOT IN (
                   SELECT DISTINCT lead_id FROM lead_events WHERE event_type = 'video_play'
               )
@@ -382,9 +337,10 @@ function sendNoVideoWatchedEmails($link, $base_url) {
     while ($rec = mysqli_fetch_assoc($recipients)) {
         $uid     = (int)$rec['leadid'];
         $toEmail = $rec['email'];
-        $toName  = $rec['name'] ?: $toEmail;
+        $toName  = trim($rec['name'] ?? '') ?: 'there';
 
-        if (emailFooter_shouldSkip($link, $uid, 'trigger_no_video_watched')) continue;
+        if (emailFooter_shouldSkip($link, $uid, 'trigger_overview_v2')) continue;
+        if (!s2sReserveFollowupContact($link, $uid)) continue;
 
         $magicLink = generateMagicLink($link, $uid, 'trigger_no_video', 48, 'start.php');
         $body    = str_replace(['{{name}}', '{{cta_url}}', '{{magic_link}}'],
@@ -392,14 +348,14 @@ function sendNoVideoWatchedEmails($link, $base_url) {
                                $tpl['body']);
         $subject = str_replace('{{name}}', htmlspecialchars($toName), $tpl['subject']);
         $body    = injectClickTracking($body, $base_url, $uid, 0);
-        $body   .= renderEmailFooter($link, 'trigger_no_video_watched', $uid);
+        $body   .= renderEmailFooter($link, 'trigger_overview_v2', $uid);
         $body    = injectPreheader($body);
         $subject = html_entity_decode($subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         try {
             $messageId = $mailer->sendEmail(
                 $toEmail, $toName, $subject, $body,
-                ['followup', 'trigger', 'trigger_no_video_watched'],
+                ['followup', 'trigger', 'trigger_overview_v2'],
                 ['user_id' => $uid, 'trigger_type' => 'no_video_24h', 'email_type' => 'trigger']
             );
             $mid = mysqli_real_escape_string($link, $messageId);
@@ -434,14 +390,26 @@ function sendFollowupEmails($link) {
         return ['sent' => 0, 'errors' => ['BrevoMailer init: ' . $e->getMessage()]];
     }
 
+    // ── 2. Behavioral trigger: clicked but didn't complete Step 2 ────────────
+    $t1 = sendClickedButNotConvertedEmails($link, $base_url);
+    $sent += $t1['sent']; $errors = array_merge($errors, $t1['errors']);
+
+    // ── 3. Behavioral trigger: Step 2 complete: next-action support after 48h ─────
+    $t2 = sendStep2OnboardingEmails($link, $base_url);
+    $sent += $t2['sent']; $errors = array_merge($errors, $t2['errors']);
+
+    // ── 4. Behavioral trigger: logged in but no video played after 24h ────────
+    $t3 = sendNoVideoWatchedEmails($link, $base_url);
+    $sent += $t3['sent']; $errors = array_merge($errors, $t3['errors']);
+
     // ── 1. Regular day-offset sequences (A/B via subject_b column) ───────────
     // Send window 08:00–20:00 — overnight sends get buried in the morning inbox.
-    // Behavioral triggers below run regardless (behavioral proximity beats timing).
+    // Behavioural triggers above share the same contact cap.
     $hour = (int)date('G');
     $inSendWindow = ($hour >= 8 && $hour < 20);
 
     $seqs = $inSendWindow
-        ? mysqli_query($link, "SELECT * FROM followup_sequences WHERE is_active = 1 ORDER BY target, day_offset ASC")
+        ? mysqli_query($link, "SELECT * FROM followup_sequences WHERE is_active = 1 ORDER BY target, day_offset DESC, id ASC")
         : false;
     if ($seqs && mysqli_num_rows($seqs) > 0) {
         while ($seq = mysqli_fetch_assoc($seqs)) {
@@ -450,16 +418,7 @@ function sendFollowupEmails($link) {
             $target     = $seq['target'];
             $body       = $seq['body'];
 
-            $filter = ($target === 'lead')
-                ? "(username IS NULL OR username = '')"
-                : "(username IS NOT NULL AND username != '')";
-
-            $sql = "SELECT leadid, name, email FROM users
-                    WHERE $filter
-                    AND TIMESTAMPDIFF(DAY, timestamp, NOW()) >= $day_offset
-                    AND leadid NOT IN (
-                        SELECT user_id FROM followup_log WHERE sequence_id = $seq_id
-                    )";
+            $sql = s2sDueFollowupRecipientsSql($target, $seq_id, $day_offset);
 
             $recipients = mysqli_query($link, $sql);
             if (!$recipients) {
@@ -470,14 +429,15 @@ function sendFollowupEmails($link) {
             while ($rec = mysqli_fetch_assoc($recipients)) {
                 $uid     = (int)$rec['leadid'];
                 $toEmail = $rec['email'];
-                $toName  = $rec['name'] ?: $toEmail;
+                $toName  = trim($rec['name'] ?? '') ?: 'there';
 
                 $fuKey = 'followup_seq_' . $seq_id;
                 if (emailFooter_shouldSkip($link, $uid, $fuKey)) continue;
+                if (!s2sReserveFollowupContact($link, $uid)) continue;
 
                 $variant         = getAbVariant($link, $uid);
                 $finalSubject    = applyAbVariant($seq['subject'], $seq['subject_b'] ?? '', $variant);
-                $magicLink       = generateMagicLink($link, $uid, $fuKey, 72);
+                $magicLink       = generateMagicLink($link, $uid, $fuKey, 72, 'start.php');
 
                 $personalSubject = str_replace(
                     ['{{name}}', '{{email}}', '{{magic_link}}'],
@@ -518,18 +478,6 @@ function sendFollowupEmails($link) {
             }
         }
     }
-
-    // ── 2. Behavioral trigger: clicked but didn't complete Step 2 ────────────
-    $t1 = sendClickedButNotConvertedEmails($link, $base_url);
-    $sent += $t1['sent']; $errors = array_merge($errors, $t1['errors']);
-
-    // ── 3. Behavioral trigger: Step 2 done, Step 4 not started after 48h ─────
-    $t2 = sendStep2DoneNoStep4Emails($link, $base_url);
-    $sent += $t2['sent']; $errors = array_merge($errors, $t2['errors']);
-
-    // ── 4. Behavioral trigger: logged in but no video played after 24h ────────
-    $t3 = sendNoVideoWatchedEmails($link, $base_url);
-    $sent += $t3['sent']; $errors = array_merge($errors, $t3['errors']);
 
     // ── 5. Cleanup expired magic link tokens ──────────────────────────────────
     mysqli_query($link, "DELETE FROM login_tokens WHERE expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)");

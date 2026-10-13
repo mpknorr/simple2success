@@ -40,7 +40,7 @@ if ($f_lang    !== '') $_drillFilterAttrs .= ' data-filter-lang="'    . htmlspec
 if ($f_page    !== '') $_drillFilterAttrs .= ' data-filter-page="'    . htmlspecialchars($f_page,    ENT_QUOTES) . '"';
 
 // Build WHERE clause for all queries
-$where = "WHERE timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
+$where = "WHERE is_admin = 0 AND timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
 if ($sf_country !== '') $where .= " AND country_detected = '$sf_country'";
 if ($sf_lang    !== '') $where .= " AND lang = '$sf_lang'";
 if ($sf_page    !== '') $where .= " AND page = '$sf_page'";
@@ -59,6 +59,7 @@ $kpi_signups  = $q("SELECT COUNT(*) as c FROM users $where");
 $kpi_paid     = $q("SELECT COUNT(*) as c FROM users $where AND paidstatus = 'Paid'");
 $kpi_step1    = $q("SELECT COUNT(*) as c FROM users $where AND step1_at IS NOT NULL");
 $kpi_step2    = $q("SELECT COUNT(*) as c FROM users $where AND username IS NOT NULL AND username != ''");
+$setupRate = (int)$kpi_signups > 0 ? round((int)$kpi_step2 / (int)$kpi_signups * 100, 2) : 0;
 $kpi_today    = $q("SELECT COUNT(*) as c FROM users WHERE DATE(timestamp) = CURDATE()");
 $kpi_week     = $q("SELECT COUNT(*) as c FROM users WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
 
@@ -531,7 +532,7 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
     <div class="col-6 col-lg-4 col-xl-2 mb-1">
         <div class="st-kpi purple">
             <div class="st-kpi-icon"><i class="ft-check-circle"></i></div>
-            <div><div class="st-kpi-num"><?= $kpi_step2 ?></div><div class="st-kpi-label">Step 2 abgeschlossen</div></div>
+            <div><div class="st-kpi-num"><?= $kpi_step2 ?></div><div class="st-kpi-label">Partner-ID gespeichert (Rohdaten)</div><small><?= $setupRate ?>% Rohanteil ohne Admin-Konten<br>Test-/Bestandskonten können enthalten sein. Ziel für echte neue Leads: ≥ 2% (1 von 50).</small></div>
         </div>
     </div>
     <div class="col-6 col-lg-4 col-xl-2 mb-1">

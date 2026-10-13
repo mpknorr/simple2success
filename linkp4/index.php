@@ -23,7 +23,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simple2Success – Eagle Elite Access | Join Free</title>
-<meta name="description" content="Join the Simple2Success Eagle Team — a proven, step-by-step system that turns daily actions into lasting income. 100% free to start.">
+<meta name="description" content="Join the Simple2Success Eagle Team — a step-by-step system with tools and guidance for building additional income. 100% free to start.">
 <link rel="shortcut icon" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon.ico">
 <link rel="stylesheet" href="<?= $baseurl ?>/linkp4/fonts/fonts.css">
 <link rel="stylesheet" href="<?= $baseurl ?>/linkp4/css/style.css">
@@ -45,19 +45,19 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 
     <h1>
       Stop Guessing.<br>
-      <span class="highlight">Start Earning.</span>
+      <span class="highlight">Start With a Plan.</span>
     </h1>
 
     <p class="hero-sub">
-      Join the Simple2Success Eagle Team — a proven, step-by-step system<br>
-      that turns daily actions into lasting income.
+      Join the Simple2Success Eagle Team — a step-by-step system with tools, guidance<br>
+      and a clear next action.
     </p>
 
     <p class="hero-proof">
-      ✦ 10,000+ Members in 40+ Countries &nbsp;·&nbsp; 100% FREE to Start
+      ✦ Step-by-Step Guidance &nbsp;·&nbsp; Team Support &nbsp;·&nbsp; 100% FREE to Start
     </p>
 
-    <p style="margin:10px auto 0;max-width:640px;font-size:15px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+    <p style="margin:10px auto 0;max-width:640px;font-size:15px;font-weight:600;color:#cb2ebc;">🦅 Our mission: supporting 1,000 people and families in building additional income, with a goal of $1,000+ per month. Results are not guaranteed.</p>
 
     <?php if ($_eae): ?>
       <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -76,10 +76,11 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <input type="text" name="name" placeholder="Your First Name" autocomplete="given-name">
       <input type="email" name="email" placeholder="Your Best Email" required autocomplete="email">
       <button type="submit" class="btn-primary">
-        Claim My Free Position Now
+        Explore the Free System
         <span class="btn-arrow">→</span>
       </button>
     </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
     <?php endif; ?>
 
     <div class="trust-row">
@@ -93,28 +94,6 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 <!-- ═══════════════════════════════════════════════════════════
      SOCIAL PROOF BAR
 ════════════════════════════════════════════════════════════ -->
-<div class="proof-bar">
-  <div class="proof-stat">
-    <span class="num">10,000+</span>
-    <span class="label">Active Members</span>
-  </div>
-  <div class="proof-divider"></div>
-  <div class="proof-stat">
-    <span class="num">40+</span>
-    <span class="label">Countries</span>
-  </div>
-  <div class="proof-divider"></div>
-  <div class="proof-stat">
-    <span class="num">1B+</span>
-    <span class="label">Products Delivered Worldwide</span>
-  </div>
-  <div class="proof-divider"></div>
-  <div class="proof-stat">
-    <span class="num">30+</span>
-    <span class="label">Years of Industry Experience</span>
-  </div>
-</div>
-
 <!-- ═══════════════════════════════════════════════════════════
      PROBLEM SECTION
 ════════════════════════════════════════════════════════════ -->
@@ -122,8 +101,8 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
   <span class="section-label">The Real Problem</span>
   <h2 class="section-title">Why Most People <span class="hl">Never Break Through</span></h2>
   <p class="section-desc">
-    It's not a lack of effort. It's a lack of the right system, the right team,
-    and a clear next step to follow every single day.
+    A clear plan and support can help you turn learning into action.
+    Your results also depend on customers, skills and costs.
   </p>
 
   <div class="problem-grid">
@@ -140,7 +119,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
     <div class="problem-card">
       <span class="icon">🏝️</span>
       <h3>Working Alone</h3>
-      <p>Trying to build income without a team, without support, and without proven marketing tools.</p>
+      <p>Trying to build income without a team, without support, and without marketing tools.</p>
     </div>
     <div class="problem-card">
       <span class="icon">⏳</span>
@@ -159,15 +138,15 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
   <span class="section-label">The Solution</span>
   <h2 class="section-title">Everything You Need to <span class="hl">Build Real Income</span></h2>
   <p class="section-desc">
-    The Eagle Team system gives you structure, proven tools, and a team
-    that handles the marketing — so you can focus on what matters.
+    The Eagle Team system gives you structure, practical tools, and team support
+    to help you learn and take action.
   </p>
 
   <div class="benefits-grid">
     <div class="benefit-card">
       <span class="benefit-num">01 — Clarity</span>
       <h3>A Step-by-Step Roadmap</h3>
-      <p>No guessing. No overwhelm. You know exactly what to do at every stage — from Day 1 to full-time income.</p>
+      <p>Understand the next action, get help when needed, and review your progress.</p>
     </div>
     <div class="benefit-card">
       <span class="benefit-num">02 — Leverage</span>
@@ -192,7 +171,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
     <div class="benefit-card">
       <span class="benefit-num">06 — Momentum</span>
       <h3>Duplication That Scales</h3>
-      <p>When you follow the system, your team duplicates it. That's how small daily actions compound into exponential growth.</p>
+      <p>When you follow the system, your team duplicates it. Review the results and costs together before repeating an approach.</p>
     </div>
   </div>
 </div>
@@ -204,10 +183,10 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 ════════════════════════════════════════════════════════════ -->
 <div class="section">
   <span class="section-label">How It Works</span>
-  <h2 class="section-title">3 Simple Steps to <span class="hl">Your First Income</span></h2>
+  <h2 class="section-title">A Clear Route to <span class="hl">Your First Actions</span></h2>
   <p class="section-desc">
     The system is designed to be simple enough for anyone to follow —
-    and powerful enough to create real, lasting results.
+    with opportunities to ask questions before making a decision.
   </p>
 
   <div class="steps-wrapper">
@@ -217,7 +196,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <div class="step-dot">1</div>
       <div class="step-body">
         <h3>Register for Free &amp; Claim Your Position</h3>
-        <p>Create your free Simple2Success account and secure your spot in the Eagle Team network. No credit card. No risk. Takes less than 2 minutes.</p>
+        <p>Create your free Simple2Success account and explore the process. Review what is included and which later choices involve costs.</p>
       </div>
     </div>
 
@@ -225,15 +204,15 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <div class="step-dot">2</div>
       <div class="step-body">
         <h3>Complete Step 2 — Activate Your Partnership</h3>
-        <p>Create your free partner account and enter your Partner ID. This activates your marketing system and unlocks all income streams.</p>
+        <p>Review local registration fees and product-package options, create your partner account, then enter your Partner ID. Saving your Partner ID completes your setup. Earning commissions requires qualifying activity under the partner terms.</p>
       </div>
     </div>
 
     <div class="step-item">
       <div class="step-dot">3</div>
       <div class="step-body">
-        <h3>Order Traffic &amp; Let the System Work</h3>
-        <p>Use our trusted solo ad traffic sources to send leads into your funnel. The system handles follow-up, conversion, and duplication automatically.</p>
+        <h3>Learn, Take Action &amp; Review</h3>
+        <p>Learn how to support customers and use your tools. If you choose paid advertising, set a budget, measure results and review costs before spending more.</p>
       </div>
     </div>
   </div>
@@ -241,67 +220,9 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
 
 <hr class="section-divider">
 
-<!-- ═══════════════════════════════════════════════════════════
-     TESTIMONIALS
-════════════════════════════════════════════════════════════ -->
 <div class="section">
-  <span class="section-label">Real Results</span>
-  <h2 class="section-title">What Eagle Team Members <span class="hl">Are Saying</span></h2>
-
-  <div class="testimonials-grid">
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <p class="testimonial-text">"I had tried three other systems before this. Simple2Success was the first one where I actually knew what to do every day. Within 60 days I had my first team members and my first commissions."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">MK</div>
-        <div>
-          <div class="author-name">Michael K.</div>
-          <div class="author-location">Germany · 3 months in</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <p class="testimonial-text">"The done-for-you marketing system is incredible. I just share my link, the funnel does the work, and I focus on following up with people who are already interested."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">SL</div>
-        <div>
-          <div class="author-name">Sandra L.</div>
-          <div class="author-location">Austria · 5 months in</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <p class="testimonial-text">"What I love most is the community. Everyone is helping each other. The leaderboard keeps me motivated and the step-by-step system removes all the guesswork."</p>
-      <div class="testimonial-author">
-        <div class="author-avatar">TM</div>
-        <div>
-          <div class="author-name">Thomas M.</div>
-          <div class="author-location">Switzerland · 2 months in</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     URGENCY BANNER
-════════════════════════════════════════════════════════════ -->
-<div style="max-width:1100px; margin:0 auto; padding:0 20px;">
-  <div class="urgency-banner">
-    <div class="urgency-icon">⚡</div>
-    <div class="urgency-text">
-      <strong>Limited Spots Available This Month</strong>
-      <span>To maintain team quality and support levels, we limit new registrations each month. Once the spots are filled, the next opening is next month.</span>
-    </div>
-    <div class="spots-counter">
-      <span class="spots-num">17</span>
-      <span class="spots-label">Spots Left</span>
-    </div>
-  </div>
+  <h2 class="section-title">Understand Your Next Step</h2>
+  <p>Explore the tools, ask questions and review the costs before choosing your next action. Consistent learning and customer support matter; income is not automatic.</p>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -314,8 +235,8 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <span style="background:linear-gradient(135deg,#a855f7,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Right Now.</span>
     </h2>
     <p>
-      Register for free, follow the system, and join thousands of people
-      who are already building their income with the Eagle Team.
+      Explore the system for free, understand the process,
+      and choose your next action with the Eagle Team.
     </p>
 
     <?php if ($show_form): ?>
@@ -330,6 +251,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <input type="email" name="email" placeholder="Best Email" required>
       <button type="submit" class="btn-cta">Get Free Access →</button>
     </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner registration and products have separate costs; see the terms during partner registration. You decide before confirming. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
     <?php else: ?>
     <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
       <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>

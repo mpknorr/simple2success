@@ -6,8 +6,14 @@ if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
 }
 include '../includes/conn.php';
 $userid  = (int)$_SESSION['userid'];
-$userRow = mysqli_fetch_assoc(mysqli_query($link, "SELECT name FROM users WHERE leadid=$userid"));
+$userRow = mysqli_fetch_assoc(mysqli_query($link, "SELECT name, username, step1_at FROM users WHERE leadid=$userid"));
 $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
+require_once '../includes/onboarding.php';
+$setupComplete = s2sSetupComplete($userRow['username'] ?? '');
+$nextAction = s2sNextAction($userRow['username'] ?? '', !empty($userRow['step1_at']));
+if (!$setupComplete && empty($userRow['step1_at'])) {
+    $nextAction = ['href' => 'start.php#business-presentation', 'label' => 'See how the system and business work'];
+}
 ?>
 <?php require_once "parts/head.php"; ?>
 <body class="vertical-layout vertical-menu 2-columns navbar-static layout-dark"
@@ -526,7 +532,7 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
 <section>
   <div class="et-status">
     <i class="ft-check-circle"></i>
-    <span><strong>Your free account is active.</strong> Your next step is ready.</span>
+    <span><strong><?= $setupComplete ? 'Steps 1 and 2 are complete.' : 'Your free Simple2Success account is ready.' ?></strong> <?= $setupComplete ? 'Choose your next action below.' : 'Complete your partner registration and save your Partner ID to finish setup.' ?></span>
   </div>
 </section>
 
@@ -543,19 +549,17 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
         You Just Joined <span style="color:#b700e0;">Mission 1000 Families.</span>
       </h1>
       <p class="et-hero-sub">
-        You now have access to a proven step-by-step system designed to help ordinary people build additional income online — and a mission bigger than any single opportunity.
+        Simple2Success brings together a clear five-step plan, ready-to-use marketing tools and the Eagle Team. Whether you are new, returning to network marketing or building a business alongside family life, you can follow the same path.
       </p>
       <p class="et-hero-note">
-        You do not need to know everything today.
-        You do not need to keep changing the plan.
-        You simply need the next step and the discipline to follow it.
+        You do not have to design a new system. Understand the business in the presentation, then follow the five steps in order. Ask your team when you need help.
       </p>
       <ul class="et-hero-bullets">
-        <li>A Proven Step-By-Step System</li>
-        <li>Clear Daily Actions</li>
-        <li>A Real Path You Can Follow</li>
+        <li>One Five-Step Plan</li>
+        <li>Your Own Pages and Follow-Up Tools</li>
+        <li>Eagle Team Support</li>
       </ul>
-      <a href="start.php" class="et-btn">Continue to Step 1 &amp; Step 2 &rarr;</a>
+      <a href="<?= htmlspecialchars($nextAction['href']) ?>" class="et-btn"><?= htmlspecialchars($nextAction['label']) ?> &rarr;</a>
     </div>
   </div>
 </section>
@@ -636,15 +640,15 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
       <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:.6rem;">Our Mission</span>
       <h2 style="font-weight:800;margin-bottom:1rem;line-height:1.25;">Mission <span style="color:#b700e0;">1000 Families</span></h2>
       <p style="font-size:1.05rem;line-height:1.7;margin-bottom:.75rem;">
-        Our mission is to help <strong>1,000 families</strong> build real freedom with the Simple2Success Eagle Team system —
-        earning <strong>$1,000+ per month</strong>, traveling the world, driving a car funded through our partner program,
-        and living life on their own terms.
+        Our mission is to support <strong>1,000 people and families</strong> in building additional income,
+        with a goal of <strong>$1,000+ per month</strong>. More choice, travel and qualifying for our partner
+        car program are possible further milestones, each with its own requirements.
       </p>
       <p style="font-size:1.05rem;line-height:1.7;margin-bottom:1rem;">
-        Not by jumping from system to system. By following <strong style="color:#b700e0;">ONE proven system</strong>, step by step.
+        Build skills with <strong style="color:#b700e0;">one clear plan</strong>, take consistent action, and review results and costs regularly.
       </p>
       <p style="font-size:.78rem;opacity:.55;margin:0;line-height:1.5;">
-        Results are not guaranteed. Success depends on consistent execution, repetition and staying with the system.
+        This is our goal, not a guaranteed or typical result. Income depends on customers, skills, effort and costs. Registration alone does not generate income.
       </p>
     </div>
   </div>
@@ -657,17 +661,15 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
 <section>
   <div class="card" style="margin-bottom:0;">
     <div class="card-body" style="padding:1.75rem 2.5rem;">
-      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:1rem;">Your Roadmap — You Are Already On The Way</span>
+      <span style="font-size:.72rem;font-weight:700;letter-spacing:.09em;color:rgba(183,0,224,.85);text-transform:uppercase;display:block;margin-bottom:1rem;">Your Five-Step Plan</span>
       <div style="display:flex;flex-wrap:wrap;gap:.6rem;">
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Account created</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(40,199,111,.12);border:1px solid rgba(40,199,111,.45);color:#28c76f;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">✓ Logged in</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">3 · Watch the videos</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">4 · Step 1: Register</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(183,0,224,.1);border:1px solid rgba(183,0,224,.45);color:#d36ce8;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">5 · Step 2: Enter Partner ID</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">6 · Step 3–5: Execute</span>
-        <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;">7 · Repeat</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 1 · Open PM Registration</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 2 · Save PM Ref-ID</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 3 · Order Traffic</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 4 · Product Start</span>
+        <span style="border:1px solid rgba(183,0,224,.4);border-radius:20px;padding:.4rem .9rem;font-size:.82rem;">Step 5 · Repeat and Review</span>
       </div>
-      <p style="font-size:.85rem;opacity:.6;margin:.9rem 0 0;">2 of 7 steps already done. Your next move: watch the videos and complete Step 1 &amp; Step 2.</p>
+      <p style="font-size:.85rem;opacity:.6;margin:.9rem 0 0;"><?= $setupComplete ? 'PM Ref-ID saved: Steps 1 and 2 are complete. Continue with Step 3.' : 'Your system account is ready. Steps 1 and 2 are complete once you save your Partner ID.' ?> <a href="support.php">Need help?</a></p>
     </div>
   </div>
 </section>
@@ -731,20 +733,20 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
     <!-- Right: text (appears right on desktop due to row-reverse) -->
     <div class="et-split-text">
       <h2 class="et-why-title">
-        Why Most People<br>
-        <span>Never Get Results</span>
+        Build a Routine<br>
+        <span>You Can Review</span>
       </h2>
       <p>
-        They try one thing, then jump to the next. They consume more information, but never stay with one process long enough to see results.
+        Choose a manageable action and a regular time to practise it. Learning becomes more useful when you put it into action.
       </p>
       <p>
-        They keep changing direction. They overthink simple actions. They start again and again instead of repeating what already works.
+        Track customer conversations, questions and costs. These help you see where support or a different approach is needed.
       </p>
       <p>
-        The problem is never effort. The problem is <strong style="color:#fff;">no system. No structure. No clear next step.</strong>
+        A clear structure can help you focus. <strong style="color:#fff;">Learn, take action, and review what works for you.</strong>
       </p>
       <p>
-        The ones who win are not smarter. <strong style="color:#fff;">They simply stopped switching systems.</strong>
+        <strong style="color:#fff;">Ask for feedback and make informed decisions.</strong> Consistency helps you learn; results still vary.
       </p>
     </div>
 
@@ -798,9 +800,9 @@ $userName = !empty($userRow['name']) ? htmlspecialchars($userRow['name']) : '';
       <p class="et-cta-body">
         With the Eagle Team system, you do not have to guess or start over again.<br><br>
         You now have a clear direction, a step-by-step system and the right next move.<br><br>
-        On the next page, you will see exactly what to do next.
+        The presentation explains the business behind the system. Then follow Step 1 and Step 2 to complete your setup.
       </p>
-      <a href="start.php" class="et-btn">Start Step 1 Now — It's Free &rarr;</a>
+      <a href="<?= htmlspecialchars($nextAction['href']) ?>" class="et-btn"><?= htmlspecialchars($nextAction['label']) ?> &rarr;</a>
     </div>
 
     <!-- Right: eagle #3 — dynamic / momentum -->

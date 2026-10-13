@@ -29,9 +29,9 @@ function getSetting($link, $key) {
 
 // Einstellungen speichern
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_settings'])) {
-    $fields = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'smtp_from_email', 'smtp_from_name'];
+    $fields = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'smtp_from_email', 'smtp_from_name', 'smtp_reply_to'];
     foreach ($fields as $field) {
-        $val = mysqli_real_escape_string($link, $_POST[$field]);
+        $val = mysqli_real_escape_string($link, $_POST[$field] ?? '');
         mysqli_query($link, "INSERT INTO settings (setting_key, setting_value) VALUES ('$field', '$val') ON DUPLICATE KEY UPDATE setting_value = '$val'");
     }
     $success = "E-Mail Einstellungen gespeichert.";
@@ -59,6 +59,7 @@ $smtp_user       = getSetting($link, 'smtp_user');
 $smtp_password   = getSetting($link, 'smtp_password');
 $smtp_from_email = getSetting($link, 'smtp_from_email');
 $smtp_from_name  = getSetting($link, 'smtp_from_name');
+$smtp_reply_to = getSetting($link, 'smtp_reply_to');
 ?>
 <!DOCTYPE html>
 <html class="loading" lang="en">
@@ -126,6 +127,13 @@ $smtp_from_name  = getSetting($link, 'smtp_from_name');
                                         <label class="col-sm-4 col-form-label">Absender Name</label>
                                         <div class="col-sm-8">
                                             <input type="text" name="smtp_from_name" class="form-control" value="<?= htmlspecialchars($smtp_from_name) ?>" placeholder="Simple2Success">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-4 col-form-label" for="smtp_reply_to">Antwortadresse</label>
+                                        <div class="col-sm-8">
+                                            <input type="email" id="smtp_reply_to" name="smtp_reply_to" class="form-control" value="<?= htmlspecialchars($smtp_reply_to) ?>">
+                                            <small class="text-muted">Betreutes Postfach. Leer = Absenderadresse.</small>
                                         </div>
                                     </div>
                                     <button type="submit" name="save_settings" class="btn btn-primary">

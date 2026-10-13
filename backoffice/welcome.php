@@ -20,7 +20,8 @@ mysqli_query($link, "CREATE TABLE IF NOT EXISTS notifications (
 
 if (isset($_POST["root"])) {
     $root     = trim($_POST["root"]);
-    $userid   = (int)$_POST["userid"];
+    $userid   = (int)($_SESSION['userid'] ?? 0);
+    if ($userid <= 0) { header('Location: login.php'); exit(); }
     $is_admin = !empty($_SESSION['is_admin']);
 
     // ── Lock check: if already saved a numeric PM number, block changes ──────
@@ -40,7 +41,7 @@ if (isset($_POST["root"])) {
 
     $root    = mysqli_real_escape_string($link, $root);
     $step2ip = mysqli_real_escape_string($link, getClientIp());
-    $result  = mysqli_query($link, "UPDATE users SET username='$root', step2_at=NOW(), step2_ip='$step2ip' WHERE leadid=$userid");
+    $result  = mysqli_query($link, "UPDATE users SET username='$root', step2_at=COALESCE(step2_at, NOW()), step2_ip='$step2ip' WHERE leadid=$userid");
 
     if (!$result) {
         header("Location: start.php?err=invalidpm");
