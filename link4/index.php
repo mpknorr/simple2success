@@ -16,7 +16,7 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simple2Success – Capture Page 4 | Your Income Starts Here</title>
-<meta name="description" content="Join the Simple2Success Eagle Team — a proven, step-by-step system that turns daily actions into lasting income. 100% free to start.">
+<meta name="description" content="Join the Simple2Success Eagle Team — a step-by-step system with tools and guidance for building additional income. 100% free to start.">
 <link rel="apple-touch-icon" sizes="180x180" href="https://www.simple2success.com/backoffice/app-assets/img/ico/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="https://www.simple2success.com/backoffice/app-assets/img/ico/favicon-16x16.png">
@@ -47,12 +47,12 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
       </h1>
 
       <p class="left-desc">
-        A proven, step-by-step system that gives ordinary people
+        A step-by-step system that gives ordinary people
         the tools, team, and traffic to build real online income —
         starting for free, today.
       </p>
 
-      <p style="margin:0 0 18px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+      <p style="margin:0 0 18px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: supporting 1,000 people and families in building additional income, with a goal of $1,000+ per month. Results are not guaranteed.</p>
 
       <ul class="feature-list">
         <li>
@@ -79,26 +79,12 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         <li>
           <div class="feature-icon">🌍</div>
           <div class="feature-text">
-            <strong>Global Team in 40+ Countries</strong>
+            <strong>Global Team in Team Support</strong>
             <span>A community that supports, motivates, and duplicates your success.</span>
           </div>
         </li>
       </ul>
 
-      <div class="stats-row">
-        <div class="stat-item">
-          <span class="num">10K+</span>
-          <span class="lbl">Members</span>
-        </div>
-        <div class="stat-item">
-          <span class="num">40+</span>
-          <span class="lbl">Countries</span>
-        </div>
-        <div class="stat-item">
-          <span class="num">100%</span>
-          <span class="lbl">Free Start</span>
-        </div>
-      </div>
 
     </div>
   </div>
@@ -132,24 +118,10 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         </div>
       </div>
 
-      <!-- Social proof mini -->
-      <div class="mini-proof">
-        <div class="mini-proof-avatars">
-          <div class="mini-avatar">MK</div>
-          <div class="mini-avatar">SL</div>
-          <div class="mini-avatar">TM</div>
-          <div class="mini-avatar">+</div>
-        </div>
-        <div class="mini-proof-text">
-          <strong>47 people</strong> registered in the last 24 hours.<br>
-          Spots are limited this month.
-        </div>
-      </div>
-
       <!-- Form header -->
       <div class="form-header">
         <h2>Get Your <span style="background:linear-gradient(135deg,#a855f7,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Free Account</span></h2>
-        <p>Enter your details below to claim your free position in the Eagle Team and access the full system.</p>
+        <p>Enter your details below to explore the Eagle Team system and decide on your next step.</p>
       </div>
 
       <?php if ($_eae): ?>
@@ -180,10 +152,11 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
         </div>
 
         <button type="submit" class="submit-btn">
-          Claim My Free Position
+          Explore the Free System
           <span style="font-size:1.2rem;">→</span>
         </button>
       </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
 
       <!-- Trust badges -->

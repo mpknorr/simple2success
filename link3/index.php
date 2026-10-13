@@ -175,9 +175,9 @@ $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) 
   <div class="container">
     <img src="<?= $baseurl ?>/<?= $page ?>/eagle1b.jpg" class="responsive-image" alt="Eagle Team">
     <div class="card-body">
-      <h2>Join 10,000+ People Already Building Income With the Simple2Success Eagle Team</h2>
+      <h2>Explore a Clear Plan for Building Additional Income With the Eagle Team</h2>
       <p class="subheadline">Your free spot is waiting — enter your details to get access</p>
-      <p style="margin:6px 0 14px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+      <p style="margin:6px 0 14px;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: supporting 1,000 people and families in building additional income, with a goal of $1,000+ per month. Results are not guaranteed.</p>
 
       <?php if ($_eae): ?>
         <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
@@ -203,13 +203,14 @@ $_pg_lang  = isset($_GET['lang']) && isset($s2s_lang['err_eae'][$_GET['lang']]) 
         </div>
         <input type="submit" class="btn-cta" value="Yes — Show Me the System →">
       </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
 
       <p class="micro-copy">🔒 100% Free — No Credit Card Required. We respect your privacy.</p>
 
       <div class="social-proof">
-        <span class="sp-item">10,000+ Members</span>
-        <span class="sp-item">40+ Countries</span>
+        <span class="sp-item">Step-by-Step Guidance</span>
+        <span class="sp-item">Team Support</span>
         <span class="sp-item">Free to Join</span>
         <span class="sp-item">Proven System Since 2023</span>
       </div>

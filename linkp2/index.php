@@ -47,8 +47,8 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
         <div class="s2s-form-col-wrap">
           <div class="s2s-container">
             <h1 class="s2s-heading"><span class="s2s-span-reserve">RESERVE</span><br><span style="white-space:nowrap;">YOUR SPOT</span></h1>
-            <p class="s2s-subtitle action">Free spots are limited by sponsor capacity — yours has been reserved</p>
-            <p style="margin:4px 0 12px;font-size:13px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+            <p class="s2s-subtitle action">Explore the process and decide whether it fits your goals</p>
+            <p style="margin:4px 0 12px;font-size:13px;font-weight:600;color:#cb2ebc;">🦅 Our mission: supporting 1,000 people and families in building additional income, with a goal of $1,000+ per month. Results are not guaranteed.</p>
             <div class="s2s-form-inner">
               <div class="s2s-form-block w-form">
                 <?php if ($_eae): ?>
@@ -72,6 +72,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
                   <input type="submit" value="Reserve My Free Spot →" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
                 </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
                 <?php endif; ?>
               </div>
             </div>
@@ -84,7 +85,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
   <section class="s2s-perks-section">
     <div class="s2s-perks-wrap">
       <div class="s2s-perks-col">
-        <div class="s2s-perks-text">Active in 40+ Countries <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Multiple Income Streams</div>
+        <div class="s2s-perks-text">Active in Team Support <span class="s2s-span-sep">//</span> 100% FREE Team System <span class="s2s-span-sep">//</span> Multiple Income Streams</div>
       </div>
       <div class="s2s-logo-col"></div>
     </div>

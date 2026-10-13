@@ -69,9 +69,10 @@ $countdownSeconds = 48 * 3600;
         <div class="s2s-form-prompt">Where Should We Send The Info?</div>
         <input type="text" class="s2s-input-field name" maxlength="256" name="name" placeholder="Your First Name" autocomplete="given-name">
         <input type="email" class="s2s-input-field" maxlength="256" name="email" placeholder="Your Best Email" required autocomplete="email">
-        <input type="submit" value="Claim My Free Position!" class="s2s-btn">
+        <input type="submit" value="Explore the Free System!" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
       </form>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
       <div class="w-form-done">
         <div>Thank you! Check your email for next steps.</div>
@@ -93,8 +94,8 @@ $countdownSeconds = 48 * 3600;
     </div>
     <div class="s2s-perks-banner">
       <div class="s2s-description-wrap">
-        <p class="s2s-tagline">Join a proven step-by-step system used by 10,000+ members in 40+ countries to build real income online — 100% free to start.</p>
-        <p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: helping 1,000 families build real online income — $1,000+/month, more freedom, more life.</p>
+        <p class="s2s-tagline">Explore a step-by-step system with tools and team support. Create a free account to see how it works.</p>
+        <p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#cb2ebc;">🦅 Our mission: supporting 1,000 people and families in building additional income, with a goal of $1,000+ per month. Results are not guaranteed.</p>
       </div>
     </div>
     <div class="s2s-benefits-grid">
@@ -172,7 +173,7 @@ $countdownSeconds = 48 * 3600;
     </div>
     <div class="s2s-cta-row">
       <div class="s2s-arrow-left"></div>
-      <a href="#" class="s2s-main-btn" id="s2s-open-modal">Claim My Free Position!</a>
+      <a href="#" class="s2s-main-btn" id="s2s-open-modal">Explore the Free System!</a>
       <div class="s2s-arrow-right"></div>
     </div>
   </div>

@@ -7,7 +7,7 @@ if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
 }
 
 include '../includes/conn.php';
-require_once '../includes/fake_leaderboard_generator.php';
+// Rankings contain real members only.
 
 $userid = (int)$_SESSION['userid'];
 ?>
@@ -103,8 +103,6 @@ $userid = (int)$_SESSION['userid'];
 
                 <?php
                 // ── Settings ─────────────────────────────────────────────────────
-                $fakeEnabled = getLbSetting($link, 'fake_leaderboard_enabled') === '1';
-                $fakeTarget  = (int)(getLbSetting($link, 'fake_leaderboard_target') ?: 500);
 
                 // ── Build query (no LIMIT/OFFSET — we paginate in PHP) ───────────
                 if ($mode === 'monthly') {
@@ -119,7 +117,7 @@ $userid = (int)$_SESSION['userid'];
                             SUM(CASE WHEN l.username IS NOT NULL AND l.username != '' THEN 1 ELSE 0 END) AS step2_members,
                             SUM(CASE WHEN l.timestamp >= '$monthStart' AND l.timestamp < '$monthEnd' THEN 1 ELSE 0 END) AS month_leads,
                             SUM(CASE WHEN l.username IS NOT NULL AND l.username != ''
-                                      AND l.timestamp >= '$monthStart' AND l.timestamp < '$monthEnd' THEN 1 ELSE 0 END) AS month_members
+                                      AND l.step2_at >= '$monthStart' AND l.step2_at < '$monthEnd' THEN 1 ELSE 0 END) AS month_members
                         FROM users u
                         LEFT JOIN users l ON l.referer = u.leadid
                         WHERE u.username IS NOT NULL AND u.username != ''
@@ -153,12 +151,7 @@ $userid = (int)$_SESSION['userid'];
                 }
                 $realCount = count($realUsers);
 
-                // ── Merge fakes if enabled & below target ────────────────────────
-                $fakeNeeded = $fakeEnabled ? max(0, $fakeTarget - $realCount) : 0;
-                $fakeUsers  = $fakeNeeded > 0
-                    ? getFakeLeaderboardData($selMonth, $mode, $fakeNeeded)
-                    : [];
-                $allUsers = array_merge($realUsers, $fakeUsers);
+                $allUsers = $realUsers;
 
                 // ── Sort in PHP ──────────────────────────────────────────────────
                 if ($mode === 'monthly') {

@@ -1,25 +1,19 @@
 <?php
 include '../includes/conn.php';
 
-// ── Step 1 click-tracking handler (AJAX POST) ────────────────────────────────
-if (isset($_POST["click"])) {
-    $clickTime = $_POST["click"];
-    $userid    = (int)$_POST["userid"];
-    $step1ip   = mysqli_real_escape_string($link, getClientIp());
-    mysqli_query($link, "UPDATE users SET signuproot='$clickTime', step1_at=NOW(), step1_ip='$step1ip' WHERE leadid=$userid");
+// All actions belong to the signed-in user.
+if (session_status() === PHP_SESSION_NONE) session_start();
+if (empty($_SESSION['userid'])) { header('Location: login.php'); exit(); }
+$userid = (int)$_SESSION['userid'];
+require_once '../includes/onboarding.php';
+if (isset($_POST['click'])) {
+    $step1ip = mysqli_real_escape_string($link, getClientIp());
+    // step1_at means registration-link click, never a completed registration.
+    mysqli_query($link, "UPDATE users SET signuproot=COALESCE(NULLIF(signuproot, ''), NOW()), step1_at=COALESCE(step1_at, NOW()), step1_ip='$step1ip' WHERE leadid=$userid");
     mysqli_query($link, "INSERT INTO lead_events (lead_id, event_type, page, ip)
         VALUES ($userid, 'step1_button_click', 'backoffice/start.php', '$step1ip')");
-    die();
-}
-
-// ── Auth ─────────────────────────────────────────────────────────────────────
-if (!isset($_SESSION)) { session_start(); }
-if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
-    header('Location: login.php');
     exit();
 }
-
-$userid = $_SESSION['userid'];
 
 // ── Log "Next Step" button click from index.php ───────────────────────────────
 $referer = $_SERVER['HTTP_REFERER'] ?? '';
@@ -45,6 +39,9 @@ if (!empty($user_referer) && is_numeric($user_referer)) {
 $current_user_row = mysqli_fetch_assoc(mysqli_query($link, "SELECT username, step1_at FROM users WHERE leadid = $userid"));
 $current_user_pm  = $current_user_row['username'] ?? '';
 $step1_clicked    = !empty($current_user_row['step1_at']);
+$setupComplete = s2sSetupComplete($current_user_pm);
+$nextAction = s2sNextAction($current_user_pm, $step1_clicked);
+
 $pm_locked        = !empty($current_user_pm) && preg_match('/^\d+$/', trim($current_user_pm));
 $is_admin         = !empty($_SESSION['is_admin']);
 
@@ -54,8 +51,8 @@ if (isset($_GET['err'])) {
     if ($_GET['err'] === 'locked')    $step2_error = 'Your Partner ID is already saved and cannot be changed. Contact support if an update is needed.';
     if ($_GET['err'] === 'invalidpm') $step2_error = 'Please enter a valid PM Partner ID (numbers only, e.g. 6304013).';
 }
-if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
-    $step2_success = 'Your Partner ID has been saved — your Simple2Success system is now activated. Welcome to the Eagle Team — your family is now part of Mission 1000. Continue with the steps below.';
+if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
+    $step2_success = 'Your Partner ID has been saved. Steps 1 and 2 are complete. Welcome to the Eagle Team. Choose your next learning or customer action below.';
 }
 ?>
 <!DOCTYPE html>
@@ -153,7 +150,10 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
           <div class="row">
             <div class="col-12">
               <div style="background:linear-gradient(90deg,rgba(183,0,224,.12) 0%,rgba(183,0,224,.04) 100%);border-left:3px solid #b700e0;border-radius:6px;padding:.7rem 1.2rem;font-size:.9rem;color:rgba(255,255,255,.85);">
-                <strong style="color:#d36ce8;">Mission 1000 Families</strong> — your family's story starts with Step 1 and Step 2.
+                <strong style="color:#d36ce8;">Mission 1000 Families</strong> — one clear next step, with support when you need it.
+                <p style="margin:.65rem 0;" role="status"><?= $setupComplete ? 'Steps 1 and 2 complete: your Partner ID is saved.' : 'Setup is complete once your Partner ID is saved in Step 2.' ?></p>
+                <a class="btn btn-primary" href="<?= htmlspecialchars($nextAction['href']) ?>"><?= htmlspecialchars($nextAction['label']) ?></a>
+                <a href="support.php" style="margin-left:1rem;">Need help?</a>
               </div>
             </div>
           </div>
@@ -168,11 +168,11 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
             <div class="col-12">
               <div class="card" style="background:rgba(255,255,255,.03);">
                 <div class="s2s-step-bar">
-                  <div class="s2s-step active">
+                  <div class="s2s-step <?= $setupComplete ? 'done' : 'active' ?>">
                     <div class="s2s-step-circle">1</div>
                     <span class="s2s-step-label">Register<br>with PM</span>
                   </div>
-                  <div class="s2s-step active">
+                  <div class="s2s-step <?= $setupComplete ? 'done' : 'active' ?>">
                     <div class="s2s-step-circle">2</div>
                     <span class="s2s-step-label">Enter<br>Partner ID</span>
                   </div>
@@ -302,6 +302,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
         <!-- ═══════════════════════════════════════════════════════════
              SECTION BRIDGE — CONFIRM (Registration CTA, 3-column layout)
         ════════════════════════════════════════════════════════════ -->
+        <?php if (!$setupComplete): ?>
         <section id="step1-action" style="margin-top:.5rem;">
           <div class="row">
             <div class="col-12">
@@ -321,16 +322,15 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                                  font-weight:800;margin-bottom:var(--s2s-sp-2);
                                  line-height:var(--s2s-lh-tight);">
                         Complete <span style="color:var(--s2s-brand);">Step 1</span><br>
-                        and Unlock Step 2
+                        then Save Your Partner ID
                       </h1>
                       <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
                                 margin:0;line-height:var(--s2s-lh-body);">
-                        Sign up with PM-International — it's free and takes less than 3 minutes.
-                        Then return here, enter your Partner ID, and your system is active.
+                        Open the PM-International registration, review the options for your country, then return here and save your Partner ID. Your setup is complete only after Step 2.
                       </p>
                       <ul style="list-style:none;padding:0;margin:1rem 0 0;font-size:.88rem;color:rgba(255,255,255,.75);line-height:2;">
                         <li><span style="color:#28c76f;font-weight:700;">✓</span> 100% free registration — no purchase required</li>
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Takes less than 3 minutes</li>
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Review any product or subscription options before confirming</li>
                         <li><span style="color:#28c76f;font-weight:700;">✓</span> Your sponsor connection is already prepared</li>
                       </ul>
                     </div>
@@ -360,7 +360,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                       </small>
                       <?php endif; ?>
                       <p style="font-size:.78rem;opacity:.45;margin-top:.6rem;margin-bottom:0;line-height:1.4;">
-                        Opens in a new tab.<br>Keep this page open.
+                        Opens in a new tab. Return here afterwards.<br><a href="#step2-action">Already registered? Save your Partner ID.</a>
                       </p>
                     </div>
 
@@ -385,7 +385,8 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
         <!-- ═══════════════════════════════════════════════════════════
              SECTION 7 — STEP 2 ACTION CARD (primary)
         ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-step2-action" style="margin-top:.5rem;">
+        <?php endif; ?>
+        <section id="step2-action" class="s2s-step2-action" style="margin-top:.5rem;">
           <div class="row">
             <div class="col-12">
               <div class="card" style="border:2px solid #b700e0;background:rgba(183,0,224,.06);box-shadow:0 0 28px rgba(183,0,224,.18);">
@@ -436,19 +437,19 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                           After registering with PM-International (Step 1), you will receive your personal Partner ID. Copy it from your confirmation email or your PM account, paste it into the field below and click Save to activate your Simple2Success system.
                         </p>
                         <p style="opacity:.75;font-size:.9rem;margin-bottom:1.25rem;">
-                          Once saved, your Partner ID is permanently locked and cannot be changed by you.
-                          Contact support if an update is ever needed.
+                          Enter only your Partner ID, never your PM password. Check the number before saving.
+                          <a href="support.php">Need help or a correction? Contact support.</a>
                         </p>
                         <form method="POST" action="welcome.php" style="max-width:640px;">
                           <input type="hidden" name="userid" value="<?= isset($userid) ? (int)$userid : '' ?>">
-                          <label style="font-size:.9rem;font-weight:600;color:#b700e0;margin-bottom:.5rem;display:block;letter-spacing:.02em;">
+                          <label for="partner-id" style="font-size:.9rem;font-weight:600;color:#b700e0;margin-bottom:.5rem;display:block;letter-spacing:.02em;">
                             YOUR PM PARTNER ID
                           </label>
                           <div style="display:flex;margin-bottom:1rem;">
-                            <span class="s2s-id-prefix" style="font-size:.75rem;padding:.75rem .85rem;">pmebusiness.com/registrationv2/?TP=</span>
+                            <span class="s2s-id-prefix" style="font-size:.75rem;padding:.75rem .85rem;">Partner ID</span>
                             <input type="text"
                                    class="s2s-id-input"
-                                   name="root"
+                                   name="root" id="partner-id" inputmode="numeric" pattern="[0-9]+"
                                    placeholder="e.g. 6304013"
                                    required
                                    style="font-size:1.15rem;padding:.75rem 1rem;font-weight:600;letter-spacing:.04em;"
@@ -556,10 +557,10 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <!-- Headline -->
                   <h3 style="color:var(--s2s-text-100);font-weight:800;margin-bottom:.5rem;text-align:center;">
                     <i class="ft-trending-up" style="color:var(--s2s-brand);margin-right:10px;"></i>
-                    Why Step 3 to 5 Are Your Keys to Financial Freedom
+                    Plan Your Next Steps and Budget
                   </h3>
                   <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);text-align:center;margin-bottom:2.5rem;max-width:800px;margin-left:auto;margin-right:auto;line-height:var(--s2s-lh-body);">
-                    The Simple2Success system is designed to unlock <strong>multiple income streams simultaneously</strong> through the PM-International compensation plan. Here is exactly what happens when you turn on your traffic:
+                    The Simple2Success system is designed to unlock <strong>multiple income streams simultaneously</strong> through the PM-International compensation plan. The examples below are gross amounts, not guaranteed earnings or profit. Review the current country-specific rules:
                   </p>
 
                   <div class="row" style="align-items:stretch;">
@@ -573,23 +574,23 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                         </p>
                         <h4 style="color:var(--s2s-text-100);font-weight:700;margin-bottom:var(--s2s-sp-4);">Training Bonus (EAB)</h4>
                         <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:var(--s2s-sp-4);line-height:var(--s2s-lh-compact);">
-                          Every time your automated traffic generates a new active partner, PM pays you a direct <strong>€60 Training Bonus</strong>.
+                          Illustrative example: a qualifying partner start may earn a <strong>€60 Training Bonus</strong>. Check the current compensation plan and eligibility for your country.
                         </p>
                         <div style="background:var(--s2s-brand-subtle);padding:10px;border-radius:var(--s2s-radius-sm);border-left:3px solid rgba(183,0,224,.5);">
                           <p style="color:var(--s2s-text-100);font-size:1.1rem;font-weight:700;margin-bottom:0;">
-                            5 Partners = <span style="color:rgba(183,0,224,.9);">€300 instantly</span>
+                            5 Partners = <span style="color:rgba(183,0,224,.9);">€300 gross if eligible</span>
                           </p>
-                          <small style="color:var(--s2s-text-65);">Covers your traffic costs immediately.</small>
+                          <small style="color:var(--s2s-text-65);">Illustrative gross bonus only; eligibility, costs and results vary.</small>
                         </div>
                       </div>
                     </div>
 
-                    <!-- Box 2: Monthly Passive Income -->
+                    <!-- Box 2: Potential Recurring Bonuses -->
                     <div class="col-lg-4 col-md-12 mb-4">
                       <div style="background:rgba(255,255,255,.04);padding:var(--s2s-card-pad);border-radius:var(--s2s-radius-lg);border-top:4px solid rgba(183,0,224,.75);height:100%;position:relative;overflow:hidden;">
                         <div style="position:absolute;top:-15px;right:-15px;opacity:.08;"><i class="ft-refresh-cw" style="font-size:6rem;color:var(--s2s-brand);"></i></div>
                         <p style="color:rgba(183,0,224,.85);font-weight:800;font-size:var(--s2s-size-eyebrow);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem;">
-                          2. Monthly Passive Income
+                          2. Potential Recurring Bonuses
                         </p>
                         <h4 style="color:var(--s2s-text-100);font-weight:700;margin-bottom:var(--s2s-sp-4);">First-Line Bonus (EB)</h4>
                         <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:var(--s2s-sp-4);line-height:var(--s2s-lh-compact);">
@@ -599,7 +600,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                           <p style="color:var(--s2s-text-100);font-size:1.1rem;font-weight:700;margin-bottom:0;">
                             Paid <span style="color:rgba(183,0,224,.9);">Month After Month</span>
                           </p>
-                          <small style="color:var(--s2s-text-65);">Builds your secure financial foundation.</small>
+                          <small style="color:var(--s2s-text-65);">Recurring bonuses depend on qualifying activity and applicable terms.</small>
                         </div>
                       </div>
                     </div>
@@ -609,7 +610,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                       <div style="background:rgba(255,255,255,.04);padding:var(--s2s-card-pad);border-radius:var(--s2s-radius-lg);border-top:4px solid var(--s2s-brand);height:100%;position:relative;overflow:hidden;">
                         <div style="position:absolute;top:-15px;right:-15px;opacity:.08;"><i class="ft-star" style="font-size:6rem;color:var(--s2s-brand);"></i></div>
                         <p style="color:var(--s2s-brand);font-weight:800;font-size:var(--s2s-size-eyebrow);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem;">
-                          3. Exponential Wealth
+                          3. Further Milestones
                         </p>
                         <h4 style="color:var(--s2s-text-100);font-weight:700;margin-bottom:var(--s2s-sp-4);">Deep Bonuses &amp; Lifestyle</h4>
                         <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:var(--s2s-sp-4);line-height:var(--s2s-lh-compact);">
@@ -619,7 +620,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                           <p style="color:var(--s2s-text-100);font-size:1.1rem;font-weight:700;margin-bottom:0;">
                             <span style="color:var(--s2s-brand);">+ Car Bonus &amp; Travel</span>
                           </p>
-                          <small style="color:var(--s2s-text-65);">Drive your dream car paid by PM.</small>
+                          <small style="color:var(--s2s-text-65);">Car program participation depends on current country and qualification rules.</small>
                         </div>
                       </div>
                     </div>
@@ -629,11 +630,11 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <!-- CTA summary -->
                   <div style="margin-top:var(--s2s-sp-4);padding:var(--s2s-card-pad);background:rgba(183,0,224,.15);border-radius:var(--s2s-radius);border:1px solid rgba(183,0,224,.5);text-align:center;box-shadow:inset 0 0 20px rgba(183,0,224,0.1);">
                     <h4 style="color:var(--s2s-text-100);font-weight:800;margin-bottom:.5rem;">
-                      The Math is Simple: <span style="color:var(--s2s-brand);">Traffic = Duplication = Freedom</span>
+                      The Math is Simple: <span style="color:var(--s2s-brand);">Learn, Support Customers, Review Results</span>
                     </h4>
                     <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body);margin-bottom:0;max-width:750px;margin-left:auto;margin-right:auto;line-height:var(--s2s-lh-body);">
-                      If you don't order traffic (Step 3) and activate your product (Step 4), the system stops here.
-                      <strong>Turn on your traffic now</strong> to start the engine and let the Simple2Success automation build your team!
+                      <strong>Choose a manageable next action:</strong> understand the products, practise a customer conversation, or ask your sponsor for help.
+                      Before buying traffic or products, set a budget and review recurring costs. Automation supports follow-up; customers and income are not guaranteed.
                     </p>
                   </div>
 
@@ -659,7 +660,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
         <!-- ═══════════════════════════════════════════════════════════
              SECTION 8 — STEPS 3 / 4 / 5 (secondary)
         ════════════════════════════════════════════════════════════ -->
-        <section class="s2s-next-steps" style="margin-top:1.25rem;">
+        <section id="next-steps" class="s2s-next-steps" style="margin-top:1.25rem;">
           <!-- Pure CSS flex row — no match-height JS. Bootstrap 4 .row is already
                display:flex;flex-wrap:wrap;align-items:stretch, so all columns
                equalise to the tallest. height:100% on .card fills the column,
@@ -709,7 +710,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                     <div style="flex:1;">
                       <p style="font-size:.92rem;margin-bottom:.5rem;">
                         Not yet started with a product subscription? Activate it now to unlock your full earning potential.
-                        Choose between <strong>Teampartner Start</strong> or <strong>Manager Quickstart</strong> — your monthly autoship activates your commissions and gives you authentic product experience.
+                        Choose between <strong>Teampartner Start</strong> or <strong>Manager Quickstart</strong> — review product options, recurring costs and the commission requirements for your country before choosing.
                       </p>
                       <p style="font-size:.82rem;opacity:.6;margin-bottom:0;">
                         Already selected a start option during registration? Then you're all set — your autoship will ship automatically next month.
@@ -750,7 +751,7 @@ if (isset($_GET['step2']) && $_GET['step2'] === 'done') {
                   <div class="card-body" style="flex:1;display:flex;flex-direction:column;">
                     <div style="flex:1;">
                       <p style="font-size:.92rem;margin-bottom:0;">
-                        Repeat Step 3 — order traffic from our trusted traffic sources.
+                        Review customer feedback, activity, income and costs before deciding whether to repeat or change your approach.
                         Consistency is the key to long-term success. Keep the leads coming and keep moving forward.
                       </p>
                     </div>

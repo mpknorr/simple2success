@@ -18,7 +18,7 @@ class BrevoMailer
         $this->apiKey    = $this->getSetting($link, 'brevo_api_key');
         $this->fromEmail = $this->getSetting($link, 'smtp_from_email') ?: 'noreply@simple2success.com';
         $this->fromName  = $this->getSetting($link, 'smtp_from_name')  ?: 'Simple2Success';
-        $this->replyTo   = $this->getSetting($link, 'smtp_from_email') ?: 'noreply@simple2success.com';
+        $this->replyTo   = $this->getSetting($link, 'smtp_reply_to') ?: $this->fromEmail;
 
         if (empty($this->apiKey)) {
             throw new \RuntimeException('Brevo API-Key fehlt (settings: brevo_api_key).');
