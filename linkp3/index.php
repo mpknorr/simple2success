@@ -72,7 +72,7 @@ $countdownSeconds = 48 * 3600;
         <input type="submit" value="Explore the Free System!" class="s2s-btn">
             <p style="margin:10px 0 0;font-size:12px;opacity:.75;text-align:center;">✓ 100% free &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ Takes 60 seconds</p>
       </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
       <div class="w-form-done">
         <div>Thank you! Check your email for next steps.</div>

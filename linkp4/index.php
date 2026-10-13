@@ -80,7 +80,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
         <span class="btn-arrow">→</span>
       </button>
     </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
     <?php endif; ?>
 
     <div class="trust-row">
@@ -204,7 +204,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <div class="step-dot">2</div>
       <div class="step-body">
         <h3>Complete Step 2 — Activate Your Partnership</h3>
-        <p>Create your free partner account and enter your Partner ID. Saving your Partner ID completes your setup. Earning commissions requires qualifying activity under the partner terms.</p>
+        <p>Review local registration fees and product-package options, create your partner account, then enter your Partner ID. Saving your Partner ID completes your setup. Earning commissions requires qualifying activity under the partner terms.</p>
       </div>
     </div>
 
@@ -251,7 +251,7 @@ $source    = htmlspecialchars($_GET['source'] ?? '');
       <input type="email" name="email" placeholder="Best Email" required>
       <button type="submit" class="btn-cta">Get Free Access →</button>
     </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
     <?php else: ?>
     <div style="background:rgba(0,207,232,.08);border:1px solid rgba(0,207,232,.3);border-radius:8px;padding:16px 20px;margin:12px 0 16px;text-align:center;">
       <p style="margin:0 0 10px;font-size:15px;"><?= htmlspecialchars($s2s_lang['err_eae'][$_pg_lang]) ?></p>

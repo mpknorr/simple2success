@@ -156,7 +156,7 @@ $source    = htmlspecialchars(isset($_GET['source']) ? $_GET['source'] : '');
           <span style="font-size:1.2rem;">→</span>
         </button>
       </form>
-<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Product, advertising or other business costs may apply later. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
+<p style="font-size:13px;line-height:1.6;opacity:.85;">Your Simple2Success account is free. Partner-registration fees and product-package costs are separate and vary by country. Review local terms before joining the business partner. Advertising may involve additional costs. You will receive access information and follow-up guidance by email; you can unsubscribe from marketing at any time.</p>
       <?php endif; ?>
 
       <!-- Trust badges -->

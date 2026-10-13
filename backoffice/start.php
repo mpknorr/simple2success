@@ -326,11 +326,11 @@ if ($setupComplete && isset($_GET['step2']) && $_GET['step2'] === 'done') {
                       </h1>
                       <p style="color:var(--s2s-text-80);font-size:var(--s2s-size-body-lg);
                                 margin:0;line-height:var(--s2s-lh-body);">
-                        Open the PM-International registration, review the options for your country, then return here and save your Partner ID. Your setup is complete only after Step 2.
+                        Your Simple2Success account is free. PM-International registration has separate country-specific fees and product options. Review the local costs, complete your registration, then return here and save your Partner ID.
                       </p>
                       <ul style="list-style:none;padding:0;margin:1rem 0 0;font-size:.88rem;color:rgba(255,255,255,.75);line-height:2;">
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> 100% free registration — no purchase required</li>
-                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Review any product or subscription options before confirming</li>
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> Review local PM registration fees and product-package prices before confirming</li>
+                        <li><span style="color:#28c76f;font-weight:700;">✓</span> We recommend considering an Optimal-Set for personal product experience; check local prices, contents and any subscription terms</li>
                         <li><span style="color:#28c76f;font-weight:700;">✓</span> Your sponsor connection is already prepared</li>
                       </ul>
                     </div>

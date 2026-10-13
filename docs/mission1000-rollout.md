@@ -53,3 +53,6 @@ Additional findings corrected: email-click.php selected a nonexistent followup_s
 The user confirmed on 13 October 2026 that GitHub and Hostinger FTP contain identical code. No additional production-file ZIP or source synchronisation is required. Historical database tables and trigger records alone do not prove a source mismatch. No schema dates or missing legacy step2_at values are backfilled. Do not classify suspicious traffic as bots without verification.
 
 The user also confirmed that no genuine lead has completed Step 2 so far. Existing saved Partner IDs are not genuine acquisition conversions. The current UI count is a raw count of saved IDs excluding admins; it must not be presented as the real acquisition conversion rate until test/existing accounts are explicitly classified. The real baseline is zero confirmed genuine completions. Do not infer genuine status from an ID alone.
+
+## Registration-cost clarification
+Only the Simple2Success account is free. PM registration fees and product-package costs differ by country and are separate from system access. No global fixed price or free PM registration is claimed. Optimal-Set is recommended for product experience with local costs and subscription terms visible; a package order is separate from the Step-2 saved-ID KPI.
