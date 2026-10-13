@@ -22,15 +22,15 @@ if ($type === 'clicks') {
     $sql = "SELECT fc.clicked_at AS signup_at,
                    u.leadid, u.name, u.email, u.country_detected, u.lang, u.source,
                    u.paidstatus, u.step1_at, u.username
-            FROM followup_clicks fc
+            FROM (SELECT user_id, MAX(clicked_at) AS clicked_at
+                  FROM followup_clicks WHERE sequence_id = $seq_id GROUP BY user_id) fc
             JOIN users u ON u.leadid = fc.user_id
-            WHERE fc.sequence_id = $seq_id
             ORDER BY fc.clicked_at DESC
             LIMIT 200";
 } elseif (in_array($type, ['delivered','opened','bounced','spam','failed'], true)) {
     $statusMap = [
-        'delivered' => "fl.status IN ('delivered','opened','clicked')",
-        'opened'    => "fl.status IN ('opened','clicked')",
+        'delivered' => "(fl.delivered_at IS NOT NULL OR fl.opened_at IS NOT NULL)",
+        'opened'    => "fl.opened_at IS NOT NULL",
         'bounced'   => "fl.status = 'bounced'",
         'spam'      => "fl.status = 'spam'",
         'failed'    => "fl.status = 'failed'",

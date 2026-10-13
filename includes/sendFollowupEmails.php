@@ -89,7 +89,8 @@ function ensureFollowupTables($link) {
         subject      VARCHAR(255) NOT NULL DEFAULT '',
         body         LONGTEXT NOT NULL,
         created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        category     ENUM('transaction','marketing') NOT NULL DEFAULT 'transaction'
     )");
 
     mysqli_query($link, "CREATE TABLE IF NOT EXISTS followup_contact_limits (
@@ -100,8 +101,8 @@ function ensureFollowupTables($link) {
         $key = mysqli_real_escape_string($link, $key);
         $subject = mysqli_real_escape_string($link, $template['subject']);
         $body = mysqli_real_escape_string($link, $template['body']);
-        mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body)
-            VALUES ('$key', '$key', '$subject', '$body')");
+        mysqli_query($link, "INSERT IGNORE INTO email_templates (name, template_key, subject, body, category)
+            VALUES ('$key', '$key', '$subject', '$body', 'marketing')");
     }
 
 }

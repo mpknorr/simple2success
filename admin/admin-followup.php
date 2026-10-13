@@ -114,34 +114,34 @@ if (isset($_GET['edit'])) {
 // Load all sequences as arrays (needed for JS preview data + table loop)
 $_clicksExist = $click_table && mysqli_num_rows($click_table) > 0;
 $_clickSubq   = $_clicksExist
-    ? "(SELECT COUNT(*) FROM followup_clicks WHERE sequence_id=f.id)"
+    ? "(SELECT COUNT(DISTINCT user_id) FROM followup_clicks WHERE sequence_id=f.id)"
     : "0";
 $_res_lead = mysqli_query($link, "SELECT f.*,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('delivered','opened','clicked')) AS delivered_count,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('opened','clicked')) AS opened_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND (delivered_at IS NOT NULL OR opened_at IS NOT NULL)) AS delivered_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND opened_at IS NOT NULL) AS opened_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='bounced') AS bounce_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='sent') AS pending_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A') AS ab_a_sent,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A' AND status IN ('opened','clicked')) AS ab_a_opens,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A' AND opened_at IS NOT NULL) AS ab_a_opens,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B') AS ab_b_sent,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B' AND status IN ('opened','clicked')) AS ab_b_opens,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B' AND opened_at IS NOT NULL) AS ab_b_opens,
     $_clickSubq AS click_count
     FROM followup_sequences f WHERE target='lead' ORDER BY day_offset ASC");
 $_res_member = mysqli_query($link, "SELECT f.*,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id) AS sent_count,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('delivered','opened','clicked')) AS delivered_count,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status IN ('opened','clicked')) AS opened_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND (delivered_at IS NOT NULL OR opened_at IS NOT NULL)) AS delivered_count,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND opened_at IS NOT NULL) AS opened_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='bounced') AS bounce_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='spam') AS spam_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='failed') AS failed_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND status='sent') AS pending_count,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A') AS ab_a_sent,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A' AND status IN ('opened','clicked')) AS ab_a_opens,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='A' AND opened_at IS NOT NULL) AS ab_a_opens,
     (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B') AS ab_b_sent,
-    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B' AND status IN ('opened','clicked')) AS ab_b_opens,
+    (SELECT COUNT(*) FROM followup_log WHERE sequence_id=f.id AND variant='B' AND opened_at IS NOT NULL) AS ab_b_opens,
     $_clickSubq AS click_count
     FROM followup_sequences f WHERE target='member' ORDER BY day_offset ASC");
 $sequences_lead   = [];
@@ -272,7 +272,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             <div class="col-lg-3 col-sm-6 mb-2">
               <div class="d-flex align-items-center">
                 <span style="font-size:22px;font-weight:bold;color:#1877F2;margin-right:8px;"><?= $ab_b_count ?></span>
-                <div><div style="font-size:12px;font-weight:600;">Variante B</div><div class="text-muted" style="font-size:11px;">Curiosity-Gap-Betreff</div></div>
+                <div><div style="font-size:12px;font-weight:600;">Variante B</div><div class="text-muted" style="font-size:11px;">Alternativer Betreff</div></div>
               </div>
             </div>
             <div class="col-lg-3 col-sm-6 mb-2">
@@ -399,7 +399,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             </td>
             <td class="text-center">
               <?php if ((int)($seq['click_count'] ?? 0) > 0): ?>
-                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
+                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Eindeutige Klicker anzeigen (nicht um Bots bereinigt)"><?= $seq['click_count'] ?></span>
               <?php else: ?>
                 <span class="badge badge-secondary" style="opacity:.4;">0</span>
               <?php endif; ?>
@@ -414,7 +414,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 $sent = max(1, (int)$seq['sent_count']);
                 ?>
                 <span class="fup-stat fup-drill" style="background:#28c76f22;color:#28c76f;" data-type="delivered" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Zugestellt (<?= round($dc/$sent*100) ?>%)">✅ <?= $dc ?></span>
-                <span class="fup-stat fup-drill" style="background:#00cfe822;color:#00cfe8;" data-type="opened"    data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Geöffnet (<?= round($oc/$sent*100) ?>%)">👁 <?= $oc ?></span>
+                <span class="fup-stat fup-drill" style="background:#00cfe822;color:#00cfe8;" data-type="opened"    data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Gemessene Öffnungen / nachweislich zugestellt: <?= $dc > 0 ? round($oc/$dc*100, 1) : 0 ?>% — technisch eingeschränkt">👁 <?= $oc ?></span>
                 <?php if ($bc > 0): ?>
                 <span class="fup-stat fup-drill" style="background:#ff980022;color:#ff9800;" data-type="bounced"   data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Bounce (<?= round($bc/$sent*100) ?>%)">⛔ <?= $bc ?></span>
                 <?php endif; ?>
@@ -536,7 +536,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
             </td>
             <td class="text-center">
               <?php if ((int)($seq['click_count'] ?? 0) > 0): ?>
-                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Klicker anzeigen"><?= $seq['click_count'] ?></span>
+                <span class="badge badge-success fup-drill" data-type="clicks" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" style="cursor:pointer;" title="Eindeutige Klicker anzeigen (nicht um Bots bereinigt)"><?= $seq['click_count'] ?></span>
               <?php else: ?>
                 <span class="badge badge-secondary" style="opacity:.4;">0</span>
               <?php endif; ?>
@@ -551,7 +551,7 @@ if ($trigger_table && mysqli_num_rows($trigger_table) > 0) {
                 $sent = max(1, (int)$seq['sent_count']);
                 ?>
                 <span class="fup-stat fup-drill" style="background:#28c76f22;color:#28c76f;" data-type="delivered" data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Zugestellt (<?= round($dc/$sent*100) ?>%)">✅ <?= $dc ?></span>
-                <span class="fup-stat fup-drill" style="background:#00cfe822;color:#00cfe8;" data-type="opened"    data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Geöffnet (<?= round($oc/$sent*100) ?>%)">👁 <?= $oc ?></span>
+                <span class="fup-stat fup-drill" style="background:#00cfe822;color:#00cfe8;" data-type="opened"    data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Gemessene Öffnungen / nachweislich zugestellt: <?= $dc > 0 ? round($oc/$dc*100, 1) : 0 ?>% — technisch eingeschränkt">👁 <?= $oc ?></span>
                 <?php if ($bc > 0): ?>
                 <span class="fup-stat fup-drill" style="background:#ff980022;color:#ff9800;" data-type="bounced"   data-seq="<?= $sid ?>" data-label="<?= $slabel ?>" title="Bounce (<?= round($bc/$sent*100) ?>%)">⛔ <?= $bc ?></span>
                 <?php endif; ?>

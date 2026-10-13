@@ -40,7 +40,7 @@ if ($f_lang    !== '') $_drillFilterAttrs .= ' data-filter-lang="'    . htmlspec
 if ($f_page    !== '') $_drillFilterAttrs .= ' data-filter-page="'    . htmlspecialchars($f_page,    ENT_QUOTES) . '"';
 
 // Build WHERE clause for all queries
-$where = "WHERE timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
+$where = "WHERE is_admin = 0 AND timestamp BETWEEN '$sf_from 00:00:00' AND '$sf_to 23:59:59'";
 if ($sf_country !== '') $where .= " AND country_detected = '$sf_country'";
 if ($sf_lang    !== '') $where .= " AND lang = '$sf_lang'";
 if ($sf_page    !== '') $where .= " AND page = '$sf_page'";
@@ -532,7 +532,7 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
     <div class="col-6 col-lg-4 col-xl-2 mb-1">
         <div class="st-kpi purple">
             <div class="st-kpi-icon"><i class="ft-check-circle"></i></div>
-            <div><div class="st-kpi-num"><?= $kpi_step2 ?></div><div class="st-kpi-label">Step 2 abgeschlossen</div><small><?= $setupRate ?>% der Leads · Ziel ≥ 2% (1 von 50)<br>Gespeicherte Partner-ID; bisherige Abschlüsse der gewählten Lead-Kohorte.</small></div>
+            <div><div class="st-kpi-num"><?= $kpi_step2 ?></div><div class="st-kpi-label">Step 2 abgeschlossen</div><small><?= $setupRate ?>% der Leads ohne Admin-Konten · Ziel ≥ 2% (1 von 50)<br>Gespeicherte Partner-ID; bisherige Abschlüsse der gewählten Lead-Kohorte.</small></div>
         </div>
     </div>
     <div class="col-6 col-lg-4 col-xl-2 mb-1">
