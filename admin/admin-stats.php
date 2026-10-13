@@ -532,7 +532,7 @@ $langLabels = ['en'=>'English','de'=>'Deutsch','fr'=>'Français','es'=>'Español
     <div class="col-6 col-lg-4 col-xl-2 mb-1">
         <div class="st-kpi purple">
             <div class="st-kpi-icon"><i class="ft-check-circle"></i></div>
-            <div><div class="st-kpi-num"><?= $kpi_step2 ?></div><div class="st-kpi-label">Step 2 abgeschlossen</div><small><?= $setupRate ?>% der Leads ohne Admin-Konten · Ziel ≥ 2% (1 von 50)<br>Gespeicherte Partner-ID; bisherige Abschlüsse der gewählten Lead-Kohorte.</small></div>
+            <div><div class="st-kpi-num"><?= $kpi_step2 ?></div><div class="st-kpi-label">Partner-ID gespeichert (Rohdaten)</div><small><?= $setupRate ?>% Rohanteil ohne Admin-Konten<br>Test-/Bestandskonten können enthalten sein. Ziel für echte neue Leads: ≥ 2% (1 von 50).</small></div>
         </div>
     </div>
     <div class="col-6 col-lg-4 col-xl-2 mb-1">
